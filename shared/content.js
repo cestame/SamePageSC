@@ -28,15 +28,17 @@ export const FIELD_KEYS = FIELDS.map((f) => f.key);
 /** @typedef {'requirement' | 'foundation' | 'mastery'} Goal */
 export const GOALS = /** @type {const} */ (['requirement', 'foundation', 'mastery']);
 
+/** @typedef {{ key: string, question: string, options: ReadonlyArray<{ value: number | string, label: string, detail?: string }> }} Question */
+
 /**
- * Intake questions. No "visual, auditory or kinesthetic learner" question:
+ * Every matching question. No "visual, auditory or kinesthetic learner" question:
  * learning styles are not supported by research.
- * @type {ReadonlyArray<{ key: string, question: string, options: ReadonlyArray<{ value: number | string, label: string, detail?: string }> }>}
+ * @type {ReadonlyArray<Question>}
  */
-export const QUESTIONS = [
+const ALL_QUESTIONS = [
   {
     key: 'prior',
-    question: 'How much do you already know about this subject?',
+    question: 'How much do you already know about {course}?',
     options: [
       { value: 1, label: 'Nothing yet', detail: 'It will all be new to me' },
       { value: 2, label: 'A little', detail: 'Some exposure, nothing formal' },
@@ -102,7 +104,7 @@ export const QUESTIONS = [
   },
   {
     key: 'workload',
-    question: 'How many hours a week can you give this class outside of lecture?',
+    question: 'How many hours a week can you give {course} outside of class?',
     options: [
       { value: 1, label: 'About 2 hours', detail: 'My semester is packed' },
       { value: 2, label: '3 to 4 hours' },
@@ -120,6 +122,47 @@ export const QUESTIONS = [
       { value: 'mastery', label: 'Real mastery', detail: 'This is my area and I want to go further' },
     ],
   },
+];
+
+/** @type {(keys: string[]) => Question[]} */
+const pick = (keys) => keys.map((k) => /** @type {Question} */ (ALL_QUESTIONS.find((q) => q.key === k)));
+
+/** Asked once, during setup. They describe how you like to learn, so they apply to every class. */
+export const GENERAL_QUESTIONS = pick(['format', 'structure', 'assessment', 'participation', 'pace', 'goal']);
+
+/** Asked for each class on the home page, because they depend on the subject. */
+export const COURSE_QUESTIONS = pick(['prior', 'workload']);
+
+const hour = (h) => h * 60;
+
+/** Time window for the schedule planner. Values are minutes after midnight. */
+export const TIME_QUESTIONS = [
+  {
+    key: 'earliest',
+    question: 'What is the earliest a class can start?',
+    options: [
+      { value: hour(8), label: '8:00 am' },
+      { value: hour(9), label: '9:00 am' },
+      { value: hour(10), label: '10:00 am' },
+      { value: hour(11), label: '11:00 am' },
+      { value: hour(12), label: 'Noon' },
+    ],
+  },
+  {
+    key: 'latest',
+    question: 'What is the latest a class can end?',
+    options: [
+      { value: hour(14), label: '2:00 pm' },
+      { value: hour(16), label: '4:00 pm' },
+      { value: hour(18), label: '6:00 pm' },
+      { value: hour(22), label: 'Evening classes are fine' },
+    ],
+  },
+];
+
+export const MAJOR_SUGGESTIONS = [
+  'Business Administration', 'Computer Science', 'Economics', 'Communication', 'Biological Sciences',
+  'Psychology', 'Political Science', 'Cinematic Arts', 'Mechanical Engineering', 'Undeclared',
 ];
 
 export const LEARNING_STYLES_NOTE =

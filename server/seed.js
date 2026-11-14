@@ -50,7 +50,7 @@ const PROFESSORS = [
     },
   },
   {
-    course: 'econ-203', name: 'Prof. James Whitfield', section: '26301', schedule: 'TTh 10:00-11:20',
+    course: 'econ-203', name: 'Prof. James Whitfield', section: '26301', schedule: 'TTh 14:00-15:20',
     summary: 'Classic lecture with graphs built step by step on the board, followed by a few practice multiple-choice questions. Very predictable rhythm from week to week.',
     profile: {
       pace: p(3, 'One chapter per week, matching the textbook.'),
@@ -76,7 +76,7 @@ const PROFESSORS = [
     },
   },
   {
-    course: 'econ-203', name: 'Prof. Kevin Tran', section: '26305', schedule: 'MWF 13:00-13:50',
+    course: 'econ-203', name: 'Prof. Kevin Tran', section: '26305', schedule: 'MWF 10:00-10:50',
     summary: 'A mix of lecture and in-class worksheets done in pairs, with the professor solving each worksheet on the board afterwards. Lots of practice, tightly organized.',
     profile: {
       pace: p(4, 'Covers more chapters than other sections; extra topics on game theory.'),

@@ -8,6 +8,7 @@ import { FIELD_KEYS, PRODUCT_NAME } from '../shared/content.js';
 import { scoreProfile, mergeContributions, validateAnswers } from './scoring.js';
 import { scrubText, isAboutThePerson } from './privacy.js';
 import { extractProfile, explainMatch, aiConfigured, AiUnavailableError } from './ai.js';
+import { planSchedule } from './planner.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -133,6 +134,47 @@ app.post('/api/match', asyncRoute(async (req, res) => {
     .map((p) => ({ ...p, ...scoreProfile(answers, p.profile) }))
     .sort((a, b) => b.score - a.score || a.id - b.id);
   res.json(results);
+}));
+
+const MINUTES_IN_DAY = 24 * 60;
+const asMinutes = (v) => (Number.isInteger(v) && v >= 0 && v <= MINUTES_IN_DAY ? v : null);
+
+// Schedule plan: ranks every section of each course for this student, then picks one section per
+// course with the best total fit that fits their time window and doesn't overlap.
+app.post('/api/plan', asyncRoute(async (req, res) => {
+  const { courses, earliest, latest, locked } = req.body || {};
+  if (!Array.isArray(courses) || courses.length === 0 || courses.length > 8) {
+    return res.status(400).json({ error: 'Send between 1 and 8 courses.' });
+  }
+  for (const c of courses) {
+    const err = validateAnswers(c?.answers);
+    if (err) return res.status(400).json({ error: `${c?.courseId}: ${err}` });
+  }
+
+  const ranked = [];
+  for (const c of courses) {
+    const [course] = await query('SELECT id, code, title FROM courses WHERE id = $1', [c.courseId]);
+    if (!course) return res.status(400).json({ error: `Unknown course ${c.courseId}` });
+    const sections = (await loadProfessors('p.course_id = $1', [course.id]))
+      .map((p) => ({ ...p, ...scoreProfile(c.answers, p.profile) }))
+      .sort((a, b) => b.score - a.score || a.id - b.id);
+    ranked.push({ course, sections });
+  }
+
+  const plan = planSchedule(
+    ranked.map((r) => ({ courseId: r.course.id, sections: r.sections })),
+    { earliest: asMinutes(earliest), latest: asMinutes(latest) },
+    locked && typeof locked === 'object' ? locked : {},
+  );
+
+  res.json(ranked.map(({ course, sections }) => {
+    const coursePlan = plan[course.id];
+    return {
+      ...course,
+      chosenId: coursePlan.chosenId,
+      sections: sections.map((s) => ({ ...s, plan: coursePlan.sections.find((p) => p.id === s.id) })),
+    };
+  }));
 }));
 
 // Explanation: written by the AI from the two profiles, cached per (answers, profile) pair.
