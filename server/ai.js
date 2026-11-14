@@ -3,7 +3,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
 import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod';
-import { FIELDS } from './fields.js';
+import { FIELDS } from '../shared/content.js';
 
 const MODEL = process.env.ANTHROPIC_MODEL || 'claude-opus-5-5';
 

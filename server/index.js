@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { initDb, query } from './db.js';
 import { seedIfEmpty } from './seed.js';
-import { FIELDS, FIELD_KEYS } from './fields.js';
+import { FIELD_KEYS, PRODUCT_NAME } from '../shared/content.js';
 import { scoreProfile, mergeContributions, validateAnswers } from './scoring.js';
 import { scrubText, isAboutThePerson } from './privacy.js';
 import { extractProfile, explainMatch, aiConfigured, AiUnavailableError } from './ai.js';
@@ -78,13 +78,14 @@ function answersToText(a) {
   ].join('\n');
 }
 
+// Used when the AI model is unavailable. Built only from the score breakdown, and labeled as such in the UI.
 function templateExplanation(breakdown) {
-  const sorted = [...breakdown].sort((x, y) => y.fit * y.weight - x.fit * x.weight);
-  const [a, b] = sorted;
+  const byContribution = [...breakdown].sort((x, y) => y.fit * y.weight - x.fit * x.weight);
+  const [best, second] = byContribution;
   const worst = [...breakdown].sort((x, y) => x.fit - y.fit)[0];
   return {
-    why: `Strongest fits: ${a.label.toLowerCase()} (${a.fit}%) and ${b.label.toLowerCase()} (${b.fit}%).`,
-    watch_out: `Biggest gap is ${worst.label.toLowerCase()}: you wanted about ${worst.target}/5, this section is ${worst.actual}/5.`,
+    why: `This class lines up best with you on ${best.label.toLowerCase()} and ${second.label.toLowerCase()}, where it matches what you asked for at ${best.fit}% and ${second.fit}%.`,
+    watch_out: `The biggest difference is ${worst.label.toLowerCase()}: you asked for about ${worst.target} out of 5 and this class sits at ${worst.actual}.`,
   };
 }
 
@@ -92,15 +93,18 @@ function templateExplanation(breakdown) {
 
 app.get('/api/health', (req, res) => res.json({ ok: true, ai: aiConfigured() }));
 
-app.get('/api/meta', (req, res) => res.json({ fields: FIELDS, ai: aiConfigured() }));
+app.get('/api/meta', (req, res) => res.json({ ai: aiConfigured() }));
 
 app.get('/api/courses', asyncRoute(async (req, res) => {
-  const rows = await query(
-    `SELECT c.id, c.code, c.title, COUNT(p.id)::int AS sections
-     FROM courses c LEFT JOIN professors p ON p.course_id = c.id
-     GROUP BY c.id ORDER BY c.code`,
-  );
-  res.json(rows);
+  // Each course carries its sections' profiles so the course picker can draw their shapes.
+  const courses = await query('SELECT id, code, title FROM courses ORDER BY code');
+  const professors = await loadProfessors('TRUE', []);
+  res.json(courses.map((c) => ({
+    ...c,
+    sections: professors
+      .filter((p) => p.course_id === c.id)
+      .map((p) => ({ id: p.id, name: p.name, is_sample: p.is_sample, profile: p.profile })),
+  })));
 }));
 
 app.get('/api/courses/:id/professors', asyncRoute(async (req, res) => {
@@ -167,7 +171,7 @@ app.post('/api/explain', rateLimit({ windowMs: 60_000, max: 30 }), asyncRoute(as
 
 app.post('/api/contribute', rateLimit({ windowMs: 60 * 60_000, max: 15 }), asyncRoute(async (req, res) => {
   const { courseId, professorId, professorName, text, sourceType, consent } = req.body || {};
-  if (!consent) return res.status(400).json({ error: 'Please confirm the notes are yours (or shared with the professor\'s agreement).' });
+  if (!consent) return res.status(400).json({ error: 'Please confirm these are your own notes, or that the professor agreed to share them.' });
   if (!['notes', 'syllabus', 'both'].includes(sourceType)) return res.status(400).json({ error: 'sourceType must be notes, syllabus, or both' });
   if (typeof text !== 'string' || text.trim().length < 80) return res.status(400).json({ error: 'Please paste at least a few sentences (80+ characters).' });
   if (text.length > 30_000) return res.status(400).json({ error: 'Text is too long (max 30,000 characters). Paste the most relevant part.' });
@@ -265,10 +269,13 @@ app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 
 // ---------- frontend ----------
 
-app.use(express.static(path.join(here, '..', 'public'), { extensions: ['html'] }));
-app.get('*', (req, res) => res.sendFile(path.join(here, '..', 'public', 'index.html')));
+const clientDir = path.join(here, '..', 'dist');
+app.use(express.static(clientDir));
+app.get('*', (req, res) => res.sendFile(path.join(clientDir, 'index.html'), (err) => {
+  if (err) res.status(503).send('The site has not been built yet. Run "npm run build".');
+}));
 
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error(err);
   res.status(500).json({ error: 'Something went wrong on our side.' });
 });
@@ -277,5 +284,5 @@ const port = Number(process.env.PORT) || 3000;
 const kind = await initDb();
 if (await seedIfEmpty()) console.log('Seeded sample data.');
 app.listen(port, '0.0.0.0', () => {
-  console.log(`Trojan Fit running on http://localhost:${port} (db: ${kind}, ai: ${aiConfigured() ? 'on' : 'OFF - set ANTHROPIC_API_KEY'})`);
+  console.log(`${PRODUCT_NAME} running on http://localhost:${port} (db: ${kind}, ai: ${aiConfigured() ? 'on' : 'OFF - set ANTHROPIC_API_KEY'})`);
 });

@@ -112,15 +112,6 @@ export async function seedIfEmpty() {
        VALUES ($1, $2, $3, 'sample', TRUE)`,
       [row.id, JSON.stringify(prof.profile), prof.summary],
     );
-    // A few sample confirmations so the feedback counter is not empty on first load.
-    const confirmations = 2 + (row.id % 3);
-    for (let i = 0; i < confirmations; i++) {
-      await query(
-        `INSERT INTO feedback (professor_id, pace_as_expected, format_as_expected, workload_as_expected)
-         VALUES ($1, TRUE, TRUE, $2)`,
-        [row.id, i !== 0],
-      );
-    }
     if (SAMPLE_RESPONSES[prof.name]) {
       await query('INSERT INTO professor_responses (professor_id, body, verified) VALUES ($1, $2, FALSE)', [
         row.id, SAMPLE_RESPONSES[prof.name],

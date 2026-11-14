@@ -1,8 +1,8 @@
 // Deterministic matching. The AI never decides the ranking: this function does,
 // so every score is explainable and repeatable. The AI only writes the explanation.
-import { FIELDS, FIELD_KEYS } from './fields.js';
+import { FIELDS, FIELD_KEYS, GOALS } from '../shared/content.js';
 
-export const GOALS = ['requirement', 'foundation', 'mastery'];
+export { GOALS };
 
 const clamp = (x, lo = 1, hi = 5) => Math.min(hi, Math.max(lo, x));
 const round1 = (x) => Math.round(x * 10) / 10;
@@ -28,26 +28,26 @@ export function studentTargets(a) {
       target: clamp(1 + (prior - 1) * 0.75 + (goal === 'mastery' ? 0.5 : 0)),
       weight: 1 + (5 - prior) * 0.25,
       mode: 'closest',
-      why: 'from your prior knowledge',
+      why: 'how much you already know',
     },
     // Prior knowledge also tempers pace: a beginner who wants "fast" still benefits from a steadier class.
     pace: {
       target: clamp(0.5 * Number(a.pace) + 0.5 * prior),
       weight: 1,
       mode: 'closest',
-      why: 'your pace preference, adjusted for prior knowledge',
+      why: 'the pace you asked for and how much you already know',
     },
-    format: { target: Number(a.format), weight: 1, mode: 'closest', why: 'your preferred class format' },
+    format: { target: Number(a.format), weight: 1, mode: 'closest', why: 'the kind of class time you prefer' },
     structure: { target: Number(a.structure), weight: 1, mode: 'closest', why: 'how much structure you want' },
-    assessment: { target: Number(a.assessment), weight: 1.2, mode: 'closest', why: 'exams vs. projects' },
+    assessment: { target: Number(a.assessment), weight: 1.2, mode: 'closest', why: 'whether you prefer exams or projects' },
     // Participation only hurts when the class asks for MORE than you are comfortable with.
-    participation: { target: Number(a.participation), weight: 1.2, mode: 'max', why: 'your comfort with participation' },
+    participation: { target: Number(a.participation), weight: 1.2, mode: 'max', why: 'how you feel about being called on' },
     // Workload only hurts fully when it is heavier than you can take on; lighter counts half.
     workload: {
       target: Number(a.workload),
       weight: goal === 'requirement' ? 1.5 : goal === 'mastery' ? 0.6 : 1,
       mode: 'max-soft',
-      why: 'the workload you can take on this semester',
+      why: 'the hours you can give each week',
     },
   };
 }
