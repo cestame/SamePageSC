@@ -81,12 +81,13 @@ server/
   db.js         Postgres / PGlite connection and schema
   seed.js       6 fictional sample professors across 2 courses
   scoring.js    deterministic matching + profile merging
+  planner.js    picks one section per class: best total fit, inside your hours, no overlaps
   ai.js         Claude calls: profile extraction, match explanations
   privacy.js    personal-detail scrubbing, person-not-class filter
 client/
   src/theme.css        color, type, spacing, radius, shadow and motion tokens
   src/components/      Button, Card, ProfileLine (the profile diagram), FitScore, QuizQuestion, states
-  src/screens/         course picker, intake, matches, professor, contribute, privacy
+  src/screens/         create profile, setup, home (schedule planner), matches, professor, contribute, privacy
 ```
 
 ## API
@@ -96,6 +97,7 @@ client/
 | GET | `/api/courses` | Courses with section counts |
 | GET | `/api/courses/:id/professors` | Merged profiles for a course |
 | GET | `/api/professors/:id` | Profile, feedback stats, professor responses |
+| POST | `/api/plan` | `{courses: [{courseId, answers}], earliest, latest, locked}` → each class's sections ranked, plus the chosen section per class |
 | POST | `/api/match` | `{courseId, answers}` → sections ranked by fit with breakdown |
 | POST | `/api/explain` | `{professorId, answers}` → AI "why" + "watch out" (cached) |
 | POST | `/api/contribute` | `{courseId, professorId \| professorName, sourceType, text, consent}` → extracted + merged profile |
