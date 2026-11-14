@@ -114,7 +114,7 @@ export function QuizQuestion<V extends string | number | boolean>({ id, question
   options: readonly QuizOption<V>[];
   value: V | undefined;
   onSelect: (value: V) => void;
-  layout?: 'stack' | 'pair';
+  layout?: 'stack' | 'pair' | 'chips';
   headingClass?: string;
 }) {
   return (
@@ -138,7 +138,7 @@ export function QuizQuestion<V extends string | number | boolean>({ id, question
               </span>
               <span className="quiz__text">
                 <span className="quiz__label">{o.label}</span>
-                {o.detail && <span className="quiz__detail text-small text-muted">{o.detail}</span>}
+                {o.detail && layout === 'stack' && <span className="quiz__detail text-small text-muted">{o.detail}</span>}
               </span>
             </motion.button>
           );

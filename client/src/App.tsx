@@ -2,8 +2,10 @@ import { MotionConfig } from 'motion/react';
 import { NOT_OFFICIAL, PRODUCT_NAME, TAGLINE } from '../../shared/content.js';
 import { ProfileLine } from './components/ProfileLine';
 import { useHashRoute } from './lib/hooks';
-import { CoursePicker } from './screens/CoursePicker';
-import { Intake } from './screens/Intake';
+import { CreateProfile } from './screens/CreateProfile';
+import { Setup } from './screens/Setup';
+import { Home } from './screens/Home';
+import { loadProfile, setupComplete } from './lib/storage';
 import { Matches } from './screens/Matches';
 import { ProfessorPage } from './screens/ProfessorPage';
 import { Contribute } from './screens/Contribute';
@@ -12,7 +14,7 @@ import { Privacy } from './screens/Privacy';
 const BRAND_SHAPE = { pace: 2, format: 1, structure: 5, assessment: 3, participation: 1, guidance: 2, workload: 4 };
 
 const NAV = [
-  { href: '#/', label: 'Match', section: 'match' },
+  { href: '#/', label: 'My schedule', section: 'home' },
   { href: '#/contribute', label: 'Add notes', section: 'contribute' },
   { href: '#/privacy', label: 'Privacy', section: 'privacy' },
 ];
@@ -20,17 +22,27 @@ const NAV = [
 function sectionOf(first: string | undefined) {
   if (first === 'contribute') return 'contribute';
   if (first === 'privacy') return 'privacy';
-  return 'match';
+  return 'home';
 }
+
+// Reading pages stay at a comfortable line length; the planner and match pages use the full width.
+const READING_PAGES = new Set(['contribute', 'privacy']);
+// Routes that show whichever step the student is on: create profile, setup, or home.
+const ENTRY_ROUTES = new Set(['setup', 'home', 'welcome']);
 
 function Screen({ parts, params }: { parts: string[]; params: URLSearchParams }) {
   const [first, second] = parts;
-  if (first === 'intake') return <Intake courseId={params.get('course')} />;
+  const profile = loadProfile();
+  if (!first || ENTRY_ROUTES.has(first)) {
+    if (!profile) return <CreateProfile />;
+    if (first === 'setup' || !setupComplete(profile)) return <Setup requestedStep={params.get('step')} />;
+    return <Home />;
+  }
   if (first === 'matches') return <Matches courseId={params.get('course')} />;
   if (first === 'professor' && second) return <ProfessorPage id={Number(second)} />;
   if (first === 'contribute') return <Contribute />;
   if (first === 'privacy') return <Privacy />;
-  return <CoursePicker />;
+  return <Home />;
 }
 
 export function App() {
@@ -40,9 +52,9 @@ export function App() {
     <MotionConfig reducedMotion="user">
       <header className="topbar">
         <div className="topbar__inner">
-          <a className="brand" href="#/">
+          <a className="brand" href="#/" aria-label={`${PRODUCT_NAME} home`}>
             <ProfileLine values={BRAND_SHAPE} size="glyph" label={PRODUCT_NAME} animate={false} />
-            {PRODUCT_NAME}
+            <span className="brand__name">{PRODUCT_NAME}</span>
           </a>
           <nav className="nav" aria-label="Main">
             {NAV.map((item) => (
@@ -53,7 +65,7 @@ export function App() {
           </nav>
         </div>
       </header>
-      <main className="page" key={parts.join('/') + params.toString()}>
+      <main className={READING_PAGES.has(parts[0]) ? 'page' : 'page page--wide'} key={parts.join('/') + params.toString()}>
         <Screen parts={parts} params={params} />
       </main>
       <footer className="footer">

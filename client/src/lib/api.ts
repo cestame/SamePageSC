@@ -61,6 +61,14 @@ export type BreakdownRow = {
 
 export type Match = Professor & { score: number; breakdown: BreakdownRow[] };
 
+export type MeetingTime = { days: string[]; start: number; end: number };
+export type PlanStatus = 'chosen' | 'chosen-with-problem' | 'available' | 'unavailable';
+export type PlanReason = 'starts-too-early' | 'ends-too-late' | 'conflict' | null;
+export type PlanSection = Match & {
+  plan: { id: number; status: PlanStatus; reason: PlanReason; conflictWith: string | null; time: MeetingTime | null };
+};
+export type PlanCourse = { id: string; code: string; title: string; chosenId: number | null; sections: PlanSection[] };
+
 export type Explanation = {
   why: string;
   watch_out: string;
@@ -96,6 +104,8 @@ export const api = {
   professors: (courseId: string) => request<Professor[]>(`/courses/${encodeURIComponent(courseId)}/professors`),
   professor: (id: number) => request<ProfessorDetail>(`/professors/${id}`),
   match: (courseId: string, answers: Answers) => request<Match[]>('/match', { courseId, answers }),
+  plan: (body: { courses: { courseId: string; answers: Answers }[]; earliest?: number; latest?: number; locked: Record<string, number> }) =>
+    request<PlanCourse[]>('/plan', body),
   explain: (professorId: number, answers: Answers) => request<Explanation>('/explain', { professorId, answers }),
   contribute: (body: {
     courseId: string;

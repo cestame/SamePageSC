@@ -37,18 +37,22 @@ function Profile({ professor: p, onChanged }: { professor: ProfessorDetail; onCh
         <KeyValue items={facts} />
       </div>
 
-      <Card>
-        <ProfileLine values={values} label={p.name} />
-        <p className="text-body">{p.summary}</p>
-      </Card>
-
-      <Card>
-        <h2 className="text-title">Where each rating comes from</h2>
-        <EvidenceList rows={p.profile} />
-      </Card>
-
-      <FeedbackCard professorId={p.id} initial={p.feedback} />
-      <Responses professor={p} onPosted={onChanged} />
+      <div className="two-col">
+        <div className="stack-5 min-0">
+          <Card>
+            <ProfileLine values={values} label={p.name} />
+            <p className="text-body">{p.summary}</p>
+          </Card>
+          <FeedbackCard professorId={p.id} initial={p.feedback} />
+        </div>
+        <div className="stack-5 min-0">
+          <Card>
+            <h2 className="text-title">Where each rating comes from</h2>
+            <EvidenceList rows={p.profile} />
+          </Card>
+          <Responses professor={p} onPosted={onChanged} />
+        </div>
+      </div>
     </>
   );
 }

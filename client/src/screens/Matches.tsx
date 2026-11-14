@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { ArrowRight, CaretDown, CheckCircle, Warning } from '@phosphor-icons/react';
+import { ArrowLeft, ArrowRight, CalendarPlus, CaretDown, CheckCircle, Warning } from '@phosphor-icons/react';
 import { api, type Answers, type Explanation, type FeedbackStats, type Match } from '../lib/api';
 import { navigate, useAsync } from '../lib/hooks';
-import { isComplete, loadAnswers } from '../lib/storage';
+import { answersFor, useProfile } from '../lib/storage';
 import { ProfileLine } from '../components/ProfileLine';
 import { Button, Card, Disclosure, EmptyState, ErrorState, FitScore, LoadingState, SampleBadge } from '../components/ui';
 
@@ -13,42 +13,47 @@ const valuesOf = (m: Match) => Object.fromEntries(m.breakdown.map((b) => [b.key,
 const targetsOf = (m: Match) => Object.fromEntries(m.breakdown.map((b) => [b.key, b.target]));
 
 export function Matches({ courseId }: { courseId: string | null }) {
-  const answers = loadAnswers();
+  const [profile, update] = useProfile();
   const [courses, retryCourses] = useAsync(api.courses, []);
-  const activeId = courseId ?? (courses.status === 'success' ? courses.data[0]?.id : null);
+  const answers = profile && courseId ? answersFor(profile, courseId) : null;
 
   useEffect(() => {
-    if (!isComplete(answers)) navigate(`#/intake${courseId ? `?course=${courseId}` : ''}`);
-  }, [answers, courseId]);
+    if (!answers) navigate('#/');
+  }, [answers]);
 
-  if (!isComplete(answers)) return null;
+  if (!profile || !answers || !courseId) return null;
   if (courses.status === 'loading') return <LoadingState label="Loading courses" lines={4} />;
   if (courses.status === 'error') return <ErrorState title="We couldn't load the courses" error={courses.error} onRetry={retryCourses} />;
 
-  const course = courses.data.find((c) => c.id === activeId);
+  const course = courses.data.find((c) => c.id === courseId);
   if (!course) {
-    return <EmptyState title="We don't know that class" body="Pick one of the classes we have profiles for." action={<Button href="#/">Choose a class</Button>} />;
+    return <EmptyState title="We don't know that class" body="Go back to your schedule and pick one of your classes." action={<Button href="#/">Back to my schedule</Button>} />;
   }
+  const myCourses = courses.data.filter((c) => profile.courseIds.includes(c.id) && answersFor(profile, c.id));
+  const useSection = (sectionId: number) => {
+    update((p) => ({ ...p, locked: { ...p.locked, [course.id]: sectionId } }));
+    navigate('#/');
+  };
 
   return (
     <>
+      <div><Button variant="quiet" href="#/" icon={<ArrowLeft size={18} aria-hidden />}>Back to my schedule</Button></div>
       <h1 className="text-display">{course.code} sections ranked for you</h1>
-      {courses.data.length > 1 && (
-        <div className="segmented" role="tablist" aria-label="Course">
-          {courses.data.map((c) => (
+      {myCourses.length > 1 && (
+        <div className="segmented" role="tablist" aria-label="Your classes">
+          {myCourses.map((c) => (
             <button key={c.id} type="button" role="tab" aria-selected={c.id === course.id} className="segmented__item" onClick={() => navigate(`#/matches?course=${c.id}`)}>
               {c.code}
             </button>
           ))}
         </div>
       )}
-      <RankedSections courseId={course.id} answers={answers} />
-      <div><Button variant="quiet" href={`#/intake?course=${course.id}`}>Change my answers</Button></div>
+      <RankedSections courseId={course.id} answers={answers} onUse={useSection} />
     </>
   );
 }
 
-function RankedSections({ courseId, answers }: { courseId: string; answers: Answers }) {
+function RankedSections({ courseId, answers, onUse }: { courseId: string; answers: Answers; onUse: (id: number) => void }) {
   const [matches, retry] = useAsync(() => api.match(courseId, answers), [courseId]);
   const explanations = useExplanations(matches.status === 'success' ? matches.data : [], answers);
 
@@ -66,14 +71,14 @@ function RankedSections({ courseId, answers }: { courseId: string; answers: Answ
 
   const [top, ...rest] = matches.data;
   return (
-    <>
-      <TopMatch match={top} explanation={explanations[top.id]} />
+    <div className="matches">
+      <TopMatch match={top} explanation={explanations[top.id]} onUse={onUse} />
       {rest.length > 0 && (
-        <div className="stack-3">
-          {rest.map((m) => <OtherMatch key={m.id} match={m} explanation={explanations[m.id]} />)}
+        <div className="stack-3 min-0">
+          {rest.map((m) => <OtherMatch key={m.id} match={m} explanation={explanations[m.id]} onUse={onUse} />)}
         </div>
       )}
-    </>
+    </div>
   );
 }
 
@@ -97,7 +102,11 @@ function useExplanations(matches: Match[], answers: Answers) {
   return byId;
 }
 
-function TopMatch({ match, explanation }: { match: Match; explanation: ExplanationState }) {
+function UseButton({ match, onUse }: { match: Match; onUse: (id: number) => void }) {
+  return <Button variant="secondary" icon={<CalendarPlus size={18} aria-hidden />} onClick={() => onUse(match.id)}>Put this section in my schedule</Button>;
+}
+
+function TopMatch({ match, explanation, onUse }: { match: Match; explanation: ExplanationState; onUse: (id: number) => void }) {
   return (
     <Card as="article" emphasis>
       <div className="stack-2">
@@ -114,12 +123,15 @@ function TopMatch({ match, explanation }: { match: Match; explanation: Explanati
       <ExplanationBlock explanation={explanation} />
       <Confirmations stats={match.feedback} />
       <Breakdown match={match} />
-      <div><Button variant="secondary" href={`#/professor/${match.id}`} iconAfter={<ArrowRight size={18} aria-hidden />}>Evidence and full profile for {match.name}</Button></div>
+      <div className="row">
+        <UseButton match={match} onUse={onUse} />
+        <Button variant="quiet" href={`#/professor/${match.id}`} iconAfter={<ArrowRight size={18} aria-hidden />}>Evidence and full profile</Button>
+      </div>
     </Card>
   );
 }
 
-function OtherMatch({ match, explanation }: { match: Match; explanation: ExplanationState }) {
+function OtherMatch({ match, explanation, onUse }: { match: Match; explanation: ExplanationState; onUse: (id: number) => void }) {
   const [open, setOpen] = useState(false);
   const watchOut = explanation && !(explanation instanceof Error) ? explanation.watch_out : null;
   return (
@@ -151,7 +163,10 @@ function OtherMatch({ match, explanation }: { match: Match; explanation: Explana
             <ExplanationBlock explanation={explanation} />
             <Confirmations stats={match.feedback} />
             <Breakdown match={match} />
-            <div><Button variant="secondary" href={`#/professor/${match.id}`} iconAfter={<ArrowRight size={18} aria-hidden />}>Evidence and full profile</Button></div>
+            <div className="row">
+              <UseButton match={match} onUse={onUse} />
+              <Button variant="quiet" href={`#/professor/${match.id}`} iconAfter={<ArrowRight size={18} aria-hidden />}>Evidence and full profile</Button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

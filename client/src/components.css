@@ -11,7 +11,7 @@
   padding-top: env(safe-area-inset-top, 0px);
 }
 .topbar__inner {
-  max-width: var(--content-width);
+  max-width: var(--wide-width);
   margin: 0 auto;
   padding-left: max(var(--space-4), env(safe-area-inset-left, 0px));
   padding-right: max(var(--space-2), env(safe-area-inset-right, 0px));
@@ -54,7 +54,7 @@
   background: var(--accent);
 }
 .footer {
-  max-width: var(--content-width);
+  max-width: var(--wide-width);
   margin: 0 auto;
   width: 100%;
   padding-block: var(--space-5) var(--space-6);
@@ -337,3 +337,76 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
 .steps__icon { color: var(--accent); flex: none; }
 .icon-inline { display: inline-flex; }
 .collapse { overflow: hidden; }
+
+.quiz__options--chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.quiz__options--chips .quiz__option { width: auto; min-height: var(--tap); padding: var(--space-2) var(--space-3); gap: var(--space-2); }
+.quiz__options--chips .quiz__mark { width: 18px; height: 18px; }
+.quiz__options--chips .quiz__mark-fill { inset: 4px; }
+
+/* ---------- desktop and tablet layouts ---------- */
+
+.two-col, .home, .matches, .split { display: grid; gap: var(--space-5); align-items: start; }
+@media (min-width: 960px) {
+  .two-col { grid-template-columns: 1fr 1fr; }
+  .home { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); }
+  .home__week { position: sticky; top: 76px; }
+  .matches { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
+  .split { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: var(--space-7); padding-top: var(--space-6); }
+  .split__aside { grid-column: 1; }
+  .setup { max-width: 1040px; width: 100%; margin: 0 auto; display: grid; gap: var(--space-5); }
+  .setup .quiz { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: var(--space-7); align-items: start; }
+}
+.setup { display: grid; gap: var(--space-5); }
+
+/* ---------- home ---------- */
+
+.summary { display: grid; gap: var(--space-2); }
+.summary a { margin-left: var(--space-2); }
+.link-button { background: none; border: 0; padding: 0; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font: inherit; color: var(--text); min-height: var(--tap); }
+.planned, .alternative { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--space-3); align-items: center; }
+.planned a { text-decoration: none; }
+.planned a:hover { text-decoration: underline; }
+.alternative__problem { color: var(--warning); }
+@media (max-width: 480px) {
+  .alternative { grid-template-columns: auto minmax(0, 1fr); }
+  .alternative .button { grid-column: 1 / -1; }
+}
+.course-option--selected { box-shadow: var(--ring-selected); background: var(--surface-sunk); }
+.course-option__check { color: var(--accent); }
+
+/* ---------- week grid ---------- */
+
+.week { display: grid; gap: var(--space-2); min-width: 0; }
+.week__head, .week__body { display: grid; grid-template-columns: 44px repeat(5, minmax(0, 1fr)); gap: 4px; }
+.week__day { text-align: center; font-weight: 700; }
+.week__body { position: relative; }
+.week__hours { position: absolute; inset: 0; pointer-events: none; }
+.week__hour { position: absolute; left: 0; width: 100%; transform: translateY(-50%); }
+.week__hour::after { content: ""; position: absolute; left: 48px; right: 0; top: 50%; height: 1px; background: var(--line); }
+.week__outside { position: absolute; left: 48px; right: 0; background: var(--surface-sunk); opacity: 0.7; }
+.week__column { position: relative; grid-row: 1; }
+.week__block {
+  position: absolute;
+  left: 0;
+  right: 0;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  box-shadow: inset 3px 0 0 var(--accent);
+  overflow: hidden;
+  display: grid;
+  align-content: start;
+  gap: 0;
+  font-size: 0.8125rem;
+  line-height: 1.25;
+}
+.week__block--problem { background: var(--surface-sunk); box-shadow: inset 3px 0 0 var(--warning); }
+.week__block-title { font-weight: 700; }
+.week__block-detail { color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.week__block-icon { position: absolute; top: 4px; right: 4px; color: var(--warning); }
+
+.nav__link { white-space: nowrap; }
+@media (max-width: 480px) {
+  .brand__name { display: none; }
+  .nav__link { padding: 0 var(--space-2); }
+}
