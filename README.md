@@ -14,6 +14,8 @@ A website (works from one link on any phone or laptop, nothing to install) that:
 
 1. **Builds a teaching profile per section** from notes and syllabi that current students contribute. An AI model extracts seven 1-5 dimensions (pace, format, structure, assessment, participation, guidance, workload), each with a one-line **evidence note from the source text** so the extraction is checkable, plus a two-sentence summary of a typical class day. New contributions are **merged** (averaged) into the existing profile, never overwritten.
 2. **Matches incoming students** after an 8-question, ~2-minute intake. Ranking is a **deterministic scoring function**, so results are explainable and repeatable; tap any match for the score breakdown. The AI only writes the 2-3 sentence "why it fits" and one honest "watch out for".
+Every professor's profile is drawn as one diagram, the **profile line**: seven rows, one dot per rating, joined top to bottom, so each class has a recognizable shape. On a match, your answers are drawn over it and the shaded gap is what lowers the score.
+
 3. **Closes the loop**: students who took the class answer 3 quick prompts, shown as "X of Y students confirmed this profile". Professors can view and respond to their own profile.
 
 We deliberately do **not** ask about "visual / auditory / kinesthetic" learning styles: they are not supported by research.
@@ -25,14 +27,14 @@ We deliberately do **not** ask about "visual / auditory / kinesthetic" learning 
 - Profiles describe the class, not the person. Evidence that comments on appearance, accent, identity, etc. is dropped.
 - No Brightspace crawling, no USC login, no dependency on USC systems.
 - Contributions require confirming the notes are your own or shared with the professor's agreement.
-- The 6 seeded professors (CSCI 103, ECON 203) are **fictional sample data** and are labeled as such.
+- The 6 seeded professors (CSCI 103, ECON 203) are **fictional sample data** and are labeled as such. No student feedback is seeded.
 
 ## Stack
 
 | Piece | Choice | Why |
 |---|---|---|
-| Server | Node.js 20+, Express | One process serves API + static site; trivial to run on Replit |
-| Frontend | Vanilla JS single-page app, mobile-first CSS | No build step, fast on phones |
+| Server | Node.js 20+, Express | One process serves the API and the built site, easy to run on Replit |
+| Frontend | React, TypeScript and Vite, mobile-first CSS with theme tokens, Phosphor icons, `motion` for animation | Typed components, one definition per element, fast on phones |
 | Database | PostgreSQL (Replit's built-in database via `DATABASE_URL`) | Persistent across Replit deployments. Falls back to embedded [PGlite](https://pglite.dev) in `./data` when `DATABASE_URL` is unset, so local dev needs zero setup |
 | AI | Claude (`claude-opus-5-5`) via the official Anthropic SDK with structured outputs | Reliable JSON for profile extraction; API key stays server-side |
 
@@ -52,32 +54,39 @@ Score = weighted average of per-dimension fit, 0-100. Covered by tests in `serve
 1. **Create Repl → Import from GitHub** → this repo. The `.replit` file sets up Node 20 and PostgreSQL.
 2. Open the **Database** tool and create a PostgreSQL database (this sets `DATABASE_URL`).
 3. In **Secrets**, add `ANTHROPIC_API_KEY`. Optionally add `PROFESSOR_RESPONSE_CODE` (lets professors post a "Verified" response).
-4. Click **Run**. Tables and sample data are created automatically on first start.
+4. Click **Run**. It installs packages, builds the site, and creates tables and sample data on first start.
 5. **Deploy** (Autoscale) for a public URL. Make sure the deployment has the same secrets and database.
 
 ### Locally
 ```bash
 npm install
-cp .env.example .env   # optional; or export ANTHROPIC_API_KEY=...
-ANTHROPIC_API_KEY=sk-... npm start
-# open http://localhost:3000
-npm test
+npm run build
+ANTHROPIC_API_KEY=sk-... npm start   # http://localhost:3000
+
+# while working on the frontend, run these in two terminals:
+npm run dev:server                   # API on :3000
+npm run dev:client                   # site on :5173 with hot reload
+
+npm run check                        # lint, type check and tests
 ```
 Without an API key the app still runs: ranking, profiles and feedback work; contributions are disabled and match explanations fall back to a clearly labeled, non-AI summary of the score breakdown.
 
 ## Project layout
 
 ```
+shared/
+  content.js    product name, profile fields, intake questions, privacy copy
 server/
-  index.js      Express API + static hosting
+  index.js      Express API + static hosting of the built site
   db.js         Postgres / PGlite connection and schema
   seed.js       6 fictional sample professors across 2 courses
   scoring.js    deterministic matching + profile merging
   ai.js         Claude calls: profile extraction, match explanations
   privacy.js    personal-detail scrubbing, person-not-class filter
-  fields.js     the 7 profile dimensions
-public/
-  index.html, styles.css, app.js   single-page frontend
+client/
+  src/theme.css        color, type, spacing, radius, shadow and motion tokens
+  src/components/      Button, Card, ProfileLine (the profile diagram), FitScore, QuizQuestion, states
+  src/screens/         course picker, intake, matches, professor, contribute, privacy
 ```
 
 ## API
