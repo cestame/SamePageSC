@@ -1,0 +1,31 @@
+{
+  "name": "trojan-fit",
+  "version": "0.1.0",
+  "description": "Professor-student course matching for USC: teaching profiles built from student notes, matched to how you learn.",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test": "node --test server/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cestame/aiusc.git"
+  },
+  "license": "MIT",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/cestame/aiusc/issues"
+  },
+  "homepage": "https://github.com/cestame/aiusc#readme",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0",
+    "@electric-sql/pglite": "^0.5.16",
+    "express": "^4.22.3",
+    "pg": "^8.23.1",
+    "zod": "^4.6.7"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
