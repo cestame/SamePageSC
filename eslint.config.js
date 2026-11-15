@@ -4,12 +4,16 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'data'] },
+  { ignores: ['dist', 'node_modules', 'data', 'extension/panel'] },
   js.configs.recommended,
   {
     files: ['server/**/*.js', 'shared/**/*.js', 'eslint.config.js'],
     languageOptions: { globals: globals.node },
     rules: { 'no-unused-vars': ['error', { argsIgnorePattern: '^_' }] },
+  },
+  {
+    files: ['extension/**/*.js'],
+    languageOptions: { globals: { ...globals.browser, chrome: 'readonly' } },
   },
   {
     files: ['client/**/*.{ts,tsx}', 'vite.config.ts'],

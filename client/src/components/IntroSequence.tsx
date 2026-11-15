@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { PRODUCT_LINE, PRODUCT_NAME } from '../../../shared/content.js';
 import { PixelHorse } from './PixelHorse';
+import { asset } from '../lib/target';
 
 /** The timeline in milliseconds. Pages turn like a book: the horse page, then the wordmark page. */
 const T = {
@@ -204,7 +205,7 @@ export function IntroSequence({ onDone }: { onDone: () => void }) {
       <div className="intro__page intro__page--logo" ref={logoPageRef}>
         <div className="intro__face intro__face--front">
           <div className="intro__logo-block" ref={logoRef}>
-            <img className="intro__logo" src="/same-page-logo.png" alt={PRODUCT_NAME} width={573} height={173} />
+            <img className="intro__logo" src={asset('same-page-logo.png')} alt={PRODUCT_NAME} width={573} height={173} />
             <p className="intro__line">{PRODUCT_LINE}</p>
           </div>
         </div>

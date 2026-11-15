@@ -9,6 +9,7 @@ import { currentUser, loadProfile, restoreSession, setupComplete, signOut, type 
 import { navigate } from './lib/hooks';
 import { LoadingState } from './components/ui';
 import { IntroSequence } from './components/IntroSequence';
+import { IS_EXTENSION, asset, followExtensionRoutes } from './lib/target';
 import { Matches } from './screens/Matches';
 import { ProfessorPage } from './screens/ProfessorPage';
 import { Contribute } from './screens/Contribute';
@@ -54,7 +55,7 @@ function Screen({ parts, params }: { parts: string[]; params: URLSearchParams })
 }
 
 function Wordmark({ decorative = false }: { decorative?: boolean }) {
-  return <img className="wordmark" src="/same-page-logo.png" alt={decorative ? '' : PRODUCT_NAME} width={573} height={173} />;
+  return <img className="wordmark" src={asset('same-page-logo.png')} alt={decorative ? '' : PRODUCT_NAME} width={573} height={173} />;
 }
 
 export function App() {
@@ -65,8 +66,10 @@ export function App() {
   const [introPending, setIntroPending] = useState(true);
   const reduceMotion = useReducedMotion();
   useEffect(() => { restoreSession().finally(() => setReady(true)); }, []);
+  useEffect(() => followExtensionRoutes(navigate), []);
   const user = currentUser();
-  const showIntro = introPending && !reduceMotion && showsAuth(parts[0], loadProfile());
+  // The side panel is too narrow for the intro, and students opening it are already mid-task.
+  const showIntro = introPending && !IS_EXTENSION && !reduceMotion && showsAuth(parts[0], loadProfile());
 
   async function logOut() {
     await signOut();

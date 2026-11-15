@@ -1,4 +1,5 @@
 import type { FieldKey, Goal } from '../../../shared/content.js';
+import { API_ORIGIN } from './target';
 
 export type { FieldKey, Goal };
 
@@ -104,7 +105,7 @@ async function request<T>(path: string, body?: unknown, method = 'POST'): Promis
     : { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
   let res: Response;
   try {
-    res = await fetch('/api' + path, init);
+    res = await fetch(API_ORIGIN + '/api' + path, { ...init, credentials: API_ORIGIN ? 'include' : 'same-origin' });
   } catch {
     throw new ApiError('We could not reach the server. Check your connection and try again.');
   }

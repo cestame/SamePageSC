@@ -66,6 +66,17 @@ Submission is due **Sunday, November 15, 2026 at 11:00 AM PT** (AI@USC, HackSC x
 - Not yet checked in a browser: the intro animation frame by frame, phone width, and dark mode.
 - Next: restyle setup, home, matches and professor pages to the new look screen by screen, fixing the audit items below.
 
+## Chrome extension (final submission, in progress)
+
+- The team wants the final submission to be a Chrome extension that works inside USC Web Registration (`https://webreg.usc.edu`). Judges see the intro on every visit to the website, which the person approved.
+- `extension/`: Manifest V3. `background.js` opens the side panel and calls `POST /api/sections/lookup`; `webreg.js` (content script on webreg.usc.edu) reads course codes and instructor names already on the page and adds a badge beside each section; `panel/` is the React client built with `npm run build:extension` (gitignored, rebuild before loading); `config.json` holds the server origin (localhost now, set it to the Replit URL and rebuild); `icons/` draw the profile line.
+- Load it: `npm run build:extension`, then chrome://extensions, Developer mode, Load unpacked, pick the `extension` folder.
+- Matching (`server/sections.js`): course code (lab letter ignored) plus instructor name parts. Sample professors never match real webReg sections. Badges: "82% teaching fit", "Answer 2 questions for your fit", "Set up Same Page for your fit" or "No notes yet", each opening the right page in the side panel.
+- The side panel shares only answers and course ids with the background worker (`chrome.storage.local`, key `answers`), never name or email.
+- Demo plan: teammates add real notes for classes they took that appear in webReg, so those sections show real fit scores.
+- The extension never calls webReg's internal endpoints (the calendar loads from `/api/Calendar`); it only reads what is rendered.
+- **Blocked on:** a saved webReg page that lists sections with instructors (the Courses page for a department with a course expanded). `readSections()` in `webreg.js` returns nothing until then. The person's saved Calendar and Departments pages had no section rows. Saved pages may contain the person's name; strip it before reading (it appears in "Welcome, ..." and the Datadog `setUser` block).
+- Not yet checked: that SameSite=Lax session cookies reach the server from the side panel (needed for logged-in accounts; guests work without cookies), and the server running on localhost:3000 is an old process without the new endpoint until it is restarted.
 ## Open audit items (current UI vs CLAUDE.md)
 
 Fix these during the redesign:
@@ -83,4 +94,4 @@ Fix these during the redesign:
 2. Finish the Same Page redesign on the remaining screens, fixing the audit items.
 3. Check animations on a real phone and with reduced motion on.
 4. Submission checklist from spec: working link, public repo, 3-minute video, slide deck, project description, screenshot, teammates on Devpost.
-5. Stretch: Chrome extension mockup for the pitch (fit scores on the registration page).
+5. Chrome extension for webReg (see "Chrome extension" above): finish the section reader, then demo with real contributed notes.

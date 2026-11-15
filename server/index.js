@@ -11,6 +11,7 @@ import { extractProfile, explainMatch, aiConfigured, AiUnavailableError } from '
 import { planSchedule } from './planner.js';
 import { authRoutes, loadUser, migrateAuth } from './auth.js';
 import { getRequirements, migrateUsc, searchCourses, searchPrograms } from './usc.js';
+import { lookupSections } from './sections.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -222,6 +223,34 @@ app.post('/api/plan', asyncRoute(async (req, res) => {
       chosenId: coursePlan.chosenId,
       sections: sections.map((s) => ({ ...s, plan: coursePlan.sections.find((p) => p.id === s.id) })),
     };
+  }));
+}));
+
+// The Chrome extension: fit for the sections a student is looking at in USC web registration.
+app.post('/api/sections/lookup', rateLimit({ windowMs: 60_000, max: 60 }), asyncRoute(async (req, res) => {
+  const { sections, general, perCourse } = req.body || {};
+  if (!Array.isArray(sections) || sections.length === 0 || sections.length > 100) {
+    return res.status(400).json({ error: 'Send between 1 and 100 sections.' });
+  }
+  const clean = sections.map((s) => ({
+    key: String(s?.key ?? '').slice(0, 64),
+    code: String(s?.code ?? '').slice(0, 16),
+    instructors: (Array.isArray(s?.instructors) ? s.instructors : []).slice(0, 6).map((n) => String(n).slice(0, 80)),
+  }));
+  const courses = await query('SELECT id, code FROM courses');
+  const cache = new Map();
+  const professorsFor = (courseId) => {
+    if (!cache.has(courseId)) cache.set(courseId, loadProfessors('p.course_id = $1', [courseId]));
+    return cache.get(courseId);
+  };
+  res.json(await lookupSections({
+    sections: clean,
+    general: general && typeof general === 'object' ? general : {},
+    perCourse: perCourse && typeof perCourse === 'object' ? perCourse : {},
+    courses,
+    professorsFor,
+    score: scoreProfile,
+    validate: validateAnswers,
   }));
 }));
 

@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { COURSE_QUESTIONS, GENERAL_QUESTIONS, TIME_QUESTIONS } from '../../../shared/content.js';
 import { api, type Answers, type User } from './api';
+import { shareAnswersWithExtension } from './target';
 
 // A signed-in student's profile is saved to their account on the server. A guest's profile lives only
 // in their browser. Browser storage can be unavailable (private windows), so an in-memory copy is kept.
@@ -29,6 +30,12 @@ let saveTimer: number | undefined;
 
 export const currentUser = () => account;
 
+/** Every change to the profile goes through here, so the extension (when present) sees the same answers. */
+function remember(profile: StudentProfile | null) {
+  inMemory = profile;
+  shareAnswersWithExtension(profile);
+}
+
 /** Called once on load: a valid session cookie means the profile comes from the account. */
 export async function restoreSession() {
   try {
@@ -44,7 +51,7 @@ export function signedIn(user: User, serverProfile: StudentProfile | null) {
   account = user;
   const guest = readBrowserCopy();
   const profile = serverProfile ?? (guest ? { ...guest, name: user.name } : newProfile(user.name));
-  inMemory = profile;
+  remember(profile);
   if (!serverProfile) saveProfile(profile);
   clearBrowserCopy();
 }
@@ -52,7 +59,7 @@ export function signedIn(user: User, serverProfile: StudentProfile | null) {
 export async function signOut() {
   await api.logout().catch(() => undefined);
   account = null;
-  inMemory = null;
+  remember(null);
 }
 
 function readBrowserCopy(): StudentProfile | null {
@@ -73,12 +80,12 @@ export function newProfile(name: string): StudentProfile {
 }
 
 export function loadProfile(): StudentProfile | null {
-  if (inMemory === undefined) inMemory = readBrowserCopy();
-  return inMemory;
+  if (inMemory === undefined) remember(readBrowserCopy());
+  return inMemory ?? null;
 }
 
 export function saveProfile(profile: StudentProfile | null) {
-  inMemory = profile;
+  remember(profile);
   if (account) {
     window.clearTimeout(saveTimer);
     if (profile) saveTimer = window.setTimeout(() => { api.saveProfile(profile).catch(() => undefined); }, SAVE_DELAY_MS);
