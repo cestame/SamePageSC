@@ -88,7 +88,20 @@ client/
   src/theme.css        color, type, spacing, radius, shadow and motion tokens
   src/components/      Button, Card, ProfileLine (the profile diagram), FitScore, QuizQuestion, states
   src/screens/         create profile, setup, home (schedule planner), matches, professor, contribute, privacy
+research/
+  world-model/  notebook that simulates how a student would learn in each section (not wired into the app yet)
 ```
+
+## Research: the world model
+
+`research/world-model/world_model.ipynb` is a prototype of the simulation behind future fit ranges. It is separate from the app and changes nothing in it.
+
+- It fits Bayesian Knowledge Tracing on real, public student quiz logs (ASSISTments 2009-10 skill-builder, about 4,200 students). On students held out of the fit, it predicts each next answer with an AUC of 0.74, against 0.58 for skill difficulty alone.
+- It estimates how students differ in prior knowledge and learning speed, then draws synthetic students from that population.
+- It runs those students through two fictional sections (lecture-heavy and active learning). The effects of each teaching move are assumptions from published research, tuned so the simulation reproduces the failure rates in Freeman et al. 2014 (33.8% under lecture, 21.8% under active learning).
+- It writes `output/same_page_sc_sim_output.json` for the front end: weekly mastery ranges, one student's predicted score range per section and the weeks they're likely to struggle.
+
+Every number in it is labeled as fit to real data, synthetic, or an assumption. To run it: `pip install -r research/world-model/requirements.txt`, open the notebook and run all cells. It downloads the data from GitHub on first run.
 
 ## USC majors and requirements
 

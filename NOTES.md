@@ -66,6 +66,14 @@ Submission is due **Sunday, November 15, 2026 at 11:00 AM PT** (AI@USC, HackSC x
 - Not yet checked in a browser: the intro animation frame by frame, phone width, and dark mode.
 - Next: restyle setup, home, matches and professor pages to the new look screen by screen, fixing the audit items below.
 
+## World model research (`research/world-model/`)
+
+- A Jupyter notebook, separate from the app. It fits Bayesian Knowledge Tracing on public ASSISTments quiz logs (held-out AUC 0.74), builds a population of learner types, and simulates synthetic students through two fictional sections. Output: `research/world-model/output/same_page_sc_sim_output.json`.
+- Labels in it: REAL-FIT (fit to real responses), SYNTHETIC (course and teaching patterns), ASSUMPTION (teaching-move effects from research, tuned to Freeman 2014 failure rates).
+- Known limits: this ASSISTments release has no wall-clock timestamps, so forgetting is an assumed rate and there is no time-of-day model. EdNet would add both. The active-learning weight came out high (one active minute counts about 10 lecture minutes) and should be presented as a starting value, not a finding.
+- The 83 MB dataset is not committed. The notebook downloads it into `research/world-model/data/`, which `.gitignore` already covers.
+- Not wired into the app. A possible next step is showing the fit ranges and hard weeks on the matches screen, which would need the sections' teaching patterns to come from contributed notes.
+
 ## Open audit items (current UI vs CLAUDE.md)
 
 Fix these during the redesign:
