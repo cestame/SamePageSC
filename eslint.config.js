@@ -7,7 +7,7 @@ export default tseslint.config(
   { ignores: ['dist', 'node_modules', 'data', 'extension/panel', 'deck'] },
   js.configs.recommended,
   {
-    files: ['server/**/*.js', 'shared/**/*.js', 'eslint.config.js'],
+    files: ['server/**/*.js', 'shared/**/*.js', 'scripts/**/*.mjs', 'eslint.config.js'],
     languageOptions: { globals: globals.node },
     rules: { 'no-unused-vars': ['error', { argsIgnorePattern: '^_' }] },
   },

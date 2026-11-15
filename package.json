@@ -5,7 +5,8 @@
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
-    "build": "vite build",
+    "build": "vite build && npm run build:deck",
+    "build:deck": "node scripts/build-deck.mjs",
     "build:extension": "vite build --mode extension",
     "dev:server": "node --watch server/index.js",
     "dev:client": "vite",

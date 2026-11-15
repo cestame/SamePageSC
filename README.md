@@ -105,6 +105,8 @@ npm run check     # lint, types and the em dash check
 
 Devpost wants the slides as images: open `print.html` and save each page, or print it to PDF.
 
+The live site serves the deck at https://samepage.replit.app/deck/ (print version: https://samepage.replit.app/deck/print.html). The root `npm run build` builds it into `dist/deck` after the app, so publishing the site on Replit publishes the deck too.
+
 ## USC majors and requirements
 
 - **Majors** come from the keyword filter on [usc.edu/majors-minors](https://www.usc.edu/majors-minors/). The server sends one request per search a student types and caches the results. It never pages through the list, because robots.txt disallows the `/page/` links.
