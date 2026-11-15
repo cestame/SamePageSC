@@ -579,7 +579,7 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
   left: max(var(--space-4), calc((100vw - var(--wide-width)) / 2));
   max-width: min(650px, 86vw);
 }
-.intro__kicker { margin-bottom: var(--space-2); color: var(--brand-cardinal); font-weight: 700; font-size: 1.125rem; }
+.intro__kicker { margin-bottom: var(--space-3); font-family: var(--font-display); color: var(--brand-cardinal); font-weight: 700; font-size: clamp(1.75rem, 6vw, 3rem); line-height: 1.05; text-wrap: balance; }
 .intro__headline {
   font-family: var(--font-display);
   font-weight: 700;
