@@ -4,6 +4,19 @@
 
 Built for AI@USC (HackSC x USC AI Committee).
 
+## Built and deployed on Replit
+
+**Live site: https://samepage.replit.app**
+
+Replit hosts and runs the whole project. Here is what it does for us:
+
+- **Development environment.** The [`.replit`](.replit) file sets up Node.js 20 and PostgreSQL 16, and Run installs packages, builds the site and starts the server.
+- **Publishing from GitHub.** The Repl is connected to this repository, and publishing builds from `main` with `npm ci && npm run build`, then starts `npm start`.
+- **Autoscale deployment.** The live site runs as an Autoscale deployment, with the app's port 3000 served on the public web port.
+- **PostgreSQL database.** Replit's built-in PostgreSQL stores teaching profiles, contributions and accounts through `DATABASE_URL`, so data persists across deployments.
+- **Secrets.** API keys such as `ANTHROPIC_API_KEY` are stored in Replit Secrets, so they stay on the server and out of this public repo.
+- **Replit Agent and Assistant.** We used Replit's built-in AI while building parts of the project.
+
 ## Problem
 
 USC students choose between sections of the same course with almost no reliable information about how each professor actually teaches. Rate My Professors is biased toward a self-selected few and rates *people*, not *classes*. Students often discover a section doesn't suit them when add/drop is the only fix.
