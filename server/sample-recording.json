@@ -1,0 +1,395 @@
+{
+ "about": "A fictional CSCI 103 lecture, written by the Same Page team, in pyannoteAI's output format. Every speaker and line is invented. Student lines are placeholders, and the app never reads them.",
+ "courseLabel": "CSCI 103 Object Oriented Programming",
+ "output": {
+  "diarization": [
+   {
+    "speaker": "SPEAKER_00",
+    "start": 0,
+    "end": 80
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 80.6,
+    "end": 184.8
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 185.4,
+    "end": 275.2
+   },
+   {
+    "speaker": "SPEAKER_01",
+    "start": 276,
+    "end": 285
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 285.8,
+    "end": 386.4
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 387,
+    "end": 476
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 476.6,
+    "end": 587.2
+   },
+   {
+    "speaker": "SPEAKER_02",
+    "start": 588,
+    "end": 602
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 602.8,
+    "end": 623.2
+   },
+   {
+    "speaker": "SPEAKER_03",
+    "start": 624,
+    "end": 631
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 631.8,
+    "end": 754.4
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 755,
+    "end": 840
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 840.6,
+    "end": 924.8
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 925.4,
+    "end": 1013.2
+   },
+   {
+    "speaker": "SPEAKER_04",
+    "start": 1013.9999999999999,
+    "end": 1032
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 1032.8,
+    "end": 1142.4
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 1143,
+    "end": 1244
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 1244.6,
+    "end": 1336.8
+   },
+   {
+    "speaker": "SPEAKER_01",
+    "start": 1338,
+    "end": 1349
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 1349.8,
+    "end": 1458.4
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 1459,
+    "end": 1552
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 1552.6,
+    "end": 1640.8
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 1641.4,
+    "end": 1649.2
+   },
+   {
+    "speaker": "SPEAKER_02",
+    "start": 1650,
+    "end": 1666
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 1666.8,
+    "end": 1774.4
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 1775,
+    "end": 1860
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 1860.6,
+    "end": 1944.8
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 1945.4,
+    "end": 1991.2
+   },
+   {
+    "speaker": "SPEAKER_03",
+    "start": 1992.0000000000002,
+    "end": 2001.0000000000002
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 2001.8,
+    "end": 2114.4
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 2115,
+    "end": 2240
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 2240.6,
+    "end": 2315.2
+   },
+   {
+    "speaker": "SPEAKER_04",
+    "start": 2316,
+    "end": 2337
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 2337.8,
+    "end": 2462.4
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 2463,
+    "end": 2564
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 2564.6,
+    "end": 2645.2
+   },
+   {
+    "speaker": "SPEAKER_01",
+    "start": 2646,
+    "end": 2658
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 2658.8,
+    "end": 2750.4
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 2751,
+    "end": 2888
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 2888.6,
+    "end": 2891.2
+   },
+   {
+    "speaker": "SPEAKER_02",
+    "start": 2892,
+    "end": 2902
+   },
+   {
+    "speaker": "SPEAKER_00",
+    "start": 2902.8,
+    "end": 3000
+   }
+  ],
+  "turnLevelTranscription": [
+   {
+    "start": 0,
+    "end": 80,
+    "speaker": "SPEAKER_00",
+    "text": "Okay, let's get started. Today's agenda is on the slide: a two-minute recap, then linked lists, then we'll start the lab together."
+   },
+   {
+    "start": 185.4,
+    "end": 275.2,
+    "speaker": "SPEAKER_00",
+    "text": "Quick recap from Monday: what does a pointer actually store? Anyone?"
+   },
+   {
+    "start": 276,
+    "end": 285,
+    "speaker": "SPEAKER_01",
+    "text": "(student words would appear here in a real transcript and are never kept)"
+   },
+   {
+    "start": 285.8,
+    "end": 386.4,
+    "speaker": "SPEAKER_00",
+    "text": "Right, an address. Hold onto that, because a linked list is just nodes holding addresses of other nodes."
+   },
+   {
+    "start": 476.6,
+    "end": 587.2,
+    "speaker": "SPEAKER_00",
+    "text": "I'm going to go slowly here. Watch me write insert-at-front line by line, and then you'll write insert-at-back yourselves."
+   },
+   {
+    "start": 588,
+    "end": 602,
+    "speaker": "SPEAKER_02",
+    "text": "(student words would appear here in a real transcript and are never kept)"
+   },
+   {
+    "start": 602.8,
+    "end": 623.2,
+    "speaker": "SPEAKER_00",
+    "text": "Step one, make the new node. Step two, point it at the old head. Step three, move head. Does that order make sense?"
+   },
+   {
+    "start": 624,
+    "end": 631,
+    "speaker": "SPEAKER_03",
+    "text": "(student words would appear here in a real transcript and are never kept)"
+   },
+   {
+    "start": 631.8,
+    "end": 754.4,
+    "speaker": "SPEAKER_00",
+    "text": "What happens if I swap steps two and three? Talk to the person next to you for thirty seconds."
+   },
+   {
+    "start": 840.6,
+    "end": 924.8,
+    "speaker": "SPEAKER_00",
+    "text": "Good. We'd lose the rest of the list. That's the bug I see most on the exam, so let's draw it."
+   },
+   {
+    "start": 1013.9999999999999,
+    "end": 1032,
+    "speaker": "SPEAKER_04",
+    "text": "(student words would appear here in a real transcript and are never kept)"
+   },
+   {
+    "start": 1143,
+    "end": 1244,
+    "speaker": "SPEAKER_00",
+    "text": "Now try insert-at-back on your own. I'll walk around. Raise your hand if you get stuck."
+   },
+   {
+    "start": 1338,
+    "end": 1349,
+    "speaker": "SPEAKER_01",
+    "text": "(student words would appear here in a real transcript and are never kept)"
+   },
+   {
+    "start": 1459,
+    "end": 1552,
+    "speaker": "SPEAKER_00",
+    "text": "Let's go through it together. Who wants to tell me the loop condition?"
+   },
+   {
+    "start": 1641.4,
+    "end": 1649.2,
+    "speaker": "SPEAKER_00",
+    "text": "Exactly, stop when next is null. Same idea as last week's array loop, just following pointers instead of indexes."
+   },
+   {
+    "start": 1650,
+    "end": 1666,
+    "speaker": "SPEAKER_02",
+    "text": "(student words would appear here in a real transcript and are never kept)"
+   },
+   {
+    "start": 1666.8,
+    "end": 1774.4,
+    "speaker": "SPEAKER_00",
+    "text": "For Friday there's a short quiz on pointers, ten minutes at the start of class. It's worth two percent."
+   },
+   {
+    "start": 1860.6,
+    "end": 1944.8,
+    "speaker": "SPEAKER_00",
+    "text": "Project two is the big one: about forty percent of your grade comes from the projects, and the final is thirty."
+   },
+   {
+    "start": 1992.0000000000002,
+    "end": 2001.0000000000002,
+    "speaker": "SPEAKER_03",
+    "text": "(student words would appear here in a real transcript and are never kept)"
+   },
+   {
+    "start": 2115,
+    "end": 2240,
+    "speaker": "SPEAKER_00",
+    "text": "Plan on about three hours of lab work this week. Office hours are posted, and the lab handout has every step written out."
+   },
+   {
+    "start": 2316,
+    "end": 2337,
+    "speaker": "SPEAKER_04",
+    "text": "(student words would appear here in a real transcript and are never kept)"
+   },
+   {
+    "start": 2463,
+    "end": 2564,
+    "speaker": "SPEAKER_00",
+    "text": "Last thing: any questions about the project before we stop?"
+   },
+   {
+    "start": 2646,
+    "end": 2658,
+    "speaker": "SPEAKER_01",
+    "text": "(student words would appear here in a real transcript and are never kept)"
+   },
+   {
+    "start": 2751,
+    "end": 2888,
+    "speaker": "SPEAKER_00",
+    "text": "Okay, that's time. Next class we'll do deletion, which is where it gets fun."
+   },
+   {
+    "start": 2892,
+    "end": 2902,
+    "speaker": "SPEAKER_02",
+    "text": "(student words would appear here in a real transcript and are never kept)"
+   }
+  ]
+ },
+ "draft": {
+  "summary": "Class opens with a short recap question, then the professor works through each example step by step before students try one themselves. Students try a problem on their own while the professor walks around, then the class goes through it together.",
+  "profile": {
+   "pace": {
+    "value": 2,
+    "evidence": "\"I'm going to go slowly here. Watch me write insert-at-front line by line.\""
+   },
+   "structure": {
+    "value": 5,
+    "evidence": "\"Today's agenda is on the slide: a two-minute recap, then linked lists, then we'll start the lab together.\""
+   },
+   "assessment": {
+    "value": 4,
+    "evidence": "\"About forty percent of your grade comes from the projects, and the final is thirty.\""
+   },
+   "guidance": {
+    "value": 1,
+    "evidence": "\"Step one, make the new node. Step two, point it at the old head. Step three, move head.\""
+   },
+   "workload": {
+    "value": 3,
+    "evidence": "\"Plan on about three hours of lab work this week.\""
+   }
+  }
+ }
+}

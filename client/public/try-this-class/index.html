@@ -28,7 +28,10 @@
   .start-wrap{position:relative;max-width:440px}
   .start-wrap::before{content:"";position:absolute;inset:16px -14px -16px 14px;border-radius:var(--radius-lg);
     background:repeating-linear-gradient(135deg,var(--accent) 0 3px,var(--inverse) 3px 6px)}
-  .topbar .fine{margin-left:auto;color:var(--text-muted);font-size:13px}
+  .home-link{display:block;border-radius:var(--radius-md)}
+  .home-link:focus-visible,.home-text:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+  .home-text{margin-left:auto;color:var(--text-soft);font-weight:600;font-size:14px;text-decoration:underline;text-underline-offset:3px;min-height:var(--tap);display:flex;align-items:center}
+  .topbar .fine{margin-left:16px;color:var(--text-muted);font-size:13px}
   .layout{display:grid;grid-template-columns:minmax(0,1fr) 380px;height:calc(100% - 64px)}
   #view{position:relative;min-width:0;background:#1b1a22}
   #view canvas{display:block}
@@ -116,8 +119,9 @@
 </head>
 <body>
 <header class="topbar">
-  <img class="wordmark" src="../same-page-logo.png" alt="Same Page">
+  <a class="home-link" href="/" aria-label="Same Page SC home page"><img class="wordmark" src="../same-page-logo.png" alt="Same Page"></a>
   <h1>Try this class</h1>
+  <a class="home-text" href="/">Back to Same Page</a>
   <span class="fine">Simulated class with fictional professors. Not an official USC site.</span>
 </header>
 <div class="layout">
@@ -293,7 +297,7 @@ view.prepend(renderer.domElement);
 const scene=new THREE.Scene();scene.background=new THREE.Color('#1b1a22');
 scene.environment=new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(),0.04).texture;
 const camera=new THREE.PerspectiveCamera(58,1,0.05,120);
-const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.maxDistance=13;
 const composer=new EffectComposer(renderer,new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,samples:4}));
 composer.addPass(new RenderPass(scene,camera));
 const ao=new GTAOPass(scene,camera,1,1);ao.updateGtaoMaterial({radius:0.5,distanceExponent:1.2,thickness:1,scale:1.15,samples:16});
@@ -860,7 +864,14 @@ function tick(){const dt=Math.min(0.05,clock.getDelta());
   if(you&&viewMode!=='seat'){youMarker.visible=true;youMarker.position.set(you.x,you.y+2.0+Math.sin(time*3)*0.07,you.z+0.05);youMarker.rotation.y=time;}else youMarker.visible=false;
   if(camTo){camera.position.lerp(camTo.p,0.1);controls.target.lerp(camTo.t,0.1);if(camera.position.distanceTo(camTo.p)<0.01&&controls.target.distanceTo(camTo.t)<0.01){camera.position.copy(camTo.p);controls.target.copy(camTo.t);camTo=null;}}
   shadowTick+=dt;if(shadowTick>0.2){shadowTick=0;renderer.shadowMap.needsUpdate=true;}
-  controls.update();if(useAO)composer.render();else renderer.render(scene,camera);requestAnimationFrame(tick);}
+  controls.update();keepInsideRoom(camera.position);keepInsideRoom(controls.target);if(useAO)composer.render();else renderer.render(scene,camera);requestAnimationFrame(tick);}
+
+// Keeps the camera and the point it orbits inside the hall's walls, floor and ceiling, so zooming or panning never leaves the room.
+const ROOM_MARGIN=0.3;
+function keepInsideRoom(v){
+  v.x=Math.min(W2-ROOM_MARGIN,Math.max(-W2+ROOM_MARGIN,v.x));
+  v.y=Math.min(CEIL-ROOM_MARGIN,Math.max(0.3,v.y));
+  v.z=Math.min(BACK-ROOM_MARGIN,Math.max(FRONT+ROOM_MARGIN,v.z));}
 
 function showLinkedSection(){if(!linked)return;
   document.querySelector('.topbar h1').textContent=`Try ${linked.course}, section ${linked.section}`;

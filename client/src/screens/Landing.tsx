@@ -424,7 +424,7 @@ function BothSides() {
         </div>
       </div>
       <ul className="privacy-points plain-list">
-        <li className="privacy-list__item"><FileText className="privacy-list__icon" size={22} aria-hidden /><span className="text-small"><b>Text notes only.</b> We never record classes.</span></li>
+        <li className="privacy-list__item"><FileText className="privacy-list__icon" size={22} aria-hidden /><span className="text-small"><b>Only the professor is transcribed.</b> Students are counted, never transcribed.</span></li>
         <li className="privacy-list__item"><EyeSlash className="privacy-list__icon" size={22} aria-hidden /><span className="text-small"><b>Names come out first.</b> Nothing personal is saved.</span></li>
         <li className="privacy-list__item"><ChalkboardTeacher className="privacy-list__icon" size={22} aria-hidden /><span className="text-small"><b>About the class, not the person.</b> Comments on personality or looks are dropped.</span></li>
       </ul>

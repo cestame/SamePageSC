@@ -22,7 +22,8 @@ We deliberately do **not** ask about "visual / auditory / kinesthetic" learning 
 
 ## Privacy rules (product features)
 
-- Text notes and syllabi only. No audio or video.
+- Students add typed notes, a syllabus, or (prototype) a recording of a class the professor agreed to have recorded.
+- Recordings: only the professor is transcribed. Students are counted, never transcribed. The audio is held in memory, dropped right after analysis and never written to disk. pyannoteAI, which separates the voices (model `precision-3`, key in the `PYANNOTE_API_KEY` secret), deletes its copy within 48 hours. Without the key, recording shows a saved sample instead.
 - Names, emails, phone numbers and student IDs are stripped **before** text is sent to the AI; only the extracted profile is stored, never raw notes.
 - Profiles describe the class, not the person. Evidence that comments on appearance, accent, identity, etc. is dropped.
 - No Brightspace crawling, no USC login, no dependency on USC systems.

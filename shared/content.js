@@ -171,10 +171,11 @@ export const FEEDBACK_PROMPTS = [
 ];
 
 export const PRIVACY_POINTS = [
-  { icon: 'text', title: 'Text only', body: 'You paste notes or a syllabus. There is no audio or video recording anywhere in the app.' },
+  { icon: 'microphone', title: 'Only the professor is transcribed', body: "Students are counted, never transcribed. Recording a class is a prototype, and it needs the professor's agreement and an announcement to the class." },
+  { icon: 'timer', title: "The recording is deleted right after it's analyzed", body: 'Our server holds the audio in memory only and drops it as soon as the analysis is back. pyannoteAI, the service that separates the voices, deletes its copy automatically within 48 hours.' },
   { icon: 'eraser', title: 'Names come out first', body: 'Names, emails, phone numbers and student IDs are removed before your text is sent to the AI model.' },
   { icon: 'trash', title: 'Your notes are not kept', body: 'Only the finished profile and short evidence lines are saved. The text you pasted is thrown away.' },
   { icon: 'person', title: 'The class, not the person', body: 'Profiles describe how a class runs. Anything about a professor\'s personality, appearance, accent or identity is dropped.' },
-  { icon: 'handshake', title: 'With consent', body: 'Share only your own notes, or materials from a class whose professor agreed. Professors can read and respond to their profile.' },
+  { icon: 'handshake', title: 'With consent', body: 'Share only your own notes, or recordings and materials from a class whose professor agreed. Professors can read and respond to their profile.' },
   { icon: 'plug', title: 'No USC systems', body: 'There is no Brightspace crawling and no USC login, so a department could pilot this on its own.' },
 ];

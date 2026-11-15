@@ -46,7 +46,8 @@ The app should feel like a tool a USC student made for other students: specific,
 - **The scoring function decides the ranking.** The AI model writes the explanation and never changes the order.
 - **Say what a number counts, right beside it.** "82%" alone is meaningless. "82% fit, based on pace, structure and assessment" isn't.
 - **Every match shows one honest downside.** A result that is all praise reads as an ad.
-- **Privacy is visible in the product.** Text notes and syllabi only, no recordings. Strip student names and personal details before storing. Store the profile, not the raw notes.
+- **Privacy is visible in the product.** Students add typed notes, syllabi, or (as a labeled prototype) a recording of a class. Strip student names and personal details before storing. Store the profile, not the raw notes or audio.
+- **Recording rules (decided by the team on November 15, 2026).** Recording needs a checked confirmation that the professor agreed and told the class. Only the professor is transcribed: the speaker with the most talk time counts as the professor, and other speakers are kept as timing only, never as words. Audio stays in server memory and is dropped as soon as the analysis returns; it is never written to disk. pyannoteAI processes the audio with a key from `PYANNOTE_API_KEY` that never reaches the browser, and deletes its copy within 48 hours. Recording is a prototype: label it so wherever it appears.
 
 ## General
 

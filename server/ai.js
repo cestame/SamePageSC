@@ -59,7 +59,7 @@ const ProfileSchema = z.object({
 
 const SCALES = FIELDS.map((f) => `- ${f.key}: 1 = ${f.low}, 5 = ${f.high}`).join('\n');
 
-const EXTRACT_SYSTEM = `You build structured teaching profiles of university course sections from class notes and syllabi that students contribute.
+const EXTRACT_SYSTEM = `You build structured teaching profiles of university course sections from class notes, syllabi, and transcripts of the professor's speech in a recorded lecture, contributed by students.
 
 Rate each dimension 1-5 on these scales:
 ${SCALES}
@@ -70,7 +70,7 @@ Rules:
 - Describe the class, never the person: no comments on the professor's personality, appearance, accent, age, or identity.
 - Never include names of students or any personal details (emails, IDs, phone numbers) in evidence or summary. The professor may be referred to as "the professor".
 - The summary is exactly two plain sentences about what a typical class day looks like.
-- If the text is not class notes or a syllabus, set is_course_material=false.`;
+- If the text is not class notes, a syllabus, or a lecture, set is_course_material=false.`;
 
 export async function extractProfile({ text, sourceType, courseLabel }) {
   const out = await structuredCall({
