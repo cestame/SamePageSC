@@ -14,7 +14,8 @@ import { Matches } from './screens/Matches';
 import { ProfessorPage } from './screens/ProfessorPage';
 import { Contribute } from './screens/Contribute';
 import { Privacy } from './screens/Privacy';
-import { EXTENSION_SECTION_ID, Landing } from './screens/Landing';
+import { EXTENSION_PAGE, Landing } from './screens/Landing';
+import { GetExtension } from './screens/GetExtension';
 import { PuzzlePiece } from '@phosphor-icons/react';
 
 const NAV = [
@@ -26,12 +27,13 @@ const NAV = [
 function sectionOf(first: string | undefined) {
   if (first === 'contribute') return 'contribute';
   if (first === 'privacy') return 'privacy';
+  if (first === 'get-extension') return 'get-extension';
   if (!first && !IS_EXTENSION) return 'landing';
   return 'home';
 }
 
 // Reading pages stay at a comfortable line length; the planner and match pages use the full width.
-const READING_PAGES = new Set(['contribute', 'privacy']);
+const READING_PAGES = new Set(['contribute', 'privacy', 'get-extension']);
 // Routes that show whichever step the student is on: create profile, setup, or home.
 const ENTRY_ROUTES = new Set(['setup', 'home', 'welcome', 'app']);
 const AUTH_ROUTES = new Set(['signup', 'login', 'guest']);
@@ -53,6 +55,7 @@ function Screen({ parts, params }: { parts: string[]; params: URLSearchParams })
   if (first === 'professor' && second) return <ProfessorPage id={Number(second)} />;
   if (first === 'contribute') return <Contribute />;
   if (first === 'privacy') return <Privacy />;
+  if (first === 'get-extension') return <GetExtension />;
   return <Home />;
 }
 
@@ -93,7 +96,7 @@ export function App() {
               </a>
             ))}
             {user && <button type="button" className="nav__link nav__button" onClick={logOut}>Log out</button>}
-            {!IS_EXTENSION && <GetExtensionLink onLanding={isLanding(parts[0])} />}
+            {!IS_EXTENSION && <GetExtensionLink />}
           </nav>
         </div>
       </header>
@@ -112,15 +115,11 @@ export function App() {
 }
 
 /** The extension is the main way to use Same Page SC, so the top bar always links to how to get it. */
-function GetExtensionLink({ onLanding }: { onLanding: boolean }) {
-  function go() {
-    if (onLanding) document.getElementById(EXTENSION_SECTION_ID)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    else navigate(`#/?section=${EXTENSION_SECTION_ID}`);
-  }
+function GetExtensionLink() {
   return (
-    <button type="button" className="nav__cta" onClick={go}>
+    <a className="nav__cta" href={EXTENSION_PAGE}>
       <PuzzlePiece size={18} aria-hidden />
       <span>Get the extension</span>
-    </button>
+    </a>
   );
 }
