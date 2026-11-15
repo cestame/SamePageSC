@@ -29,7 +29,7 @@ export function Privacy() {
           })}
           <li className="privacy-list__item">
             <span />
-            <span className="text-small text-muted">Your answers to the eight questions are saved only in this browser. There are no accounts.</span>
+            <span className="text-small text-muted">With an account, your answers and schedule are saved to it and your password is stored only as a salted hash. Without one, they stay in this browser. We never ask for your USC login.</span>
           </li>
         </ul>
       </Card>

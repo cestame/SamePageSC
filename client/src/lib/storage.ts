@@ -1,9 +1,9 @@
 import { useCallback, useState } from 'react';
 import { COURSE_QUESTIONS, GENERAL_QUESTIONS, TIME_QUESTIONS } from '../../../shared/content.js';
-import type { Answers } from './api';
+import { api, type Answers, type User } from './api';
 
-// The student's profile lives only in their own browser: there are no server accounts.
-// Storage can be unavailable (private windows), so access is guarded and an in-memory copy is kept.
+// A signed-in student's profile is saved to their account on the server. A guest's profile lives only
+// in their browser. Browser storage can be unavailable (private windows), so an in-memory copy is kept.
 
 export type GeneralAnswers = Pick<Answers, 'format' | 'structure' | 'assessment' | 'participation' | 'pace' | 'goal'>;
 export type CourseAnswers = Pick<Answers, 'prior' | 'workload'>;
@@ -11,6 +11,8 @@ export type CourseAnswers = Pick<Answers, 'prior' | 'workload'>;
 export type StudentProfile = {
   name: string;
   major: string;
+  /** The program's id in the USC Catalogue, used to look up its requirements. */
+  majorPoid?: number;
   courseIds: string[];
   general: Partial<GeneralAnswers>;
   time: { earliest?: number; latest?: number };
@@ -20,25 +22,68 @@ export type StudentProfile = {
 };
 
 const KEY = 'trojan-fit:profile';
+const SAVE_DELAY_MS = 400;
 let inMemory: StudentProfile | null | undefined;
+let account: User | null = null;
+let saveTimer: number | undefined;
+
+export const currentUser = () => account;
+
+/** Called once on load: a valid session cookie means the profile comes from the account. */
+export async function restoreSession() {
+  try {
+    const { user, profile } = await api.me();
+    if (user) signedIn(user, profile as StudentProfile | null);
+  } catch {
+    /* offline or server error: fall back to the browser copy */
+  }
+}
+
+/** After signup or login. A guest profile already on this device moves into a new account. */
+export function signedIn(user: User, serverProfile: StudentProfile | null) {
+  account = user;
+  const guest = readBrowserCopy();
+  const profile = serverProfile ?? (guest ? { ...guest, name: user.name } : newProfile(user.name));
+  inMemory = profile;
+  if (!serverProfile) saveProfile(profile);
+  clearBrowserCopy();
+}
+
+export async function signOut() {
+  await api.logout().catch(() => undefined);
+  account = null;
+  inMemory = null;
+}
+
+function readBrowserCopy(): StudentProfile | null {
+  try {
+    const raw = localStorage.getItem(KEY);
+    return raw ? (JSON.parse(raw) as StudentProfile) : null;
+  } catch {
+    return null;
+  }
+}
+
+function clearBrowserCopy() {
+  try { localStorage.removeItem(KEY); } catch { /* storage unavailable */ }
+}
 
 export function newProfile(name: string): StudentProfile {
   return { name, major: '', courseIds: [], general: {}, time: {}, perCourse: {}, locked: {} };
 }
 
 export function loadProfile(): StudentProfile | null {
-  if (inMemory !== undefined) return inMemory;
-  try {
-    const raw = localStorage.getItem(KEY);
-    inMemory = raw ? (JSON.parse(raw) as StudentProfile) : null;
-  } catch {
-    inMemory = null;
-  }
+  if (inMemory === undefined) inMemory = readBrowserCopy();
   return inMemory;
 }
 
 export function saveProfile(profile: StudentProfile | null) {
   inMemory = profile;
+  if (account) {
+    window.clearTimeout(saveTimer);
+    if (profile) saveTimer = window.setTimeout(() => { api.saveProfile(profile).catch(() => undefined); }, SAVE_DELAY_MS);
+    return;
+  }
   try {
     if (profile) localStorage.setItem(KEY, JSON.stringify(profile));
     else localStorage.removeItem(KEY);

@@ -42,6 +42,8 @@ export function useHashRoute() {
   return route;
 }
 
+/** Goes to a route. Going to the route already showing re-renders it, since its state may have changed. */
 export function navigate(hash: string) {
-  window.location.hash = hash;
+  if (window.location.hash === hash) window.dispatchEvent(new HashChangeEvent('hashchange'));
+  else window.location.hash = hash;
 }

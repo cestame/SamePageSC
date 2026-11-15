@@ -81,12 +81,19 @@ export type ContributionResult = {
   professor: Professor;
 };
 
+export type User = { id: number; email: string; name: string };
+export type Session = { user: User | null; profile: unknown };
+
+export type UscProgram = { poid: number; name: string; degree: string; school: string };
+export type CatalogueCourse = { code: string; title: string };
+export type Requirements = { status: 'ready' | 'queued' | 'unavailable'; courses: CatalogueCourse[]; etaSeconds?: number };
+
 export class ApiError extends Error {}
 
-async function request<T>(path: string, body?: unknown): Promise<T> {
+async function request<T>(path: string, body?: unknown, method = 'POST'): Promise<T> {
   const init: RequestInit = body === undefined
     ? {}
-    : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
+    : { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
   let res: Response;
   try {
     res = await fetch('/api' + path, init);
@@ -99,6 +106,15 @@ async function request<T>(path: string, body?: unknown): Promise<T> {
 }
 
 export const api = {
+  me: () => request<Session>('/auth/me'),
+  searchPrograms: (q: string) => request<UscProgram[]>(`/usc/programs?q=${encodeURIComponent(q)}`),
+  requirements: (poid: number) => request<Requirements>(`/usc/programs/${poid}/requirements`),
+  searchCourses: (q: string) => request<CatalogueCourse[]>(`/usc/courses?q=${encodeURIComponent(q)}`),
+  addCourse: (code: string, title: string) => request<{ id: string; code: string; title: string }>('/courses', { code, title }),
+  signup: (name: string, email: string, password: string) => request<Session>('/auth/signup', { name, email, password }),
+  login: (email: string, password: string) => request<Session>('/auth/login', { email, password }),
+  logout: () => request<{ ok: true }>('/auth/logout', {}),
+  saveProfile: (data: unknown) => request<{ ok: true }>('/profile', { data }, 'PUT'),
   meta: () => request<{ ai: boolean }>('/meta'),
   courses: () => request<Course[]>('/courses'),
   professors: (courseId: string) => request<Professor[]>(`/courses/${encodeURIComponent(courseId)}/professors`),

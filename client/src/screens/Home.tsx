@@ -2,7 +2,7 @@ import { ArrowRight, LockSimple, Warning } from '@phosphor-icons/react';
 import { COURSE_QUESTIONS, GENERAL_QUESTIONS } from '../../../shared/content.js';
 import { api, type Course, type PlanCourse, type PlanReason, type PlanSection } from '../lib/api';
 import { navigate, useAsync } from '../lib/hooks';
-import { answersFor, courseReady, saveProfile, useProfile, type StudentProfile } from '../lib/storage';
+import { answersFor, courseReady, currentUser, saveProfile, useProfile, type StudentProfile } from '../lib/storage';
 import { formatMeeting, formatMinutes } from '../lib/time';
 import { ProfileLine } from '../components/ProfileLine';
 import { WeekGrid, type WeekBlock } from '../components/WeekGrid';
@@ -17,7 +17,8 @@ export function Home() {
   const [courses, retryCourses] = useAsync(api.courses, []);
   if (!profile) return null;
 
-  const readyIds = profile.courseIds.filter((id) => courseReady(profile, id));
+  const profiled = (id: string) => courses.status === 'success' && Boolean(courses.data.find((c) => c.id === id)?.sections.length);
+  const readyIds = profile.courseIds.filter((id) => courseReady(profile, id) && profiled(id));
   const planKey = JSON.stringify({ readyIds, a: readyIds.map((id) => answersFor(profile, id)), t: profile.time, l: profile.locked });
 
   return (
@@ -50,7 +51,9 @@ function ProfileSummary({ profile }: { profile: StudentProfile }) {
         ['Learning', <span key="l">{GENERAL_QUESTIONS.length} answers saved <a href={`#/setup?step=${GENERAL_QUESTIONS[0].key}`}>Retake</a></span>],
         ['Classes', <span key="c">{profile.courseIds.length} picked <a href="#/setup?step=classes">Add or remove</a></span>],
       ]} />
-      <p className="text-small text-muted">Not {profile.name}? <button type="button" className="link-button" onClick={startOver}>Start over with a new profile</button></p>
+      {currentUser()
+        ? <p className="text-small text-muted">Signed in as {currentUser()?.email}. Your schedule is saved to your account.</p>
+        : <p className="text-small text-muted">You're using a guest profile saved in this browser. <a href="#/signup">Create an account</a> to keep it on any device, or <button type="button" className="link-button" onClick={startOver}>start over</button>.</p>}
     </div>
   );
 }
@@ -76,6 +79,7 @@ function PlannedClasses({ profile, update, courses, readyIds }: { profile: Stude
         {profile.courseIds.map((id) => {
           const course = courses.find((c) => c.id === id);
           if (!course) return null;
+          if (course.sections.length === 0) return <NoProfilesYet key={id} course={course} />;
           if (!courseReady(profile, id)) return <CourseQuestions key={id} course={course} profile={profile} update={update} />;
           const coursePlan = planned.find((p) => p.id === id);
           if (plan.status === 'loading') return <Card key={id}><LoadingState label={`Ranking ${course.code} sections`} /></Card>;
@@ -99,6 +103,22 @@ function PlannedClasses({ profile, update, courses, readyIds }: { profile: Stude
         )}
       </section>
     </div>
+  );
+}
+
+function NoProfilesYet({ course }: { course: Course }) {
+  return (
+    <Card>
+      <div className="stack-1">
+        <h2 className="text-title">{course.code}</h2>
+        <p className="text-small text-muted">{course.title}</p>
+      </div>
+      <p className="text-small">
+        No one has added notes for any {course.code} section yet, so we can't rank its sections or place it on your week.
+        If you know someone taking it, they can add their notes in a few minutes.
+      </p>
+      <div><Button variant="secondary" href="#/contribute">Add notes for a class</Button></div>
+    </Card>
   );
 }
 
