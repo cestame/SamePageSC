@@ -1,4 +1,4 @@
-# Trojan Fit
+# Same Page
 
 **Pick the USC section that fits how you learn, before add/drop.** By Trojans, for Trojans.
 

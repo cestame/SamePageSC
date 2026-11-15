@@ -5,7 +5,7 @@ import { ArrowClockwise, CaretDown, WarningCircle } from '@phosphor-icons/react'
 // ---------- Button ----------
 
 type ButtonProps = {
-  variant?: 'primary' | 'secondary' | 'quiet';
+  variant?: 'primary' | 'secondary' | 'quiet' | 'accent-link';
   block?: boolean;
   icon?: ReactNode;
   iconAfter?: ReactNode;

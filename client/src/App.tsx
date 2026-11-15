@@ -1,20 +1,18 @@
 import { useEffect, useState } from 'react';
-import { MotionConfig } from 'motion/react';
+import { MotionConfig, useReducedMotion } from 'motion/react';
 import { NOT_OFFICIAL, PRODUCT_NAME, TAGLINE } from '../../shared/content.js';
-import { ProfileLine } from './components/ProfileLine';
 import { useHashRoute } from './lib/hooks';
-import { AuthPage } from './screens/AuthPage';
+import { ACCOUNT_PANEL_ID, AuthPage } from './screens/AuthPage';
 import { Setup } from './screens/Setup';
 import { Home } from './screens/Home';
-import { currentUser, loadProfile, restoreSession, setupComplete, signOut } from './lib/storage';
+import { currentUser, loadProfile, restoreSession, setupComplete, signOut, type StudentProfile } from './lib/storage';
 import { navigate } from './lib/hooks';
 import { LoadingState } from './components/ui';
+import { IntroSequence, introSeen } from './components/IntroSequence';
 import { Matches } from './screens/Matches';
 import { ProfessorPage } from './screens/ProfessorPage';
 import { Contribute } from './screens/Contribute';
 import { Privacy } from './screens/Privacy';
-
-const BRAND_SHAPE = { pace: 2, format: 1, structure: 5, assessment: 3, participation: 1, guidance: 2, workload: 4 };
 
 const NAV = [
   { href: '#/', label: 'My schedule', section: 'home' },
@@ -34,6 +32,11 @@ const READING_PAGES = new Set(['contribute', 'privacy']);
 const ENTRY_ROUTES = new Set(['setup', 'home', 'welcome']);
 const AUTH_ROUTES = new Set(['signup', 'login', 'guest']);
 
+function showsAuth(first: string | undefined, profile: StudentProfile | null) {
+  if (first && AUTH_ROUTES.has(first)) return true;
+  return (!first || ENTRY_ROUTES.has(first)) && !profile;
+}
+
 function Screen({ parts, params }: { parts: string[]; params: URLSearchParams }) {
   const [first, second] = parts;
   const profile = loadProfile();
@@ -50,12 +53,20 @@ function Screen({ parts, params }: { parts: string[]; params: URLSearchParams })
   return <Home />;
 }
 
+function Wordmark({ decorative = false }: { decorative?: boolean }) {
+  return <img className="wordmark" src="/same-page-logo.png" alt={decorative ? '' : PRODUCT_NAME} width={573} height={173} />;
+}
+
 export function App() {
   const { parts, params } = useHashRoute();
   const current = sectionOf(parts[0]);
   const [ready, setReady] = useState(false);
+  // Decided once per page load, so the intro doesn't vanish mid-scroll when it marks itself as seen.
+  const [introPending] = useState(() => !introSeen());
+  const reduceMotion = useReducedMotion();
   useEffect(() => { restoreSession().finally(() => setReady(true)); }, []);
   const user = currentUser();
+  const showIntro = introPending && !reduceMotion && showsAuth(parts[0], loadProfile());
 
   async function logOut() {
     await signOut();
@@ -63,11 +74,11 @@ export function App() {
   }
   return (
     <MotionConfig reducedMotion="user">
+      {showIntro && <IntroSequence targetId={ACCOUNT_PANEL_ID} />}
       <header className="topbar">
         <div className="topbar__inner">
           <a className="brand" href="#/" aria-label={`${PRODUCT_NAME} home`}>
-            <ProfileLine values={BRAND_SHAPE} size="glyph" label={PRODUCT_NAME} animate={false} />
-            <span className="brand__name">{PRODUCT_NAME}</span>
+            <Wordmark />
           </a>
           <nav className="nav" aria-label="Main">
             {NAV.map((item) => (
@@ -83,8 +94,11 @@ export function App() {
         {ready ? <Screen parts={parts} params={params} /> : <LoadingState label="Loading your profile" lines={4} />}
       </main>
       <footer className="footer">
-        <p>{TAGLINE} {NOT_OFFICIAL}</p>
-        <p><a href="#/privacy">How we handle your notes and answers</a></p>
+        <div className="footer__inner">
+          <Wordmark decorative />
+          <p>{TAGLINE} {NOT_OFFICIAL}</p>
+          <a href="#/privacy">How we handle your notes and answers</a>
+        </div>
       </footer>
     </MotionConfig>
   );

@@ -9,7 +9,7 @@ Submission is due **Sunday, November 15, 2026 at 11:00 AM PT** (AI@USC, HackSC x
 - Everything below is committed and pushed. GitHub `main` is the current site.
 - **Not deployed yet.** Replit import is the top priority so there is a working link to submit.
 - **AI paths are untested.** No `ANTHROPIC_API_KEY` was available locally, so profile extraction (Add notes) and AI match explanations have never run against the real API. Without a key the app still works: Add notes shows a "paused" state and explanations fall back to a labeled, non-AI sentence built from the score breakdown.
-- **Redesign is pending a decision.** The person finds the current UI "basic, no personality". See "Redesign" below.
+- **Redesign is under way** from the person's Figma Make design ("Same Page"). See "Redesign" below.
 
 ## The product flow (as built)
 
@@ -56,16 +56,15 @@ Submission is due **Sunday, November 15, 2026 at 11:00 AM PT** (AI@USC, HackSC x
 - **classes.usc.edu (Schedule of Classes)** has an internal JSON API; calling it was blocked by the permission settings as unauthorized access to an undocumented API. Don't use it.
 - ECON 205 has no sample sections because no title was available. Add it if the person supplies the title.
 
-## Redesign (pending the person's choice)
+## Redesign (Figma Make "Same Page", in progress)
 
-- Mockups: https://claude.ai/artifact/F77aDXZKCRP6rLjJ8AoQ3g (laptop 1440x900 on top, phone below) with three directions for the home screen:
-  - **A. Class notes** (recommended): notebook paper, ruled lines and a margin line, index cards with slight tilt, tape only on the top match, Shantell Sans handwriting only for real student notes (watch-outs, evidence quotes, margin notes), highlighter swipe once per screen.
-  - **B. Two-ink zine**: black + cardinal on newsprint, Anybody condensed headlines, thick borders, halftone, misregistered profile line.
-  - **C. Game day**: dark scoreboard, Big Shoulders numerals, gold score box, cardinal blocks.
-- The person may instead design it in Figma Make and want it built from that.
-- Proposed tokens for A (light / dark): `--paper #FBF8F1 / #1A1715`, `--rule #DFE6EE / #2A2622`, `--margin #E7B8B8 / #4A2626`, `--card #FFFFFF / #24201D`, `--surface-sunk #F1ECE3 / #2E2925`, `--ink #1F1B18 / #F1ECE6`, `--ink-muted #645B53 / #B2A89E`, `--accent #990000 / #E36A6A`, `--accent-soft #FBE3E0 / #3A1F1E`, `--highlight #FFE37A / #8A6D00`.
-- Fonts checked on Google Fonts: Bricolage Grotesque (opsz 12-96, wdth 75-100, wght 200-800), Atkinson Hyperlegible Next (wght 200-800), Shantell Sans (wght 300-800, INFM 0-100, BNCE -100-100, SPAC 0-100, italics), Anybody (wdth 50-150, wght 100-900).
-- Motif in A: same profile line encoding, drawn as a slightly wobbly pen stroke that draws in, the student's answers as a pencil line, the gap shaded like highlighter, and a handwritten margin note pointing at the row with the biggest gap (this satisfies "one honest downside").
+- Source: Figma Make file `6Um2xcZhYNwlvRqOlBp4bc` ("Redesign Website Landing Page"). The Figma MCP server can read Make files only through `get_design_context` with node `0:1`, which lists the source files as resources (`src/App.tsx`, `src/index.css`, `src/assets/*.png`). `create_session` and screenshots don't work on Make files.
+- The person chose: build the sign-up page from it and carry its look app-wide; keep the horse intro but make it skippable and short; cut the marketing hero, the numbered 01/02/03 steps and the privacy marketing section.
+- Done: product renamed to **Same Page** (`shared/content.js`, plus `PRODUCT_LINE`). Palette in `theme.css`: paper `#FBF8EE`, ink `#030027`, navy `#151E3F`, cardinal `#922E2E`, cream `#FFF0B6`, gold `#E0B600` (brand constants stay fixed in dark mode; dark mode uses a navy base and a cream primary button). Pill buttons, 50px inputs, 22px card radius, dark navy footer with the wordmark, wordmark image in the topbar, square-cornered calendar blocks, and a hard cardinal offset shadow (`--shadow-offset`) used only on the top match card.
+- Sign-up page (`screens/AuthPage.tsx`): form panel first on phones, profile diagram and two facts beside it on laptops. Intro (`components/IntroSequence.tsx`): 170svh scroll scene, "Skip to sign up" button, shown once per browser (`localStorage same-page-intro-seen`), left out entirely with reduced motion.
+- Images: `client/public/same-page-logo.png` and `client/public/pixel-horse.png`, from the Figma file.
+- Not yet checked in a browser: the intro animation frame by frame, phone width, and dark mode.
+- Next: restyle setup, home, matches and professor pages to the new look screen by screen, fixing the audit items below.
 
 ## Open audit items (current UI vs CLAUDE.md)
 
@@ -81,7 +80,7 @@ Fix these during the redesign:
 ## Next, in order
 
 1. Deploy to Replit (steps above) and test the AI paths.
-2. Get the person's redesign choice (A, B, C, or their Figma Make design) and build it, fixing the audit items.
+2. Finish the Same Page redesign on the remaining screens, fixing the audit items.
 3. Check animations on a real phone and with reduced motion on.
 4. Submission checklist from spec: working link, public repo, 3-minute video, slide deck, project description, screenshot, teammates on Devpost.
 5. Stretch: Chrome extension mockup for the pitch (fit scores on the registration page).

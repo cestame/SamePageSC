@@ -1,9 +1,10 @@
 // Product copy that appears in more than one place. A rename is a one-line change here.
 // Imported by both the Express server and the React client.
 
-export const PRODUCT_NAME = 'Trojan Fit';
+export const PRODUCT_NAME = 'Same Page';
 export const TAGLINE = 'Made by USC students for USC students.';
 export const NOT_OFFICIAL = 'Not an official USC site.';
+export const PRODUCT_LINE = 'You and your classes, on the same page.';
 
 /**
  * The seven teaching-profile dimensions. Every value is 1 to 5.

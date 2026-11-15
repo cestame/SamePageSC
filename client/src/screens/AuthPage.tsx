@@ -1,46 +1,78 @@
 import { useState, type FormEvent } from 'react';
-import { ArrowRight, CloudCheck, DeviceMobile, LockSimple } from '@phosphor-icons/react';
-import { PRODUCT_NAME } from '../../../shared/content.js';
+import { ArrowRight, Check, DeviceMobile, LockSimple } from '@phosphor-icons/react';
 import { api } from '../lib/api';
 import { navigate } from '../lib/hooks';
 import { loadProfile, newProfile, saveProfile, setupComplete, signedIn, type StudentProfile } from '../lib/storage';
-import { Button, Card, ErrorState } from '../components/ui';
+import { Button, ErrorState } from '../components/ui';
+import { ProfileLine } from '../components/ProfileLine';
 
 type Mode = 'signup' | 'login' | 'guest';
 
-const HEADINGS: Record<Mode, string> = {
-  signup: `Create your ${PRODUCT_NAME} account`,
-  login: `Log in to ${PRODUCT_NAME}`,
-  guest: 'Try it without an account',
+export const ACCOUNT_PANEL_ID = 'account';
+
+const HEADINGS: Record<Mode, { title: string; hint: string }> = {
+  signup: { title: 'Build a schedule that fits', hint: 'Answer a few questions, then compare the sections of every class you need.' },
+  login: { title: 'Pick up where you left off', hint: 'Use the email and password you signed up with.' },
+  guest: { title: 'Try it without an account', hint: 'Tell us what to call you and you can start right away.' },
 };
 
+/** A fictional class used to show what a teaching profile looks like before the student has any. */
+const SAMPLE_SHAPE = { pace: 2, format: 1, structure: 5, assessment: 3, participation: 1, guidance: 2, workload: 4 };
+
 export function AuthPage({ mode }: { mode: Mode }) {
+  const heading = HEADINGS[mode];
   return (
-    <div className="split">
-      <div className="stack-4">
-        <h1 className="text-display">{HEADINGS[mode]}</h1>
+    <div className="auth">
+      <section className="auth__panel" id={ACCOUNT_PANEL_ID} aria-labelledby="auth-title">
+        <ModeSwitch mode={mode} />
+        <div className="stack-2">
+          <h1 id="auth-title" className="text-display">{heading.title}</h1>
+          <p className="text-small text-muted">{heading.hint}</p>
+        </div>
+        {mode === 'guest' ? <GuestForm /> : <AccountForm mode={mode} />}
+      </section>
+      <ProfilePreview />
+    </div>
+  );
+}
+
+function ProfilePreview() {
+  return (
+    <aside className="auth__motif" aria-labelledby="motif-title">
+      <ProfileLine values={SAMPLE_SHAPE} size="card" label="a sample class" />
+      <div className="stack-3">
+        <h2 id="motif-title" className="text-title">Every class gets a shape</h2>
         <p className="text-body text-muted">
-          You'll tell us your major, the classes you need this semester, how you like to learn and when you can be on campus.
-          Then we rank every section of each class for you and build a schedule with no overlaps.
+          Students who took a class add their notes and syllabus. We turn them into seven ratings, from pace to workload,
+          and draw them as one line, so you can tell two sections apart at a glance. This one is a fictional sample.
         </p>
+        <ul className="plain-list stack-2">
+          <li className="auth__proof"><Check size={18} weight="bold" aria-hidden />Your answers are drawn over each section's line</li>
+          <li className="auth__proof"><Check size={18} weight="bold" aria-hidden />Every match names one honest downside</li>
+        </ul>
         <p className="text-small"><a href="#/contribute">Taking a class now? Add your notes instead</a></p>
       </div>
-      <Card>
-        <ModeSwitch mode={mode} />
-        {mode === 'guest' ? <GuestForm /> : <AccountForm mode={mode} />}
-      </Card>
-    </div>
+    </aside>
   );
 }
 
 function ModeSwitch({ mode }: { mode: Mode }) {
   const items: [Mode, string, string][] = [['signup', 'Create account', '#/signup'], ['login', 'Log in', '#/login']];
   return (
-    <div className="segmented" role="tablist" aria-label="Account">
+    <div className="segmented segmented--fill" role="tablist" aria-label="Account">
       {items.map(([key, label, href]) => (
         <a key={key} role="tab" aria-selected={mode === key} className="segmented__item segmented__item--link" href={href}>{label}</a>
       ))}
     </div>
+  );
+}
+
+function SecurityNote() {
+  return (
+    <p className="auth__note text-small text-muted">
+      <LockSimple size={20} aria-hidden />
+      <span>We never ask for your USC login. Your password is stored only as a salted hash.</span>
+    </p>
   );
 }
 
@@ -70,38 +102,38 @@ function AccountForm({ mode }: { mode: 'signup' | 'login' }) {
   }
 
   return (
-    <form className="stack-4" onSubmit={submit} noValidate>
-      {isSignup && (
+    <>
+      <form className="stack-4" onSubmit={submit} noValidate>
+        {isSignup && (
+          <label className="field">
+            <span className="field__label">First name</span>
+            <input className="input" id="first-name" type="text" autoComplete="given-name" maxLength={40} placeholder="Tommy" value={name} onChange={(e) => setName(e.target.value)} />
+          </label>
+        )}
         <label className="field">
-          <span className="field__label">First name</span>
-          <input className="input" id="first-name" type="text" autoComplete="given-name" maxLength={40} value={name} onChange={(e) => setName(e.target.value)} />
+          <span className="field__label">Email</span>
+          <input className="input" id="email" type="email" autoComplete="email" placeholder="you@usc.edu" value={email} onChange={(e) => setEmail(e.target.value)} />
         </label>
-      )}
-      <label className="field">
-        <span className="field__label">Email</span>
-        <input className="input" id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-      </label>
-      <label className="field">
-        <span className="field__label">Password</span>
-        <input className="input" id="password" type="password" autoComplete={isSignup ? 'new-password' : 'current-password'} value={password} onChange={(e) => setPassword(e.target.value)} />
-        {isSignup && <span className="text-small text-muted">At least 8 characters.</span>}
-      </label>
-      {error && <ErrorState title={isSignup ? 'We couldn\'t create your account' : 'We couldn\'t log you in'} error={error} />}
-      <Button type="submit" block disabled={!ready || busy} iconAfter={<ArrowRight size={18} aria-hidden />}>
-        {busy ? 'One moment' : isSignup ? 'Create my account' : 'Log in'}
-      </Button>
-      <ul className="privacy-list">
-        <li className="privacy-list__item">
-          <CloudCheck className="privacy-list__icon" size={22} aria-hidden />
-          <span className="text-small">Your answers and schedule are saved to your account, so you can pick up on any device.</span>
-        </li>
-        <li className="privacy-list__item">
-          <LockSimple className="privacy-list__icon" size={22} aria-hidden />
-          <span className="text-small">Your password is stored only as a salted hash, and we never ask for your USC login.</span>
-        </li>
-      </ul>
-      <p className="text-small"><a href="#/guest">Try it without an account</a></p>
-    </form>
+        <label className="field">
+          <span className="field__label">Password</span>
+          <input
+            className="input"
+            id="password"
+            type="password"
+            autoComplete={isSignup ? 'new-password' : 'current-password'}
+            placeholder={isSignup ? 'At least 8 characters' : 'Your password'}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </label>
+        {error && <ErrorState title={isSignup ? 'We couldn\'t create your account' : 'We couldn\'t log you in'} error={error} />}
+        <Button type="submit" block disabled={!ready || busy} iconAfter={<ArrowRight size={19} aria-hidden />}>
+          {busy ? 'One moment' : isSignup ? 'Create my account' : 'Log in'}
+        </Button>
+      </form>
+      <Button variant="accent-link" href="#/guest" iconAfter={<ArrowRight size={19} aria-hidden />}>Try it without an account</Button>
+      <SecurityNote />
+    </>
   );
 }
 
@@ -115,16 +147,18 @@ function GuestForm() {
     navigate('#/setup');
   }
   return (
-    <form className="stack-4" onSubmit={start}>
-      <label className="field">
-        <span className="field__label">Your first name</span>
-        <input className="input" id="guest-name" type="text" autoComplete="given-name" maxLength={40} value={name} onChange={(e) => setName(e.target.value)} />
-      </label>
-      <p className="privacy-list__item">
-        <DeviceMobile className="privacy-list__icon" size={22} aria-hidden />
-        <span className="text-small">Without an account, your answers are saved in this browser only. Create an account later and they move into it.</span>
+    <>
+      <form className="stack-4" onSubmit={start}>
+        <label className="field">
+          <span className="field__label">Your first name</span>
+          <input className="input" id="guest-name" type="text" autoComplete="given-name" maxLength={40} placeholder="Tommy" value={name} onChange={(e) => setName(e.target.value)} />
+        </label>
+        <Button type="submit" block disabled={!trimmed} iconAfter={<ArrowRight size={19} aria-hidden />}>Start without an account</Button>
+      </form>
+      <p className="auth__note text-small text-muted">
+        <DeviceMobile size={20} aria-hidden />
+        <span>Without an account, your answers are saved in this browser only. Create an account later and they move into it.</span>
       </p>
-      <Button type="submit" block disabled={!trimmed} iconAfter={<ArrowRight size={18} aria-hidden />}>Start without an account</Button>
-    </form>
+    </>
   );
 }

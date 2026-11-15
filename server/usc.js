@@ -11,7 +11,7 @@ const CURATED = JSON.parse(readFileSync(new URL('../shared/requirements.json', i
 const curatedCourses = (program) => program.groups.flatMap((g) => g.courses);
 const LIVE_FETCH = process.env.CATALOGUE_LIVE_FETCH === 'true';
 
-const USER_AGENT = 'Mozilla/5.0 (Trojan Fit student course-matching project)';
+const USER_AGENT = 'Mozilla/5.0 (Same Page student course-matching project)';
 const MAJORS_URL = 'https://www.usc.edu/majors-minors/?search-by-keyword=';
 const CATALOGUE = 'https://catalogue.usc.edu';
 export const CATALOGUE_ID = 22; // USC Catalogue 2026-2027
