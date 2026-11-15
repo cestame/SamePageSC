@@ -8,6 +8,7 @@ import { HorseIntro } from "./HorseIntro";
 import { SamePageDeck } from "./SamePageDeck";
 import { SiteQrCode } from "./slides/plan";
 import { TitleSlide } from "./slides/problem";
+import { WebRegSlide } from "./slides/product";
 import type { DeckConfig, SamePageSlide } from "./slides";
 import { Heading, Wordmark } from "./ui";
 import { PaperSlide } from "./PaperScene";
@@ -60,22 +61,13 @@ function QuestionSlide() {
   );
 }
 
-type Focus = { x: string; y: string; zoom: number; seconds: number };
-
 /**
- * The screen recording fills the whole slide, as if the presenter switched to the browser. It opens like an app
- * coming forward, then slowly zooms toward where the action is, so the room's eye follows the clicks.
+ * The screen recording fills the whole slide, as if the presenter switched to the browser.
  */
-function VideoSlide({ clip, heading, step, focus }: { clip: string; heading: string; step: string; focus: Focus }) {
+function VideoSlide({ clip, heading, step }: { clip: string; heading: string; step: string }) {
   return (
     <div className="absolute inset-0 overflow-hidden bg-paper">
-      <motion.div
-        className="size-full"
-        style={{ transformOrigin: `${focus.x} ${focus.y}` }}
-        initial={{ scale: 0.9, opacity: 0, borderRadius: 40 }}
-        animate={{ scale: [0.9, 1, focus.zoom], opacity: 1, borderRadius: 0 }}
-        transition={{ scale: { duration: focus.seconds, times: [0, 0.04, 1], ease: "easeInOut" }, opacity: { duration: 0.4 }, borderRadius: { duration: 0.6 } }}
-      >
+      <motion.div className="size-full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
         <video src={asset(`/${clip}`)} autoPlay muted playsInline className="size-full object-cover" />
       </motion.div>
       <motion.p
@@ -140,9 +132,10 @@ const slides: SamePageSlide[] = [
   },
   slide("stars", "Five stars", "Lia", "The first time we ever meet our professors is as a number on a five star scale, the same way restaurants or movies are rated. But let me ask you something: have you ever been moved by a movie from just reading the reviews? In our survey, 82% of respondents said Rate My Professors was their main source for choosing between classes. Students are left guessing. Professors are left represented by reviews that may barely reflect how they teach.", StarsSlide),
   slide("question", "How do we get on the same page?", "Lia", "So, how do we get on the Same Page?", QuestionSlide),
-  slide("record", "Demo: recording", "Srinija", "Welcome to class. Start the recording. [Clicker starts the recording.] Today's lesson: how does Same Page work? Students, are you ready for registration? [Everyone: Yes!] Awesome. Open USC Web Registration and your Same Page extension. Once you've answered questions based on class preferences, you can see which professors you're the best fit with.", (p) => <VideoSlide {...p} clip="demo-record.mp4" step="1" heading="Recording the class" focus={{ x: "50%", y: "97%", zoom: 1.6, seconds: 39 }} />),
-  slide("analyze", "Demo: analyzing", "Srinija", "[Student raises hand: But what if I really want to understand the class?] No worries, because you can! Using spatial mapping and verbal diarization, you can experience a comprehensive class lecture. [Student 2: But how does this work?] Same Page collects audio during class lectures and transcribes them. It also lets students upload class notes.", (p) => <VideoSlide {...p} clip="demo-analyze.mp4" step="2" heading="Analyzing the lecture" focus={{ x: "50%", y: "82%", zoom: 1.7, seconds: 15 }} />),
-  slide("rating", "Demo: the rating", "Srinija", "[End the recording.] And here's my class's rating.", (p) => <VideoSlide {...p} clip="demo-rating.mp4" step="3" heading="The professor's profile" focus={{ x: "50%", y: "60%", zoom: 1.35, seconds: 20 }} />),
+  slide("record", "Demo: recording", "Srinija", "Welcome to class. Start the recording. [Clicker starts the recording.] Today's lesson: how does Same Page work? Students, are you ready for registration? [Everyone: Yes!] Awesome. Open USC Web Registration and your Same Page extension. Once you've answered questions based on class preferences, you can see which professors you're the best fit with.", (p) => <VideoSlide {...p} clip="demo-record.mp4" step="1" heading="Recording the class" />),
+  slide("webreg", "Inside Web Registration", "Srinija", "Here's what students see: a fit badge under every section in Web Registration. Click one and the full match opens in the side panel.", WebRegSlide),
+  slide("analyze", "Demo: analyzing", "Srinija", "[Student raises hand: But what if I really want to understand the class?] No worries, because you can! Using spatial mapping and verbal diarization, you can experience a comprehensive class lecture. [Student 2: But how does this work?] Same Page collects audio during class lectures and transcribes them. It also lets students upload class notes.", (p) => <VideoSlide {...p} clip="demo-analyze.mp4" step="2" heading="Analyzing the lecture" />),
+  slide("rating", "Demo: the rating", "Srinija", "[End the recording.] And here's my class's rating.", (p) => <VideoSlide {...p} clip="demo-rating.mp4" step="3" heading="The professor's profile" />),
   slide("symbiosis", "The bird and the horse", "Alexis", "You may be wondering why our logo is a bird and a horse. It's based on symbiotic relationships in nature. Egrets and wild horses have a mutually beneficial relationship, and in a similar way, Same Page provides a mutually beneficial relationship for students and professors.", SymbiosisSlide),
   slide("closing", "Conclusion", "Everyone", "[Conclusion.]", ClosingSlide),
 ];
