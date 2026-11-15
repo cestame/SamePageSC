@@ -607,29 +607,42 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
 }
 .intro__cue svg { animation: cue-bob 1.4s var(--ease-out) infinite; }
 
-.intro-horse { position: absolute; z-index: 3; top: 48svh; left: 0; width: 76vw; pointer-events: none; will-change: transform; }
-.intro-horse img { width: 100%; height: auto; display: block; }
+/* The horse image is about 82.6 tiles wide. The bird is 13 tiles wide, so sizing it from the horse keeps the tiles equal. */
+.intro__sticky { --horse-width: 76vw; }
+.intro-horse { position: absolute; z-index: 3; top: 48svh; left: 0; width: var(--horse-width); pointer-events: none; will-change: transform; }
+/* The source image faces left; flip it so the horse faces the way it runs. */
+.intro-horse img { width: 100%; height: auto; display: block; transform: scaleX(-1); }
 .intro-horse--running img { animation: horse-gallop 460ms steps(2, jump-none) infinite; }
-.intro-bird { position: absolute; z-index: 4; top: 0; left: 0; width: 44px; pointer-events: none; will-change: transform; filter: drop-shadow(0 4px 0 rgb(3 0 39 / 0.12)); }
-.pixel-bird { width: 100%; height: auto; display: block; overflow: visible; shape-rendering: crispEdges; fill: var(--brand-gold); }
-.pixel-bird__wing { transform-box: fill-box; transform-origin: 30% 70%; animation: bird-flap 240ms steps(2, jump-none) infinite; }
-.intro-bird--landed .pixel-bird__wing { animation: none; transform: rotate(16deg); }
-.pixel-bird__beak { fill: var(--brand-cardinal); }
-.pixel-bird__eye, .pixel-bird__feet { fill: var(--brand-ink); }
+.intro-bird { position: absolute; z-index: 4; top: 0; left: 0; width: calc(var(--horse-width) * 13 / 82.6); pointer-events: none; will-change: transform; }
+/* In flight the bird heads left toward the horse; once landed it faces forward with the horse. */
+.pixel-bird { width: 100%; height: auto; display: block; overflow: visible; shape-rendering: crispEdges; fill: var(--brand-gold); transform: scaleX(-1); }
+.intro-bird--landed .pixel-bird { transform: none; }
+.pixel-bird__beak, .pixel-bird__feet { fill: var(--brand-cardinal); }
+.pixel-bird__wing-folded { fill: var(--brand-gold-deep); }
+.pixel-bird__wing--up { animation: wing-up 240ms step-end infinite; }
+.pixel-bird__wing--down { animation: wing-down 240ms step-end infinite; }
+.pixel-bird__wing-folded, .pixel-bird__feet { display: none; }
+.intro-bird--landed .pixel-bird__wing { display: none; }
+.intro-bird--landed .pixel-bird__wing-folded, .intro-bird--landed .pixel-bird__feet { display: inline; }
 
 @media (min-width: 680px) {
-  .intro-horse { top: 43svh; width: clamp(330px, 44vw, 690px); }
-  .intro-bird { width: clamp(42px, 5vw, 68px); }
+  .intro__sticky { --horse-width: clamp(330px, 44vw, 690px); }
+  .intro-horse { top: 43svh; }
   .intro__ground { bottom: 9svh; }
 }
 
+/* scaleX(-1) is repeated here because the animation replaces the image's resting transform. */
 @keyframes horse-gallop {
-  0%, 100% { transform: translateY(0) rotate(-0.4deg); }
-  50% { transform: translateY(-7px) rotate(0.5deg); }
+  0%, 100% { transform: scaleX(-1) translateY(0) rotate(-0.4deg); }
+  50% { transform: scaleX(-1) translateY(-7px) rotate(0.5deg); }
 }
-@keyframes bird-flap {
-  0% { transform: rotate(-24deg) translateY(-1px); }
-  100% { transform: rotate(30deg) translateY(1px); }
+@keyframes wing-up {
+  0% { opacity: 1; }
+  50% { opacity: 0; }
+}
+@keyframes wing-down {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
 }
 @keyframes cue-bob {
   0%, 100% { transform: translateY(0); }

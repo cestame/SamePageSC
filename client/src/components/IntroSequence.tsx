@@ -57,7 +57,7 @@ function introFrame(progress: number): Frame {
     horseX,
     horseRunning: horseProgress < 1,
     birdX: birdLanded ? horseX + 20 : 108 + flight * (horseX - 88),
-    birdY: birdLanded ? 48 : 20 + flight * 28 - Math.sin(flight * Math.PI) * 27,
+    birdY: birdLanded ? 50 : 20 + flight * 30 - Math.sin(flight * Math.PI) * 27,
     birdLanded,
     coverY: -smoothstep(clamp((progress - 0.62) / 0.33)) * 102,
     revealOpacity: revealEase,
@@ -65,16 +65,47 @@ function introFrame(progress: number): Frame {
   };
 }
 
+/*
+ * The bird is drawn on the same tile grid as the horse image: square tiles at 82% of the cell with a gap
+ * between them. Each map is 13 cells wide, facing right. "#" is a tile, anything else is empty.
+ */
+const BIRD_BODY = [
+  '.............',
+  '........###..',
+  '.......##.##.',
+  '#.....######.',
+  '##..#######..',
+  '.##########..',
+  '..########...',
+];
+const BIRD_BEAK = ['', '', '............#'];
+const BIRD_WING_UP = ['....##.......', '....###......', '.....##......', '.....#.......'];
+const BIRD_WING_DOWN = ['', '', '', '', '', '', '', '....###......', '.....##......'];
+const BIRD_WING_FOLDED = ['', '', '', '', '.....####....', '......###....'];
+const BIRD_FEET = ['', '', '', '', '', '', '', '.....#.#.....'];
+
+const TILE = 0.82;
+
+function Tiles({ map, className }: { map: string[]; className: string }) {
+  const tiles = map.flatMap((row, y) => [...row].map((cell, x) => (cell === '#' ? { x, y } : null)).filter((t) => t !== null));
+  return (
+    <g className={className}>
+      {tiles.map(({ x, y }) => (
+        <rect key={`${x}-${y}`} x={x + (1 - TILE) / 2} y={y + (1 - TILE) / 2} width={TILE} height={TILE} />
+      ))}
+    </g>
+  );
+}
+
 function PixelBird() {
   return (
-    <svg className="pixel-bird" viewBox="0 0 14 10" aria-hidden="true">
-      <g className="pixel-bird__wing">
-        <path d="M5 4V1h1v1h1v1h1v2H6V4z" />
-      </g>
-      <path d="M2 5V4h2V3h4v1h2v1h3v1h-3v2H8v1H5V8H3V7H1V6h1z" />
-      <path className="pixel-bird__beak" d="M1 5H0v1h2V5z" />
-      <rect className="pixel-bird__eye" x="4" y="4" width="1" height="1" />
-      <path className="pixel-bird__feet" d="M6 8h1v2H6zM8 8h1v2H8z" />
+    <svg className="pixel-bird" viewBox="0 0 13 9" aria-hidden="true">
+      <Tiles map={BIRD_BODY} className="pixel-bird__body" />
+      <Tiles map={BIRD_BEAK} className="pixel-bird__beak" />
+      <Tiles map={BIRD_WING_UP} className="pixel-bird__wing pixel-bird__wing--up" />
+      <Tiles map={BIRD_WING_DOWN} className="pixel-bird__wing pixel-bird__wing--down" />
+      <Tiles map={BIRD_WING_FOLDED} className="pixel-bird__wing-folded" />
+      <Tiles map={BIRD_FEET} className="pixel-bird__feet" />
     </svg>
   );
 }
