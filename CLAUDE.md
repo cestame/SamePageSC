@@ -6,9 +6,21 @@ A web app for the AI@USC hackathon. Current USC students contribute class notes 
 
 Submission is due Sunday, November 15 at 11:00 AM PT. A working, deployed app beats an unfinished ambitious one. Never leave the main branch broken.
 
+Read `NOTES.md` at the start of every session: it records what's built, what the team decided and what's next.
+
+## Decisions since the spec
+
+The team made these calls after `spec.md` was written. Where they differ from the spec, these win.
+
+- **Real accounts are in scope.** Email and password sign-up and log-in, with a "Try it without an account" guest option so judges can start instantly. Never ask for a USC login.
+- **The flow is sign up, then setup, then home.** Setup asks the major, the classes this semester, 6 general questions once, and the earliest and latest class times. Each class then asks only 2 questions (prior knowledge, weekly hours) on the home page.
+- **Home is a schedule planner.** It picks one section per class with the best total fit, inside the student's hours, with no overlaps. The planner is deterministic, like the scoring.
+- **USC data is read respectfully.** Majors come from the keyword filter on usc.edu/majors-minors, one request per search. Never page through it (robots.txt disallows `/page/`). catalogue.usc.edu turns away automated requests, so major requirements are copied by hand into `shared/requirements.json` from text the team pastes. Never scrape the catalogue or call classes.usc.edu's internal API.
+- **Never write a teaching profile for a real professor.** Sample professors are fictional. Real instructors may appear only with their name, section and meeting times, marked as having no notes yet, until real notes are contributed.
+
 ## Stack
 
-- Keep the stack the project already uses. Don't swap frameworks, databases or hosting without asking first.
+- The stack is Node 20 + Express (`server/`), React + TypeScript + Vite (`client/`), PostgreSQL on Replit (PGlite locally), Claude for profile extraction and match explanations, hosted on Replit. Keep it. Don't swap frameworks, databases or hosting without asking first.
 - Icons come from Phosphor Icons (`@phosphor-icons/react`), not lucide and not emojis.
 - `motion` for animation.
 - All sample professors, courses and profiles live in one seed data file. All product copy that repeats (the product name, taglines, field names and their descriptions) lives in one content file, so a rename is a one-line change.
@@ -18,8 +30,8 @@ Submission is due Sunday, November 15 at 11:00 AM PT. A working, deployed app be
 
 The app should feel like a tool a USC student made for other students: specific, calm and quick to use on a phone between classes. It should not feel like a generated landing page.
 
-- The first screen is the first action. No marketing hero, no "Welcome to", no feature grid explaining the product. A student lands and starts the intake or picks a course.
-- Mobile first. Design every screen at phone width, then widen it.
+- The first screen is the first action. No marketing hero, no "Welcome to", no feature grid explaining the product. A student lands on the sign-up form (with the guest option beside it) and starts.
+- Mobile first. Design every screen at phone width, then widen it. Widening is real work: on a laptop, use the space (two columns, a wider calendar) instead of a narrow phone column in the middle of the screen.
 - The teaching profile is the motif. Draw the seven profile fields as one consistent diagram and reuse it everywhere a professor appears: match results, profile pages, the contribute confirmation. A student should recognize a professor's shape at a glance. (If the team picks a different motif, replace this rule, but keep one motif.)
 - A neutral palette with one accent. The accent is USC cardinal, used for small marks, the diagram and motion. Gold is a second mark for rare emphasis only. Don't use USC's logos, seal or wordmark, and don't present this as an official USC site.
 - Every screen has real states: loading, empty, error and success. Design them, don't leave defaults.
