@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Day-one video, Same Page</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Atkinson+Hyperlegible+Next:wght@400..700&display=swap">
+<link rel="stylesheet" href="capture.css">
+</head>
+<body>
+<header class="topbar">
+  <img class="wordmark" src="../same-page-logo.png" alt="Same Page">
+  <h1>Day-one video</h1>
+  <nav><a href="index.html">Lecture audio</a><a href="day-one.html" aria-current="page">Day-one video</a></nav>
+  <span class="fine">Prototype. Everything runs on this laptop. Not an official USC tool.</span>
+</header>
+
+<main class="capture-layout">
+  <section class="card setup" aria-labelledby="setupTitle">
+    <h2 id="setupTitle">Before class</h2>
+    <label class="check"><input type="checkbox" class="consent"> The professor turned on day-one capture for this course.</label>
+    <label class="check"><input type="checkbox" class="consent"> The class was told at the start, and students could choose an opt-out area of the room.</label>
+    <label class="check"><input type="checkbox" class="consent"> I understand faces and people are blurred on this laptop before anything is saved.</label>
+    <button class="primary" id="findBtn" disabled>Find cameras</button>
+    <p class="muted" id="status">Any webcams or USB cameras plugged into this laptop can be used at once, up to four.</p>
+    <div id="cameraList"></div>
+    <div class="row-btns">
+      <button class="primary" id="startBtn" disabled>Start cameras</button>
+      <button class="soft" id="recBtn" disabled>Start recording</button>
+      <button class="soft" id="stillBtn" disabled>Save room stills</button>
+      <button class="soft" id="clearZones" disabled>Clear opt-out areas</button>
+    </div>
+    <p class="muted">Drag on any camera view to black out an opt-out area, such as the rows where students who declined are sitting.</p>
+  </section>
+
+  <section class="card" aria-labelledby="viewTitle" style="grid-column: span 2">
+    <h2 id="viewTitle">Protected camera views <span class="rec" id="recState" hidden>Recording</span></h2>
+    <div class="tiles" id="tiles"></div>
+    <p class="muted" id="viewsEmpty">Camera views appear here, already blurred.</p>
+    <h3>Classroom over time</h3>
+    <svg class="spark" id="spark" viewBox="0 0 300 60" preserveAspectRatio="none" role="img" aria-label="People in view and movement over time"></svg>
+    <div class="kv" style="margin-top:10px">
+      <span>People in view now (largest count from any one camera)</span><b id="mPeople">0</b>
+      <span>Most people seen at once</span><b id="mPeak">0</b>
+      <span>Movement in the room</span><b id="mMotion">none yet</b>
+      <span>Minutes captured</span><b id="mMinutes">0</b>
+    </div>
+    <div class="row-btns"><button class="soft" id="exportBtn" disabled>Download room summary</button></div>
+    <p class="muted">The recording, stills and summary contain only blurred images and counts. Raw camera frames are never stored, and if face and person detection stops working, the views blur completely until it recovers.</p>
+  </section>
+</main>
+
+<script type="module" src="video.js"></script>
+</body>
+</html>

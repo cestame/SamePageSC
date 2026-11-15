@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Class capture, Same Page</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Atkinson+Hyperlegible+Next:wght@400..700&display=swap">
+<link rel="stylesheet" href="capture.css">
+</head>
+<body>
+<header class="topbar">
+  <img class="wordmark" src="../same-page-logo.png" alt="Same Page">
+  <h1>Class capture</h1>
+  <nav><a href="index.html" aria-current="page">Lecture audio</a><a href="day-one.html">Day-one video</a></nav>
+  <span class="fine">Prototype. Everything runs on this laptop. Not an official USC tool.</span>
+</header>
+
+<main class="capture-layout">
+  <section class="card setup" aria-labelledby="setupTitle">
+    <h2 id="setupTitle">Before class</h2>
+    <label class="check"><input type="checkbox" id="consent"> The professor turned on capture for this course, and the class was told audio is being transcribed.</label>
+    <p class="muted">Audio never leaves this laptop. Whisper turns speech into text here, a voice model tells speakers apart, and each audio clip is deleted as soon as it is processed. Other students' words are never shown or saved, only that they spoke and for how long.</p>
+    <button class="primary" id="loadBtn" disabled>Load the speech models</button>
+    <div class="progress" id="progress" hidden><i></i></div>
+    <p class="muted" id="loadNote"></p>
+
+    <div id="enrollBox" hidden>
+      <h3>Teach it your voice</h3>
+      <p class="prompt">Read this out loud: "I'm checking in for class today, and I want Same Page to recognize my voice when I ask a question."</p>
+      <button class="soft" id="enrollYou">Record my voice (8 seconds)</button>
+      <button class="soft" id="enrollProf">Record the professor (optional, 8 seconds)</button>
+      <p class="muted" id="enrollNote">Without a professor sample, the voice that talks the most is treated as the professor.</p>
+      <div class="row-btns">
+        <button class="primary" id="startBtn" disabled>Start listening</button>
+        <button class="soft" id="stopBtn" disabled>Stop</button>
+      </div>
+      <p class="level" aria-hidden="true"><i id="levelBar"></i></p>
+    </div>
+  </section>
+
+  <section class="card transcript" aria-labelledby="liveTitle">
+    <h2 id="liveTitle">Live transcript</h2>
+    <ol id="lines" aria-live="polite"></ol>
+    <p class="muted" id="empty">Lines appear here as people speak.</p>
+  </section>
+
+  <aside class="card stats" aria-labelledby="statsTitle">
+    <h2 id="statsTitle">What this class looks like</h2>
+    <div class="kv">
+      <span>Professor talking</span><b id="sProf">0%</b>
+      <span>You talking</span><b id="sYou">0%</b>
+      <span>Other students talking</span><b id="sOther">0%</b>
+      <span>Times other students spoke</span><b id="sTurns">0</b>
+      <span>Questions from the professor</span><b id="sProfQ">0</b>
+      <span>Average wait after a question</span><b id="sWait">none yet</b>
+      <span>Your questions</span><b id="sYouQ">0</b>
+    </div>
+    <h3>Your questions</h3>
+    <ul id="yourQuestions" class="muted"><li>None yet.</li></ul>
+    <button class="soft" id="exportBtn" disabled>Download class summary</button>
+    <p class="muted">The summary holds the professor's transcript, your own questions and the numbers above. It has no audio and no other student's words.</p>
+  </aside>
+</main>
+
+<script type="module" src="audio.js"></script>
+</body>
+</html>
