@@ -50,7 +50,9 @@ function FakeReview() {
 function PaperBeat({ split }: { split: boolean }) {
   return (
     <motion.div key="paper" exit={{ opacity: 0, transition: { duration: 0.6 } }} className="stage-gutter absolute inset-0 flex flex-col justify-between">
-      <Heading lines={["Same room.", "Different pages."]} size="headline" />
+      <motion.div initial="enter" animate="present">
+        <Heading lines={["Same room.", "Different pages."]} size="headline" />
+      </motion.div>
       <div className="relative mx-auto h-[560px] w-[430px]">
         <PaperHalf side="left" split={split} />
         <PaperHalf side="right" split={split} />
@@ -131,7 +133,11 @@ function PeopleBeat() {
   );
 }
 
-/** Beat 1: the paper. Beat 2: it splits to reveal a review. Beat 3: two people drift apart and talk past each other. */
+/** Beat 1: the paper. Beat 2: two people drift apart and talk past each other. Beat 3: the paper splits to reveal the review behind it. */
 export function PaperSlide({ step }: { step: number }) {
-  return <AnimatePresence mode="wait">{step < 2 ? <PaperBeat key="paper" split={step === 1} /> : <PeopleBeat key="people" />}</AnimatePresence>;
+  return (
+    <AnimatePresence mode="wait">
+      {step === 1 ? <PeopleBeat key="people" /> : <PaperBeat key={step === 2 ? "review" : "paper"} split={step === 2} />}
+    </AnimatePresence>
+  );
 }
