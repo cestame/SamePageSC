@@ -33,7 +33,7 @@ Submission is due **Sunday, November 15, 2026 at 11:00 AM PT** (AI@USC, HackSC x
 - Database: Postgres on Replit via `DATABASE_URL`; PGlite in `./data/pglite` locally when it's unset.
 - AI: Claude via `@anthropic-ai/sdk`, model `claude-opus-5-5`, structured outputs, server-side fallback enabled, key only on the server.
 - `npm run build && npm start` serves on http://localhost:3000. `npm run check` = lint + type check + tests (12 tests, all passing).
-- Local server note: it has been started in the background by Claude Code before and was killed once when the machine ran low on memory. Start it again only when the person asks.
+- Local server note: it has been started in the background by Claude Code before and was killed once when the machine ran low on memory. Start it again only when the person asks. Stop it with Ctrl+C, never a force-kill: on 2026-11-14 a force-kill corrupted the local PGlite data, which was moved to `data/pglite-damaged-2026-11-14` and replaced with a fresh database (samples re-seed on start). AI is off locally until `ANTHROPIC_API_KEY` is set.
 - A Figma MCP server was added to Claude Code for this project (`claude mcp add --transport http figma https://mcp.figma.com/mcp`, local scope for `C:/Users/alexi/aiusc`). The person must run `/mcp` and log in to Figma. They are making a design in Figma Make; if the MCP server can't read a Make file, ask for a regular Figma Design file or screenshots.
 
 ## Replit deployment steps
