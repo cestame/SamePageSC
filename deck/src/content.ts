@@ -155,10 +155,10 @@ export const speakers = {
 
 export const title = {
   wordmarkAlt: "Same Page SC",
-  pitch: ["Find the section", "that fits you."],
+  pitch: ["Before day one,", "your professor is a number."],
   byline: "Lia Choi, Alexis Limary, Ame Wang, and Srinija Chukkapalli",
   script: [
-    "Hi, we're Same Page SC. We help Trojans pick the section that fits how they learn, right inside Web Registration.",
+    "[Hold up a sheet of paper.] Yesterday, Dean Garrett held a sheet of paper like this and called himself the least hip person in the room. He was joking, but the distance between students and professors is real, and it starts before day one. The first time you meet your professor, they're a number.",
   ],
 };
 
@@ -171,7 +171,7 @@ export const survey = {
     { count: 13, percent: 45, line: "found ratings only somewhat accurate or worse" },
   ],
   script: [
-    "We surveyed 29 USC students this weekend. 19 use Rate My Professors to pick classes, and 22 say the rating matters. But 13 said their class matched the ratings only somewhat, or worse.",
+    "We surveyed 29 USC students across more than 20 majors. 19 use Rate My Professors to choose classes, and 22 say the rating matters. Yet 13 said their class matched the rating only somewhat, or worse.",
   ],
 };
 
@@ -189,15 +189,15 @@ export const ratings = {
     scaleNote: "Bars illustrative. The gap is to scale on a 1 to 5 rating.",
   },
   script: [
-    "That's because stars track ease, not learning. Easier classes get higher ratings, ratings rise with the grade students expect, and studies find no significant link between ratings and learning.",
-    "Ratings are also unfair. In one study, Asian-named math instructors scored 0.6 to 0.8 points lower on clarity for the same teaching. USC itself dropped student evaluations from tenure decisions in 2018.",
+    "That number comes from anonymous reviews, and it mostly measures ease. Studies find no significant link between ratings and learning.",
+    "It also measures things that aren't teaching. Asian-named instructors scored 0.6 to 0.8 points lower on clarity, often with comments about accents, and ratings run lower for women and for Black faculty. All of it collapses into one number.",
   ],
 };
 
 export const shapes = {
   heading: ["One profile. Seven teaching traits."],
   script: [
-    "So instead of a star, Same Page SC gives every section a shape. Students share typed notes and syllabi, and Claude turns them into seven teaching traits, from pace to workload. Here are three sections of CSCI 103. Reyes walks you through every example, Natarajan moves fast and grades on exams, and Okafor runs discussions. All three are fictional samples.",
+    "Behind every badge is a profile instead of a star: seven teaching traits, from pace to workload, built from notes, syllabi and consented recordings. Every trait shows its evidence, and comments about personality or accent are dropped.",
   ],
 };
 
@@ -211,27 +211,28 @@ export const fit = {
   downside: "Fewer discussions. Tighter deadlines.",
   legend: { student: "You", section: "Dr. Reyes", gap: "Where you differ" },
   script: [
-    "You answer eight quick questions, and your answers become the dashed line. Our scoring formula turns the gap into a fit score. For this new coder, Reyes is a 93 percent fit, and Same Page SC always names one honest trade-off: fewer discussions and tighter deadlines.",
+    "You answer a few quick questions, and a fixed formula compares you with each section. For this new coder, Dr. Reyes is a 93 percent fit, and Same Page SC always names one honest trade-off: fewer discussions and tighter deadlines.",
   ],
 };
 
 export const webreg = {
-  heading: ["See fit inside WebReg."],
+  heading: ["All inside WebReg."],
   page: "Web Registration",
   badge: (score: number, name: string) => `${score}% fit with ${name}`,
   panelTitle: "Chrome side panel",
   demoNote: "Try it: samepage.replit.app/demo/webreg",
   script: [
-    "You don't have to change how you register. Our Chrome extension puts a fit badge under every section in Web Registration: 93 for Reyes, 65 for Natarajan and 51 for Okafor. Click one and the full match opens in the side panel. It never asks for your USC login.",
+    "And you never leave Web Registration. Our Chrome extension puts a fit badge and a Try this class button under every section, and it never asks for your USC login.",
   ],
 };
 
 export const tryClass = {
-  heading: ["Preview the room before class."],
+  heading: ["Feel the room before you register."],
   moments: ["How class opens", "A question to the class", "A student's question", "A worked example", "How class ends"],
   status: "Fictional professors, synthetic voices",
   script: [
-    "Some things a profile can't capture, so we built Try this class: a 3D model of GFS 106 with all 144 seats. Pick a seat, jump to a student's question or a worked example, and hear the lesson out loud. It's live on our site right now, with fictional professors.",
+    "So students guess at a whole semester from a number and a wall of reviews. But people understand a place by being in it, and what helps most is the feel of the room.",
+    "[Live demo.] While Lia spoke, I recorded her, with her consent, and you heard it announced. Same Page SC treated her as the professor and kept your voices as timing only. This is the room you're in, rebuilt in 3D: pick a seat, hear how class opens, and watch how a question gets handled.",
   ],
 };
 
@@ -256,13 +257,13 @@ export const ai = {
     ],
   },
   script: [
-    "Under the hood, Claude reads the notes and builds each profile with evidence. A fixed formula ranks the sections, so the AI never changes the order, and Claude writes the explanation and the downside. Comments about personality or looks get dropped, and the API key never leaves our server. Our knowledge-tracing prototype already predicts student answers with an AUC of 0.74.",
+    "Under the hood, pyannoteAI's Precision-3 separates the professor from the room, Claude Opus 5.5 builds the profile, and a fixed formula ranks, so the AI never changes the order. Our knowledge-tracing prototype predicts answers with an AUC of 0.74.",
   ],
 };
 
 export const fairness = {
   heading: ["Trust, built into the rules."],
-  rules: ["Typed notes, no recordings", "Names removed", "Describe the class", "No learning-style labels", "Professors can respond"],
+  rules: ["Recordings only with consent", "Only the professor is transcribed", "Names removed", "Describe the class", "Professors can respond"],
   script: [
     "Fairness is built into the rules. We only take typed notes and syllabi, never recordings. Names come out before anything is saved. Comments about a professor's personality, looks or accent get dropped, so a profile can only describe how the class runs. We don't sort students into learning styles, and professors can see how students describe their class and respond. It's a mirror of the teaching, not a ranking of the teacher.",
   ],
@@ -277,7 +278,7 @@ export const rollout = {
   ],
   needsNothing: "No USC login. No IT integration.",
   script: [
-    "Student Government can pilot this next semester. It's live today, and it needs no USC login and no IT integration. Later, professors can opt in to share more, but only after legal and IRB review.",
+    "It's live today with no USC login, and Student Government can pilot it this spring, with recording only after legal and IRB review.",
   ],
 };
 
@@ -285,7 +286,7 @@ export const closing = {
   heading: ["Try Same Page SC."],
   cta: "Scan to try it",
   script: [
-    "Scan the code to try it. Your next chapter begins with the right class. Thank you.",
+    "The first time you meet your professor shouldn't be a number. Scan the code, and let's get on the same page. Thank you.",
   ],
 };
 
