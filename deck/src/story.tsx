@@ -10,30 +10,10 @@ import { SiteQrCode } from "./slides/plan";
 import { TitleSlide } from "./slides/problem";
 import type { DeckConfig, SamePageSlide } from "./slides";
 import { Heading, Wordmark } from "./ui";
+import { PaperSlide } from "./PaperScene";
 import "./styles.css";
 
 /** The story pitch: Dean Garrett's paper joke, the star-rating problem, Srinija's class demo on video, and the egret and horse. */
-
-function PaperSlide() {
-  return (
-    <StepView className="grid grid-cols-[1fr_auto] items-center gap-gap">
-      <div className="flex flex-col gap-10">
-        <Heading lines={["Same room.", "Different pages."]} size="headline" />
-        <motion.p variants={fadeReveal(0.9)} className="text-lede text-ink-soft">“The least hip person in the room.”</motion.p>
-      </div>
-      <motion.div
-        aria-hidden
-        variants={{ enter: { rotate: -18, y: 80, opacity: 0 }, present: { rotate: -5, y: 0, opacity: 1, transition: { duration: 1, delay: 0.4 } } }}
-        className="flex h-[560px] w-[430px] flex-col gap-5 rounded-lg bg-sheet p-12 shadow-float"
-      >
-        <span className="block h-6 w-3/4 rounded bg-sheet-ink/80" />
-        {[90, 70, 85, 60, 80, 65, 75, 55].map((w, i) => (
-          <span key={i} className="block h-3 rounded bg-sheet-rule" style={{ width: `${w}%` }} />
-        ))}
-      </motion.div>
-    </StepView>
-  );
-}
 
 function Stars() {
   return (
@@ -80,20 +60,33 @@ function QuestionSlide() {
   );
 }
 
-function VideoSlide({ clip, heading, step }: { clip: string; heading: string; step: string }) {
+type Focus = { x: string; y: string; zoom: number; seconds: number };
+
+/**
+ * The screen recording fills the whole slide, as if the presenter switched to the browser. It opens like an app
+ * coming forward, then slowly zooms toward where the action is, so the room's eye follows the clicks.
+ */
+function VideoSlide({ clip, heading, step, focus }: { clip: string; heading: string; step: string; focus: Focus }) {
   return (
-    <StepView className="flex flex-col gap-8">
-      <div className="flex items-center gap-6">
-        <motion.span variants={fadeReveal(0.1)} className="rounded-chip bg-accent px-6 py-2 text-caption font-bold text-on-control">{step}</motion.span>
-        <Heading lines={[heading]} />
-      </div>
+    <div className="absolute inset-0 overflow-hidden bg-paper">
       <motion.div
-        variants={{ enter: { opacity: 0, scale: 0.94, y: 30 }, present: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.8, delay: 0.3 } } }}
-        className="min-h-0 flex-1 overflow-hidden rounded-card bg-paper-raised shadow-float"
+        className="size-full"
+        style={{ transformOrigin: `${focus.x} ${focus.y}` }}
+        initial={{ scale: 0.9, opacity: 0, borderRadius: 40 }}
+        animate={{ scale: [0.9, 1, focus.zoom], opacity: 1, borderRadius: 0 }}
+        transition={{ scale: { duration: focus.seconds, times: [0, 0.04, 1], ease: "easeInOut" }, opacity: { duration: 0.4 }, borderRadius: { duration: 0.6 } }}
       >
-        <video src={asset(`/${clip}`)} autoPlay muted playsInline className="size-full object-contain" />
+        <video src={asset(`/${clip}`)} autoPlay muted playsInline className="size-full object-cover" />
       </motion.div>
-    </StepView>
+      <motion.p
+        className="absolute bottom-10 left-10 flex items-center gap-4 rounded-chip bg-paper/90 py-3 pr-8 pl-3 text-point font-bold shadow-float"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0, transition: { delay: 0.8 } }}
+      >
+        <span className="flex size-12 items-center justify-center rounded-full bg-accent text-caption text-on-control">{step}</span>
+        {heading}
+      </motion.p>
+    </div>
   );
 }
 
@@ -132,12 +125,24 @@ const slide = (id: string, name: string, speaker: string, note: string, Content:
 
 const slides: SamePageSlide[] = [
   slide("title", "Same Page SC", "Everyone", "Hi, I'm Lia, Alexis, Srinija... and I'm Ame.", TitleSlide),
-  slide("paper", "Same room, different pages", "Ame", "Recall this time yesterday... Dean Garrett stood here with this sheet of paper, joking that he was “the least hip person in the room.” We all laughed. But his joke got us thinking: professors and students can be in the same room without being on the same page. A professor walks in hoping to challenge students. A student walks in having read “impossible class.” The professor invites discussion. The student remembers a review calling them “unapproachable” and hesitates to raise their hand. Before either has a chance to understand the other, someone else's experience has already shaped their relationship.", PaperSlide),
+  {
+    id: "paper",
+    name: "Same room, different pages",
+    steps: 3,
+    sourcesByStep: [[]],
+    speaker: "Ame",
+    notes: [
+      "Recall this time yesterday, when we were all buzzing with excitement for the weekend ahead. Our very first speaker, Dean Garrett, stood here with this sheet of paper, joking that he was \u201cthe least hip person in the room.\u201d We all laughed. But his joke got us thinking: professors and students can be in the same room without being on the same page.",
+      "A professor walks in hoping to challenge students. A student walks in having read \u201cimpossible class.\u201d The professor invites discussion. The student remembers a review calling them \u201cunapproachable\u201d and hesitates to raise their hand.",
+      "Before either has a chance to understand the other, someone else's experience has already shaped their relationship.",
+    ],
+    Content: PaperSlide,
+  },
   slide("stars", "Five stars", "Lia", "The first time we ever meet our professors is as a number on a five star scale, the same way restaurants or movies are rated. But let me ask you something: have you ever been moved by a movie from just reading the reviews? In our survey, 82% of respondents said Rate My Professors was their main source for choosing between classes. Students are left guessing. Professors are left represented by reviews that may barely reflect how they teach.", StarsSlide),
   slide("question", "How do we get on the same page?", "Lia", "So, how do we get on the Same Page?", QuestionSlide),
-  slide("record", "Demo: recording", "Srinija", "Welcome to class. Start the recording. [Clicker starts the recording.] Today's lesson: how does Same Page work? Students, are you ready for registration? [Everyone: Yes!] Awesome. Open USC Web Registration and your Same Page extension. Once you've answered questions based on class preferences, you can see which professors you're the best fit with.", (p) => <VideoSlide {...p} clip="demo-record.mp4" step="1" heading="Recording the class" />),
-  slide("analyze", "Demo: analyzing", "Srinija", "[Student raises hand: But what if I really want to understand the class?] No worries, because you can! Using spatial mapping and verbal diarization, you can experience a comprehensive class lecture. [Student 2: But how does this work?] Same Page collects audio during class lectures and transcribes them. It also lets students upload class notes.", (p) => <VideoSlide {...p} clip="demo-analyze.mp4" step="2" heading="Analyzing the lecture" />),
-  slide("rating", "Demo: the rating", "Srinija", "[End the recording.] And here's my class's rating.", (p) => <VideoSlide {...p} clip="demo-rating.mp4" step="3" heading="The professor's profile" />),
+  slide("record", "Demo: recording", "Srinija", "Welcome to class. Start the recording. [Clicker starts the recording.] Today's lesson: how does Same Page work? Students, are you ready for registration? [Everyone: Yes!] Awesome. Open USC Web Registration and your Same Page extension. Once you've answered questions based on class preferences, you can see which professors you're the best fit with.", (p) => <VideoSlide {...p} clip="demo-record.mp4" step="1" heading="Recording the class" focus={{ x: "50%", y: "97%", zoom: 1.6, seconds: 39 }} />),
+  slide("analyze", "Demo: analyzing", "Srinija", "[Student raises hand: But what if I really want to understand the class?] No worries, because you can! Using spatial mapping and verbal diarization, you can experience a comprehensive class lecture. [Student 2: But how does this work?] Same Page collects audio during class lectures and transcribes them. It also lets students upload class notes.", (p) => <VideoSlide {...p} clip="demo-analyze.mp4" step="2" heading="Analyzing the lecture" focus={{ x: "50%", y: "82%", zoom: 1.7, seconds: 15 }} />),
+  slide("rating", "Demo: the rating", "Srinija", "[End the recording.] And here's my class's rating.", (p) => <VideoSlide {...p} clip="demo-rating.mp4" step="3" heading="The professor's profile" focus={{ x: "50%", y: "60%", zoom: 1.35, seconds: 20 }} />),
   slide("symbiosis", "The bird and the horse", "Alexis", "You may be wondering why our logo is a bird and a horse. It's based on symbiotic relationships in nature. Egrets and wild horses have a mutually beneficial relationship, and in a similar way, Same Page provides a mutually beneficial relationship for students and professors.", SymbiosisSlide),
   slide("closing", "Conclusion", "Everyone", "[Conclusion.]", ClosingSlide),
 ];
