@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Armchair, ArrowDown, ArrowRight, ChalkboardTeacher, EyeSlash, FileText, PuzzlePiece, WarningCircle } from '@phosphor-icons/react';
+import { Armchair, ArrowDown, ArrowRight, CaretDown, ChalkboardTeacher, EyeSlash, FileText, NotePencil, PuzzlePiece, WarningCircle } from '@phosphor-icons/react';
 import { PRODUCT_NAME } from '../../../shared/content.js';
 import { Button, FitScore } from '../components/ui';
 import { ProfileLine } from '../components/ProfileLine';
@@ -128,33 +128,49 @@ function Hero() {
 
 const STATS = [
   { value: 66, text: 'of students we surveyed use Rate My Professors to choose a class' },
-  { value: 76, text: 'say a professor\'s rating matters when they pick, scoring it 4 or 5 out of 5' },
-  { value: 45, text: 'said their class matched the ratings only somewhat or worse, 3 or lower out of 5', punchline: true },
+  { value: 76, text: 'say a professor\'s rating matters when they pick' },
+  { value: 45, text: 'found their class matched the ratings only somewhat, or worse', punchline: true },
+];
+
+/** Two fictional sample sections of the same course, drawn as profiles so the difference is visible at a glance. */
+const SAMPLE_SECTIONS = [
+  { name: 'Dr. Maya Reyes', values: { pace: 2, format: 2, structure: 5, assessment: 3, participation: 2, guidance: 1, workload: 3 } },
+  { name: 'Dr. Priya Natarajan', values: { pace: 5, format: 1, structure: 4, assessment: 1, participation: 1, guidance: 3, workload: 3 } },
 ];
 
 function Problem() {
   return (
-    <div className="landing-problem">
-      <div className="stack-3">
+    <div className="stack-5">
+      <div className="stack-2">
         <h2 id="problem-title" className="text-display">Two sections of the same course can feel like two different classes.</h2>
-        <p className="text-body band__muted landing-measure">
-          Rate My Professors tells you whether people liked someone. It doesn't tell you how the class runs: how fast it moves,
-          how tightly it's organized, or how you get graded.
-        </p>
+        <p className="text-body band__muted landing-measure">A star rating says whether people liked someone. It can't show you how the class runs.</p>
       </div>
-      <div className="stack-4">
-        <dl className="stats">
-          {STATS.map((s) => (
-            <div key={s.value} className={s.punchline ? 'stat stat--punchline' : 'stat'}>
-              <dt className="stat__value">{s.value}<span className="stat__unit">%</span></dt>
-              <dd className="stat__text">{s.text}</dd>
-            </div>
+      <div className="landing-problem">
+        <ul className="section-shapes plain-list">
+          {SAMPLE_SECTIONS.map((s) => (
+            <li key={s.name} className="card section-shape">
+              <div>
+                <p className="text-heading">CSCI 103 with {s.name}</p>
+                <p className="text-small text-muted">Sample professor, fictional</p>
+              </div>
+              <ProfileLine values={s.values} label={`${s.name}, a fictional sample professor`} />
+            </li>
           ))}
-        </dl>
-        <p className="text-small band__muted">
-          From our survey of 29 USC students, freshmen through grad students in more than 20 majors, November 14 and 15, 2026.
-          Accuracy was rated from 1 to 5. The average was 3.4.
-        </p>
+        </ul>
+        <div className="stack-3">
+          <dl className="stat-bars">
+            {STATS.map((s) => (
+              <div key={s.value} className={s.punchline ? 'stat-bar stat-bar--punchline' : 'stat-bar'}>
+                <dt className="stat-bar__value">{s.value}<span className="stat__unit">%</span></dt>
+                <dd className="stat-bar__body">
+                  <span className="stat-bar__track" aria-hidden="true"><span className="stat-bar__fill" style={{ width: `${s.value}%` }} /></span>
+                  <span className="stat-bar__text">{s.text}</span>
+                </dd>
+              </div>
+            ))}
+          </dl>
+          <p className="text-small band__muted">Survey of 29 USC students, November 14 and 15, 2026.</p>
+        </div>
       </div>
     </div>
   );
@@ -174,10 +190,7 @@ function Quotes() {
     <div className="stack-5">
       <div className="stack-3">
         <h2 id="quotes-title" className="text-display">No professor is right for everyone.</h2>
-        <p className="text-body band__muted landing-measure">
-          We asked students to describe a teaching style that helped or hurt them. Their answers pull in different directions,
-          so one star rating can't tell you which class is right for you.
-        </p>
+        <p className="text-body band__muted landing-measure">We asked students which teaching styles help or hurt them. Their answers pull in opposite directions.</p>
       </div>
       <ul className="quotes plain-list">
         {QUOTES.map((q) => (
@@ -192,11 +205,58 @@ function Quotes() {
   );
 }
 
+/** Fit scores the real scoring function gives the sample new-coder student for three CSCI 103 sample sections. */
+const SAMPLE_FITS = [
+  { name: 'Reyes', score: 93 },
+  { name: 'Natarajan', score: 65 },
+  { name: 'Okafor', score: 51 },
+];
+
+function QuizPicture() {
+  return (
+    <div className="how-picture how-picture--quiz" aria-hidden="true">
+      <span className="how-chip how-chip--on">Slow and thorough</span>
+      <span className="how-chip">Fast-moving</span>
+    </div>
+  );
+}
+
+function RankPicture() {
+  return (
+    <ol className="how-picture how-picture--rank plain-list" aria-hidden="true">
+      {SAMPLE_FITS.map((s) => (
+        <li key={s.name}>
+          <span className="how-rank__name">{s.name}</span>
+          <span className="how-rank__bar" style={{ width: `${s.score}%` }} />
+          <b>{s.score}%</b>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function DownsidePicture() {
+  return (
+    <div className="how-picture" aria-hidden="true">
+      <span className="how-chip how-chip--warn"><WarningCircle size={18} aria-hidden />Stricter deadlines than you asked for</span>
+    </div>
+  );
+}
+
+function NotesPicture() {
+  return (
+    <div className="how-picture how-picture--notes" aria-hidden="true">
+      <NotePencil size={34} aria-hidden />
+      <span className="how-note"><i /><i /><i /></span>
+    </div>
+  );
+}
+
 const STEPS = [
-  { title: 'Tell us how you learn.', text: 'Eight quick questions about pace, structure and how you like to be graded. There\'s no "visual learner" quiz, because the research doesn\'t back it.' },
-  { title: 'See every section ranked.', text: 'Each section gets a fit score built from notes that students took in that exact class.' },
-  { title: 'Know why, and what to watch for.', text: 'Every match explains the fit in plain words and names one honest downside.' },
-  { title: 'Pass it on.', text: 'After the semester, add your notes so the next Trojan picks well too.' },
+  { title: 'Tell us how you learn.', text: 'Eight quick questions. No learning-style quiz.', Picture: QuizPicture },
+  { title: 'See every section ranked.', text: 'Fit scores from notes on that exact class.', Picture: RankPicture },
+  { title: 'Know the catch.', text: 'Every match names one honest downside.', Picture: DownsidePicture },
+  { title: 'Pass it on.', text: 'Add your notes after the semester.', Picture: NotesPicture },
 ];
 
 function HowItWorks() {
@@ -205,11 +265,14 @@ function HowItWorks() {
       <h2 id="how-title" className="text-display">How it works</h2>
       <ol className="steps-list plain-list">
         {STEPS.map((s, i) => (
-          <li key={s.title} className="step">
-            <span className="step__number" aria-hidden="true">{i + 1}</span>
-            <div className="stack-1">
-              <h3 className="text-heading">{s.title}</h3>
-              <p className="text-small band__muted">{s.text}</p>
+          <li key={s.title} className="how-step">
+            <s.Picture />
+            <div className="step">
+              <span className="step__number" aria-hidden="true">{i + 1}</span>
+              <div className="stack-1">
+                <h3 className="text-heading">{s.title}</h3>
+                <p className="text-small band__muted">{s.text}</p>
+              </div>
             </div>
           </li>
         ))}
@@ -273,10 +336,7 @@ function TryThisClass() {
     <div className="landing-try">
       <div className="stack-4">
         <h2 id="try-class-title" className="text-display">Sit in on a class before you register.</h2>
-        <p className="text-body band__muted landing-measure">
-          Pick any seat in a 3D lecture hall modeled on GFS 106 and watch a short sample lesson. You can switch between two
-          teaching styles, jump to moments like a student's question or a worked example, and hear the professor out loud.
-        </p>
+        <p className="text-body band__muted landing-measure">Pick any seat in a 3D model of GFS 106 and hear a sample lesson out loud.</p>
         <div className="landing-hero__actions">
           <Button className="button--large" href={TRY_CLASS_URL} icon={<Armchair size={22} aria-hidden />}>Sit in on a sample class</Button>
           <Button variant="quiet" href={TRY_REYES_URL} iconAfter={<ArrowRight size={19} aria-hidden />}>Try it as Dr. Reyes's CSCI 103 section</Button>
@@ -310,15 +370,15 @@ function ExtensionSection() {
     <div className="landing-extension">
       <div className="stack-4">
         <h2 id="extension-title" className="text-display">Same Page works where you register.</h2>
-        <p className="text-body band__muted landing-measure">
-          The Chrome extension reads the class list you already have open in USC Web Registration and puts a fit badge under
-          each section. Tap one to see the match and its downside in Chrome's side panel.
-        </p>
-        <ol className="install plain-list">
-          {INSTALL_STEPS.map((s, i) => (
-            <li key={s} className="install__step"><span className="step__number" aria-hidden="true">{i + 1}</span><span className="text-small">{s}</span></li>
-          ))}
-        </ol>
+        <p className="text-body band__muted landing-measure">A fit badge appears under every section in Web Registration. Tap it to see the full match.</p>
+        <details className="disclosure install-disclosure">
+          <summary className="disclosure__summary">How to install, in 4 steps<CaretDown className="disclosure__caret" size={18} aria-hidden /></summary>
+          <ol className="install plain-list disclosure__body">
+            {INSTALL_STEPS.map((s, i) => (
+              <li key={s} className="install__step"><span className="step__number" aria-hidden="true">{i + 1}</span><span className="text-small">{s}</span></li>
+            ))}
+          </ol>
+        </details>
         <div className="landing-hero__actions">
           <Button className="button--large" href={asset('same-page-extension.zip')} icon={<ArrowDown size={22} aria-hidden />}>Download the extension</Button>
           <Button variant="quiet" href="/demo/webreg" iconAfter={<ArrowRight size={19} aria-hidden />}>Try it on the demo class list</Button>
@@ -353,20 +413,20 @@ function BothSides() {
         <div className="stack-2">
           <span className="sides__mascot sides__mascot--bird" aria-hidden="true"><PixelBird seated /></span>
           <h3 className="text-title">For students</h3>
-          <p className="text-body band__muted">Pick sections that suit how you learn, with reasons you can check against real notes instead of star ratings.</p>
+          <p className="text-body band__muted">Pick sections that suit how you learn, with reasons you can check.</p>
           <div><Button variant="quiet" href="#/home" iconAfter={<ArrowRight size={18} aria-hidden />}>Find my best sections</Button></div>
         </div>
         <div className="stack-2">
           <span className="sides__mascot sides__mascot--horse" aria-hidden="true"><PixelHorse /></span>
           <h3 className="text-title">For professors</h3>
-          <p className="text-body band__muted">See how students describe your class, add your own response, and reach the students your teaching style suits best.</p>
+          <p className="text-body band__muted">See how students describe your class and add your own response.</p>
           <div><Button variant="quiet" href="#/contribute" iconAfter={<ArrowRight size={18} aria-hidden />}>Add notes from a class</Button></div>
         </div>
       </div>
       <ul className="privacy-points plain-list">
-        <li className="privacy-list__item"><FileText className="privacy-list__icon" size={22} aria-hidden /><span className="text-small"><b>Text notes only.</b> We never record classes. Students share typed notes and syllabi.</span></li>
-        <li className="privacy-list__item"><EyeSlash className="privacy-list__icon" size={22} aria-hidden /><span className="text-small"><b>Names come out first.</b> Student names and personal details are removed before anything is saved.</span></li>
-        <li className="privacy-list__item"><ChalkboardTeacher className="privacy-list__icon" size={22} aria-hidden /><span className="text-small"><b>About the class, not the person.</b> Profiles describe how a class runs. Comments about a professor's personality or looks are dropped.</span></li>
+        <li className="privacy-list__item"><FileText className="privacy-list__icon" size={22} aria-hidden /><span className="text-small"><b>Text notes only.</b> We never record classes.</span></li>
+        <li className="privacy-list__item"><EyeSlash className="privacy-list__icon" size={22} aria-hidden /><span className="text-small"><b>Names come out first.</b> Nothing personal is saved.</span></li>
+        <li className="privacy-list__item"><ChalkboardTeacher className="privacy-list__icon" size={22} aria-hidden /><span className="text-small"><b>About the class, not the person.</b> Comments on personality or looks are dropped.</span></li>
       </ul>
     </div>
   );

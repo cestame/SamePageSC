@@ -102,6 +102,12 @@ Submission is due **Sunday, November 15, 2026 at 11:00 AM PT** (AI@USC, HackSC x
 - The hall page got phone styles (wrapping top bar, taller room) and a favicon.
 - `client/public/same-page-extension.zip` was rebuilt with the button, leaving `panel/try-this-class` out of the zip because the button opens the hall from the server.
 
+## Landing page with less text (2026-11-15)
+
+- The problem band now shows two fictional CSCI 103 sections (Reyes and Natarajan) as profile cards, with the survey figures as bars and a one-line source.
+- How it works has a small picture per step (quiz choices, the real scorer's 93, 65 and 51 for the sample student, a downside pill, a note) and one short line each.
+- The extension band keeps one sentence, with the install steps in a "How to install, in 4 steps" disclosure. Quotes, Try this class and both-sides copy were shortened.
+
 ## Open audit items (current UI vs CLAUDE.md)
 
 Fix these during the redesign:
