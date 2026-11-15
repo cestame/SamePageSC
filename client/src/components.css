@@ -856,3 +856,7 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
   .pixel-bird__wing--down { display: none; }
   .guide-node__bird { animation: none; }
 }
+
+/* Matches opened from a webReg badge scroll to the section that was clicked. */
+.card[id^="section-"] { scroll-margin-top: calc(var(--topbar-height) + var(--space-4)); }
+.quick-questions { max-width: var(--content-width); }

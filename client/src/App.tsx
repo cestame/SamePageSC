@@ -49,7 +49,7 @@ function Screen({ parts, params }: { parts: string[]; params: URLSearchParams })
     if (first === 'setup' || !setupComplete(profile)) return <Setup requestedStep={params.get('step')} />;
     return <Home />;
   }
-  if (first === 'matches') return <Matches courseId={params.get('course')} />;
+  if (first === 'matches') return <Matches courseId={params.get('course')} focusSection={Number(params.get('section')) || null} />;
   if (first === 'professor' && second) return <ProfessorPage id={Number(second)} />;
   if (first === 'contribute') return <Contribute />;
   if (first === 'privacy') return <Privacy />;

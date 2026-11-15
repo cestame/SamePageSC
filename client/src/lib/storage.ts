@@ -132,3 +132,12 @@ export function answersFor(p: StudentProfile, courseId: string): Answers | null 
   if (!courseReady(p, courseId)) return null;
   return { ...(p.general as GeneralAnswers), ...(p.perCourse[courseId] as CourseAnswers) };
 }
+
+/**
+ * Students arriving from a webReg badge go straight to a class's matches. If they have no profile yet,
+ * start a guest one so they can answer the 8 questions right there instead of going through setup.
+ */
+export function ensureGuestProfile() {
+  if (!loadProfile()) saveProfile(newProfile(''));
+  return true;
+}

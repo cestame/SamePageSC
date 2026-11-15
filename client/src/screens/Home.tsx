@@ -24,7 +24,7 @@ export function Home() {
   return (
     <>
       <div className="stack-4">
-        <h1 className="text-display">{profile.name}'s schedule</h1>
+        <h1 className="text-display">{profile.name ? `${profile.name}'s schedule` : 'Your schedule'}</h1>
         <ProfileSummary profile={profile} />
       </div>
       {courses.status === 'loading' && <LoadingState label="Loading your classes" lines={4} />}

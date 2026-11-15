@@ -97,21 +97,23 @@
   function describe(result, code) {
     const who = result.isSample ? `${result.name} (sample professor, fictional)` : result.name;
     const course = encodeURIComponent(result.courseId ?? '');
+    // Every section with notes opens its class's matches with this section selected; missing answers are asked there.
+    const matches = `#/matches?course=${course}&section=${encodeURIComponent(result.professorId ?? '')}`;
     const lookup = {
       scored: {
         text: [['score', `${result.score}%`], ['muted', `teaching fit with ${who}, based on pace, structure, grading and 4 more`]],
         label: `${result.score}% teaching fit with ${who}, based on pace, structure, grading and four more. Open the match in Same Page.`,
-        route: `#/matches?course=${course}`,
+        route: matches,
       },
       'needs-answers': {
         text: [['muted', 'Answer 2 questions for your fit']],
         label: `Same Page has notes on ${who} for ${code}. Answer 2 questions to see your fit.`,
-        route: '#/home',
+        route: matches,
       },
       'needs-setup': {
-        text: [['muted', 'Set up Same Page for your fit']],
-        label: `Same Page has notes on ${who} for ${code}. Finish setup to see your fit.`,
-        route: '#/setup',
+        text: [['muted', 'Answer 8 questions for your fit']],
+        label: `Same Page has notes on ${who} for ${code}. Answer 8 quick questions to see your fit.`,
+        route: matches,
       },
       'no-notes': {
         text: [['muted', 'No notes yet']],

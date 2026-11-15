@@ -1,27 +1,37 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ArrowLeft, ArrowRight, CalendarPlus, CaretDown, CheckCircle, Warning } from '@phosphor-icons/react';
-import { api, type Answers, type Explanation, type FeedbackStats, type Match } from '../lib/api';
+import { COURSE_QUESTIONS, GENERAL_QUESTIONS } from '../../../shared/content.js';
+import { api, type Answers, type Course, type Explanation, type FeedbackStats, type Match } from '../lib/api';
 import { navigate, useAsync } from '../lib/hooks';
-import { answersFor, useProfile } from '../lib/storage';
+import { answersFor, ensureGuestProfile, useProfile, type StudentProfile } from '../lib/storage';
 import { ProfileLine } from '../components/ProfileLine';
-import { Button, Card, Disclosure, EmptyState, ErrorState, FitScore, LoadingState, SampleBadge } from '../components/ui';
+import { Button, Card, Disclosure, EmptyState, ErrorState, FitScore, LoadingState, QuizQuestion, SampleBadge } from '../components/ui';
 
 type ExplanationState = Explanation | Error | undefined;
 
 const valuesOf = (m: Match) => Object.fromEntries(m.breakdown.map((b) => [b.key, b.actual]));
 const targetsOf = (m: Match) => Object.fromEntries(m.breakdown.map((b) => [b.key, b.target]));
 
-export function Matches({ courseId }: { courseId: string | null }) {
+type Question = (typeof GENERAL_QUESTIONS)[number];
+type MissingQuestion = { question: Question; scope: 'general' | 'course' };
+
+/** The questions this class's ranking still needs: the 6 general ones once, then the 2 for this class. */
+function missingQuestions(profile: StudentProfile, courseId: string): MissingQuestion[] {
+  const course = profile.perCourse[courseId] ?? {};
+  return [
+    ...GENERAL_QUESTIONS.filter((q) => (profile.general as Record<string, unknown>)[q.key] === undefined).map((question) => ({ question, scope: 'general' as const })),
+    ...COURSE_QUESTIONS.filter((q) => (course as Record<string, unknown>)[q.key] === undefined).map((question) => ({ question, scope: 'course' as const })),
+  ];
+}
+
+export function Matches({ courseId, focusSection }: { courseId: string | null; focusSection: number | null }) {
+  // Arriving from a webReg badge with no profile yet: start a guest one so the questions can be asked here.
+  useState(ensureGuestProfile);
   const [profile, update] = useProfile();
   const [courses, retryCourses] = useAsync(api.courses, []);
-  const answers = profile && courseId ? answersFor(profile, courseId) : null;
 
-  useEffect(() => {
-    if (!answers) navigate('#/home');
-  }, [answers]);
-
-  if (!profile || !answers || !courseId) return null;
+  if (!profile || !courseId) return null;
   if (courses.status === 'loading') return <LoadingState label="Loading courses" lines={4} />;
   if (courses.status === 'error') return <ErrorState title="We couldn't load the courses" error={courses.error} onRetry={retryCourses} />;
 
@@ -29,6 +39,10 @@ export function Matches({ courseId }: { courseId: string | null }) {
   if (!course) {
     return <EmptyState title="We don't know that class" body="Go back to your schedule and pick one of your classes." action={<Button href="#/home">Back to my schedule</Button>} />;
   }
+  const missing = missingQuestions(profile, course.id);
+  if (missing.length > 0) return <QuickQuestions course={course} missing={missing} update={update} />;
+  const answers = answersFor(profile, course.id);
+  if (!answers) return null;
   const myCourses = courses.data.filter((c) => profile.courseIds.includes(c.id) && answersFor(profile, c.id));
   const useSection = (sectionId: number) => {
     update((p) => ({ ...p, locked: { ...p.locked, [course.id]: sectionId } }));
@@ -48,14 +62,60 @@ export function Matches({ courseId }: { courseId: string | null }) {
           ))}
         </div>
       )}
-      <RankedSections courseId={course.id} answers={answers} onUse={useSection} />
+      <RankedSections courseId={course.id} answers={answers} onUse={useSection} focusId={focusSection} />
     </>
   );
 }
 
-function RankedSections({ courseId, answers, onUse }: { courseId: string; answers: Answers; onUse: (id: number) => void }) {
+/**
+ * Asks only what this class's ranking is missing, one question at a time, right on the matches page.
+ * Answering a class's questions also adds the class to the student's list.
+ */
+function QuickQuestions({ course, missing, update }: { course: Course; missing: MissingQuestion[]; update: (change: (p: StudentProfile) => StudentProfile) => void }) {
+  const [total] = useState(missing.length);
+  const { question, scope } = missing[0];
+  const answered = total - missing.length;
+
+  function answer(value: string | number) {
+    update((p) => {
+      if (scope === 'general') return { ...p, general: { ...p.general, [question.key]: value } };
+      const perCourse = { ...p.perCourse, [course.id]: { ...(p.perCourse[course.id] ?? {}), [question.key]: value } };
+      const courseIds = p.courseIds.includes(course.id) ? p.courseIds : [...p.courseIds, course.id];
+      return { ...p, perCourse, courseIds };
+    });
+  }
+
+  return (
+    <div className="quick-questions stack-5">
+      <div className="stack-2">
+        <h1 className="text-display">See how {course.code} sections fit you</h1>
+        <p className="text-title" aria-live="polite">{answered + 1} of {total}</p>
+        <div className="progress" aria-hidden="true">
+          <div className="progress__track"><div className="progress__fill" style={{ width: `${(answered / total) * 100}%` }} /></div>
+        </div>
+      </div>
+      <QuizQuestion
+        key={question.key}
+        id={`quick-${question.key}`}
+        question={question.question.replace('{course}', course.code)}
+        headingClass="text-title"
+        options={question.options}
+        value={undefined}
+        onSelect={answer}
+      />
+      <p className="text-small text-muted">Your answers stay in this browser unless you have an account. Professors never see them.</p>
+    </div>
+  );
+}
+
+function RankedSections({ courseId, answers, onUse, focusId }: { courseId: string; answers: Answers; onUse: (id: number) => void; focusId: number | null }) {
   const [matches, retry] = useAsync(() => api.match(courseId, answers), [courseId]);
   const explanations = useExplanations(matches.status === 'success' ? matches.data : [], answers);
+  const ready = matches.status === 'success';
+  // Coming from a webReg badge: bring the section the student clicked into view.
+  useEffect(() => {
+    if (ready && focusId) document.getElementById(`section-${focusId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [ready, focusId]);
 
   if (matches.status === 'loading') return <Card emphasis><LoadingState label="Ranking sections" lines={5} /></Card>;
   if (matches.status === 'error') return <ErrorState title="We couldn't rank the sections" error={matches.error} onRetry={retry} />;
@@ -75,7 +135,7 @@ function RankedSections({ courseId, answers, onUse }: { courseId: string; answer
       <TopMatch match={top} explanation={explanations[top.id]} onUse={onUse} />
       {rest.length > 0 && (
         <div className="stack-3 min-0">
-          {rest.map((m) => <OtherMatch key={m.id} match={m} explanation={explanations[m.id]} onUse={onUse} />)}
+          {rest.map((m) => <OtherMatch key={m.id} match={m} explanation={explanations[m.id]} onUse={onUse} startOpen={m.id === focusId} />)}
         </div>
       )}
     </div>
@@ -108,7 +168,7 @@ function UseButton({ match, onUse }: { match: Match; onUse: (id: number) => void
 
 function TopMatch({ match, explanation, onUse }: { match: Match; explanation: ExplanationState; onUse: (id: number) => void }) {
   return (
-    <Card as="article" emphasis>
+    <Card as="article" emphasis id={`section-${match.id}`}>
       <div className="stack-2">
         <div className="row">
           <span className="top-match__marker" aria-hidden />
@@ -131,11 +191,11 @@ function TopMatch({ match, explanation, onUse }: { match: Match; explanation: Ex
   );
 }
 
-function OtherMatch({ match, explanation, onUse }: { match: Match; explanation: ExplanationState; onUse: (id: number) => void }) {
-  const [open, setOpen] = useState(false);
+function OtherMatch({ match, explanation, onUse, startOpen = false }: { match: Match; explanation: ExplanationState; onUse: (id: number) => void; startOpen?: boolean }) {
+  const [open, setOpen] = useState(startOpen);
   const watchOut = explanation && !(explanation instanceof Error) ? explanation.watch_out : null;
   return (
-    <Card as="article">
+    <Card as="article" id={`section-${match.id}`}>
       <button type="button" className="match-row" aria-expanded={open} onClick={() => setOpen(!open)}>
         <ProfileLine values={valuesOf(match)} size="glyph" label={match.name} />
         <span className="stack-1 min-0">

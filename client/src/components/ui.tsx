@@ -28,13 +28,14 @@ export function Button({ variant = 'primary', block, icon, iconAfter, href, chil
 
 // ---------- Card ----------
 
-export function Card({ children, as: Tag = 'section', emphasis, className }: {
+export function Card({ children, as: Tag = 'section', emphasis, className, id }: {
   children: ReactNode;
   as?: 'section' | 'article' | 'div';
   emphasis?: boolean;
   className?: string;
+  id?: string;
 }) {
-  return <Tag className={['card', emphasis ? 'card--emphasis' : '', className ?? ''].join(' ').trim()}>{children}</Tag>;
+  return <Tag id={id} className={['card', emphasis ? 'card--emphasis' : '', className ?? ''].join(' ').trim()}>{children}</Tag>;
 }
 
 // ---------- Badge ----------
