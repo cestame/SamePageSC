@@ -9,6 +9,8 @@ import { scoreProfile, mergeContributions, validateAnswers } from './scoring.js'
 import { scrubText, isAboutThePerson } from './privacy.js';
 import { extractProfile, explainMatch, aiConfigured, AiUnavailableError } from './ai.js';
 import { planSchedule } from './planner.js';
+import { authRoutes, loadUser, migrateAuth } from './auth.js';
+import { getRequirements, migrateUsc, searchCourses, searchPrograms } from './usc.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -91,6 +93,47 @@ function templateExplanation(breakdown) {
 }
 
 // ---------- API ----------
+
+app.use('/api', loadUser);
+authRoutes(app, { asyncRoute, rateLimit });
+
+// ---------- USC majors, requirements and courses ----------
+
+app.get('/api/usc/programs', rateLimit({ windowMs: 60_000, max: 40 }), asyncRoute(async (req, res) => {
+  try {
+    res.json(await searchPrograms(String(req.query.q || '')));
+  } catch (err) {
+    res.status(502).json({ error: `We couldn't reach USC's majors list right now (${err.message}).` });
+  }
+}));
+
+app.get('/api/usc/programs/:poid/requirements', asyncRoute(async (req, res) => {
+  const poid = Number(req.params.poid);
+  if (!Number.isInteger(poid)) return res.status(400).json({ error: 'bad program id' });
+  res.json(await getRequirements(poid));
+}));
+
+app.get('/api/usc/courses', asyncRoute(async (req, res) => {
+  const q = String(req.query.q || '');
+  res.json(q.trim().length < 2 ? [] : await searchCourses(q));
+}));
+
+const COURSE_CODE = /^[A-Z]{2,5} \d{3}[A-Z]{0,2}$/;
+const courseIdFor = (code) => code.toLowerCase().replace(/\s+/g, '-');
+
+// Adds a class to the course list so a student can plan it, even before anyone has added notes for it.
+// "CSCI 103L" maps onto an existing "CSCI 103" when there is one.
+app.post('/api/courses', rateLimit({ windowMs: 60_000, max: 30 }), asyncRoute(async (req, res) => {
+  const code = String(req.body?.code || '').toUpperCase().replace(/\s+/g, ' ').trim();
+  const title = String(req.body?.title || '').trim().slice(0, 120);
+  if (!COURSE_CODE.test(code)) return res.status(400).json({ error: 'Use a course code like CSCI 103 or WRIT 150.' });
+  if (title.length < 3) return res.status(400).json({ error: 'Add the course title.' });
+  const baseId = courseIdFor(code.replace(/[A-Z]+$/, '').trim());
+  const [existing] = await query('SELECT id, code, title FROM courses WHERE id = $1 OR id = $2', [courseIdFor(code), baseId]);
+  if (existing) return res.json(existing);
+  const [created] = await query('INSERT INTO courses (id, code, title) VALUES ($1, $2, $3) RETURNING id, code, title', [courseIdFor(code), code, title]);
+  res.json(created);
+}));
 
 app.get('/api/health', (req, res) => res.json({ ok: true, ai: aiConfigured() }));
 
@@ -324,6 +367,8 @@ app.use((err, req, res, _next) => {
 
 const port = Number(process.env.PORT) || 3000;
 const kind = await initDb();
+await migrateAuth();
+await migrateUsc();
 if (await seedIfEmpty()) console.log('Seeded sample data.');
 app.listen(port, '0.0.0.0', () => {
   console.log(`${PRODUCT_NAME} running on http://localhost:${port} (db: ${kind}, ai: ${aiConfigured() ? 'on' : 'OFF - set ANTHROPIC_API_KEY'})`);
