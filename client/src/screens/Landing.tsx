@@ -1,17 +1,21 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Armchair, ArrowDown, ArrowRight, CaretDown, ChalkboardTeacher, EyeSlash, FileText, NotePencil, PuzzlePiece, WarningCircle } from '@phosphor-icons/react';
+import { Armchair, ArrowDown, ArrowRight, ChalkboardTeacher, EyeSlash, FileText, NotePencil, PuzzlePiece, WarningCircle } from '@phosphor-icons/react';
 import { PRODUCT_NAME } from '../../../shared/content.js';
 import { Button, FitScore } from '../components/ui';
 import { ProfileLine } from '../components/ProfileLine';
 import { PixelHorse } from '../components/PixelHorse';
 import { PixelBird } from '../components/PixelBird';
 import { API_ORIGIN, asset } from '../lib/target';
+import { DEMO_WEBREG_URL } from './GetExtension';
+
 
 // All copy and figures here come from the team's content brief and survey of 29 USC students
 // (November 14 and 15, 2026). The preview uses the fictional sample professor Dr. Maya Reyes and the
 // real scoring function's result for the sample student (93).
 
 export const EXTENSION_SECTION_ID = 'extension';
+/** The page with the download and install steps, where every "get the extension" button leads. */
+export const EXTENSION_PAGE = '#/get-extension';
 
 const scrollToId = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
@@ -104,7 +108,7 @@ function Hero() {
         <img className="landing-hero__logo" src={asset('same-page-logo.png')} alt={PRODUCT_NAME} width={573} height={173} />
         <h1 id="landing-title" className="landing-hero__title">Know how a class is really taught before you enroll, from notes taken by the students who sat in it.</h1>
         <div className="landing-hero__actions">
-          <Button className="button--large" onClick={() => scrollToId(EXTENSION_SECTION_ID)} icon={<PuzzlePiece size={22} aria-hidden />}>
+          <Button className="button--large" href={EXTENSION_PAGE} icon={<PuzzlePiece size={22} aria-hidden />}>
             Get the Chrome extension
           </Button>
           <Button variant="quiet" href="#/home" iconAfter={<ArrowRight size={19} aria-hidden />}>Try it in your browser</Button>
@@ -358,30 +362,15 @@ function TryThisClass() {
   );
 }
 
-const INSTALL_STEPS = [
-  'Download the extension and unzip it.',
-  'Open chrome://extensions and turn on Developer mode, top right.',
-  'Click Load unpacked and pick the unzipped same-page-extension folder.',
-  'Open your class list in USC Web Registration. A fit badge appears under every section.',
-];
-
 function ExtensionSection() {
   return (
     <div className="landing-extension">
       <div className="stack-4">
         <h2 id="extension-title" className="text-display">Same Page works where you register.</h2>
         <p className="text-body band__muted landing-measure">A fit badge appears under every section in Web Registration. Tap it to see the full match.</p>
-        <details className="disclosure install-disclosure">
-          <summary className="disclosure__summary">How to install, in 4 steps<CaretDown className="disclosure__caret" size={18} aria-hidden /></summary>
-          <ol className="install plain-list disclosure__body">
-            {INSTALL_STEPS.map((s, i) => (
-              <li key={s} className="install__step"><span className="step__number" aria-hidden="true">{i + 1}</span><span className="text-small">{s}</span></li>
-            ))}
-          </ol>
-        </details>
         <div className="landing-hero__actions">
-          <Button className="button--large" href={asset('same-page-extension.zip')} icon={<ArrowDown size={22} aria-hidden />}>Download the extension</Button>
-          <Button variant="quiet" href="/demo/webreg" iconAfter={<ArrowRight size={19} aria-hidden />}>Try it on the demo class list</Button>
+          <Button className="button--large" href={EXTENSION_PAGE} icon={<ArrowDown size={22} aria-hidden />}>Download the extension</Button>
+          <Button variant="quiet" href={DEMO_WEBREG_URL} iconAfter={<ArrowRight size={19} aria-hidden />}>Try it on the sample Web Registration</Button>
         </div>
       </div>
       <BadgeIllustration />

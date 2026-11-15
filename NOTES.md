@@ -108,6 +108,11 @@ Submission is due **Sunday, November 15, 2026 at 11:00 AM PT** (AI@USC, HackSC x
 - How it works has a small picture per step (quiz choices, the real scorer's 93, 65 and 51 for the sample student, a downside pill, a note) and one short line each.
 - The extension band keeps one sentence, with the install steps in a "How to install, in 4 steps" disclosure. Quotes, Try this class and both-sides copy were shortened.
 
+## Get the extension page (2026-11-15)
+
+- `#/get-extension` (`client/src/screens/GetExtension.tsx`) has the download, five install steps (with a button that copies chrome://extensions, since Chrome blocks links to it) and a "Test it on the sample Web Registration" card linking to `/demo/webreg`.
+- Every "get the extension" button now leads there: the top bar, the hero's "Get the Chrome extension" and the extension band's "Download the extension". The extension band also links "Try it on the sample Web Registration". The old install-steps disclosure on the landing page was removed, since the page has the steps.
+
 ## Open audit items (current UI vs CLAUDE.md)
 
 Fix these during the redesign:

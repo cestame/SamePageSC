@@ -872,11 +872,15 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
 .how-note i { display: block; height: 6px; border-radius: var(--radius-pill); background: var(--line); }
 .how-note i:nth-child(2) { width: 80%; }
 .how-note i:nth-child(3) { width: 60%; }
-.install-disclosure { max-width: 34rem; }
 
 @media (min-width: 720px) {
   .section-shapes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ---------- get the extension page ---------- */
+
+.install-steps { display: grid; gap: var(--space-5); }
+.install-steps__step { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-3); align-items: start; }
 
 /* ---------- top bar extension button ---------- */
 
@@ -884,6 +888,7 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
   display: inline-flex; align-items: center; gap: 6px; min-height: var(--tap); margin-left: var(--space-2); padding: 0 var(--space-4);
   border: 0; border-radius: var(--radius-pill); background: var(--control); color: var(--on-control);
   font: inherit; font-size: 0.9375rem; font-weight: 700; white-space: nowrap; cursor: pointer;
+  text-decoration: none;
 }
 .nav__cta:hover { background: var(--control-hover); }
 @media (max-width: 560px) {
