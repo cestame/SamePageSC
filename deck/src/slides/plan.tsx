@@ -342,7 +342,7 @@ export function RolloutSlide() {
 /* ---------- Closing: the tagline and a code the audience can scan ---------- */
 
 /** A QR code for the live site, drawn as one SVG path so it stays sharp on a projector. */
-function SiteQrCode({ size }: { size: number }) {
+export function SiteQrCode({ size }: { size: number }) {
   const code = qrcode(0, "M");
   code.addData(links.site);
   code.make();

@@ -137,6 +137,13 @@ Submission is due **Sunday, November 15, 2026 at 11:00 AM PT** (AI@USC, HackSC x
 - The product is called "Same Page SC" everywhere people see it: the website, the extension (its name, toolbar title and badge labels), Add notes, Try this class and the deck. `shared/content.js` already had `PRODUCT_NAME = 'Same Page SC'`; the hard-coded "Same Page" strings were updated, and the extension download was rebuilt.
 - The deck no longer shows the "Slide x, beat y" label or the B key that toggled it. The script page labels multi-part slides "Part 1 of 2".
 
+## Class version of the pitch (2026-11-15)
+
+- `deck/class.html`: 11 slides. Slides 1 to 4 and 8 to 11 are a normal slideshow; 5 to 7 (welcome, lesson, pop quiz) are played as a class and recorded. Opens with a "Do you remember?" callback to the keynote's paper and Foghorn Leghorn joke, and closes with "Class dismissed".
+- The deck laptop records with the same `/api/recordings/analyze` endpoint as the website (filed under CSCI 103). Keys: R start, then stop and grade; H counts a raised hand on the current slide, Shift+H takes one back; S shows the backup. The report card counts only hands raised on slides 5 to 7.
+- Backup: every live result is saved in that laptop's browser and becomes the next backup, so do one full rehearsal on the presenting laptop before the pitch. Without one, S falls back to the server's fictional sample lecture, labeled as such.
+- Roles and all lines are in `deck/src/classContent.ts`. The deck shell, print page and script page now take a deck config, so both decks share them.
+
 ## Open audit items (current UI vs CLAUDE.md)
 
 Fix these during the redesign:

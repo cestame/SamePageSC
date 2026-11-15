@@ -119,6 +119,8 @@ npm run check     # lint, types and the em dash check
 
 Devpost wants the slides as images: open `print.html` and save each page, or print it to PDF.
 
+There is also a class version of the pitch at `/deck/class.html` (script at `/deck/class-script.html`, print at `/deck/class-print.html`). It is a normal slideshow except the live walkthrough, which is played as a class: the deck laptop records it with Record this class, a teammate counts raised hands with the H key, and the report card slide shows the class's own analysis. R starts and stops the recording, H counts a hand (Shift+H takes one back), and S shows a backup report card: the last live run saved on that laptop, or the fictional sample lecture.
+
 The live site serves the deck at https://samepage.replit.app/deck/ (print version: https://samepage.replit.app/deck/print.html). The root `npm run build` builds it into `dist/deck` after the app, so publishing the site on Replit publishes the deck too.
 
 ## USC majors and requirements

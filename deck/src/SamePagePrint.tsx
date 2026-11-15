@@ -3,7 +3,7 @@ import type { CSSProperties } from "react";
 import { STAGE_SIZES, stageStyle, useOrientation } from "@/engine/orientation";
 import { useWidthScale } from "@/engine/usePresenterKeys";
 import { Footer } from "./SamePageDeck";
-import { samePageSlides } from "./slides";
+import type { DeckConfig } from "./slides";
 
 MotionGlobalConfig.skipAnimations = true;
 
@@ -11,10 +11,10 @@ MotionGlobalConfig.skipAnimations = true;
  * Every beat of every slide on its own page, with animations finished, for PDF export and slide images.
  * On screen, pages shrink to the window's width and follow its orientation. Printing always gets full-size landscape pages.
  */
-export function SamePagePrint() {
+export function SamePagePrint({ deck }: { deck: DeckConfig }) {
   const orientation = useOrientation();
   const zoom = useWidthScale(STAGE_SIZES[orientation].width);
-  const pages = samePageSlides.flatMap((slide) => Array.from({ length: slide.steps }, (_, step) => ({ slide, step })));
+  const pages = deck.slides.flatMap((slide) => Array.from({ length: slide.steps }, (_, step) => ({ slide, step })));
   return (
     <main className="print-pages" style={{ "--page-zoom": zoom } as CSSProperties}>
       {pages.map(({ slide, step }) => (

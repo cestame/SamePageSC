@@ -2,13 +2,15 @@ import { ArrowSquareOut, Printer } from "@phosphor-icons/react";
 import { asset } from "@/engine/asset";
 import { ForcedOrientation, STAGE_SIZES, stageStyle } from "@/engine/orientation";
 import { useWidthScale } from "@/engine/usePresenterKeys";
-import { samePageSlides, type SamePageSlide } from "./slides";
+import type { DeckConfig, SamePageSlide } from "./slides";
 import { Wordmark } from "./ui";
 
 /** Speaking pace used for the time estimates, in words per minute. */
 const WORDS_PER_MINUTE = 150;
+const PITCH_LIMIT_SECONDS = 180;
 
-const wordCount = (text: string) => text.split(/\s+/).filter(Boolean).length;
+/** Words actually spoken: stage directions in [brackets] are left out of the timing. */
+const wordCount = (text: string) => text.replace(/\[[^\]]*\]/g, " ").split(/\s+/).filter(Boolean).length;
 const slideWords = (slide: SamePageSlide) => slide.notes.reduce((total, paragraph) => total + wordCount(paragraph), 0);
 const seconds = (words: number) => Math.round((words / WORDS_PER_MINUTE) * 60);
 
@@ -114,21 +116,24 @@ function SpeakerPlan({ slides }: { slides: SamePageSlide[] }) {
 const linkClass = "flex items-center gap-2 rounded-full bg-paper-raised px-5 py-3 text-base font-bold shadow-card hover:bg-paper-sunken";
 
 /** The pitch script: every beat's words beside a picture of the slide, with time estimates. */
-export function ScriptPage() {
-  const spoken = samePageSlides.filter((slide) => slide.id !== "sources");
+type ScriptPageProps = { deck: DeckConfig; title?: string; intro?: string };
+
+export function ScriptPage({ deck, title = "Pitch script", intro }: ScriptPageProps) {
+  const spoken = deck.slides.filter((slide) => slide.id !== "sources");
   const totalSeconds = spoken.reduce((total, slide) => total + seconds(slideWords(slide)), 0);
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-10 md:px-10">
       <header className="flex flex-col gap-6">
         <Wordmark className="w-48" />
-        <h1 className="font-display text-4xl font-bold md:text-5xl">Pitch script</h1>
+        <h1 className="font-display text-4xl font-bold md:text-5xl">{title}</h1>
         <p className="max-w-[68ch] text-lg text-ink-soft">
-          About {duration(totalSeconds)} spoken at {WORDS_PER_MINUTE} words a minute, inside the 3-minute limit. Each paragraph goes with the
-          slide beside it, and the same words show in the deck when you press N.
+          About {duration(totalSeconds)} spoken at {WORDS_PER_MINUTE} words a minute{totalSeconds <= PITCH_LIMIT_SECONDS ? ", inside the 3-minute limit" : ", over the 3-minute limit"}, not counting pauses. Each
+          paragraph goes with the slide beside it, and the same words show in the deck when you press N.
         </p>
+        {intro && <p className="max-w-[68ch] text-lg text-ink-soft">{intro}</p>}
         <SpeakerPlan slides={spoken} />
         <nav className="flex flex-wrap gap-3 print:hidden">
-          <a className={linkClass} href={asset("/index.html")}>
+          <a className={linkClass} href={asset(deck.deckPath)}>
             <ArrowSquareOut size={20} aria-hidden />
             Open the deck
           </a>

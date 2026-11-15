@@ -41,3 +41,8 @@ export const samePageSlides: SamePageSlide[] = [
 ];
 
 export const samePagePrintPath = "/print.html";
+
+/** One deck: its slides and where its print and script pages live, so two decks can share the same shell. */
+export type DeckConfig = { slides: SamePageSlide[]; deckPath: string; printPath: string; scriptPath: string };
+
+export const pitchDeck: DeckConfig = { slides: samePageSlides, deckPath: "/index.html", printPath: samePagePrintPath, scriptPath: "/script.html" };

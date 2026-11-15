@@ -20,7 +20,7 @@ const HORSE_PAGE_WIDTH = 820;
  * The cream page the horse runs on, as in the app's intro. It clips the horse so it gallops in from the page's edge.
  * On the portrait canvas the page sits along the bottom instead of the right.
  */
-function HorsePage() {
+export function HorsePage() {
   const tall = useIsPortrait();
   return (
     <div
