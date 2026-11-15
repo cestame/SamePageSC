@@ -12,7 +12,7 @@ const shortcuts = [
   ["Print", "P"],
 ];
 
-export type NotesSlide = { name: string; steps: number; notes: string[] };
+export type NotesSlide = { name: string; steps: number; notes: string[]; speaker?: string };
 
 type NotesPanelProps = { open: boolean; slide: NotesSlide; step: number; printPath: string; onClose: () => void };
 
@@ -46,6 +46,7 @@ export function NotesPanel({ open, slide, step, printPath, onClose }: NotesPanel
             <div className="flex items-baseline gap-3">
               <h2 className="text-lg font-bold">{slide.name}</h2>
               <BeatPosition slide={slide} step={step} />
+              {slide.speaker && <p className="text-sm font-bold text-accent">{slide.speaker} presents</p>}
             </div>
             <div className="flex items-center gap-1">
               <a href={asset(printPath)} target="_blank" className="flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold text-ink-muted hover:bg-paper-sunken hover:text-ink">

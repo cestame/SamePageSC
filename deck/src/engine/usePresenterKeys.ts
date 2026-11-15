@@ -93,17 +93,30 @@ export function useIdleCursor() {
   return isIdle;
 }
 
-const STAGE = { width: 1920, height: 1080 };
-
-export function useStageScale() {
+/** How far to shrink a slide canvas of this size so it fits the window. */
+export function useStageScale({ width, height }: { width: number; height: number }) {
   const [scale, setScale] = useState<number | null>(null);
 
   useEffect(() => {
-    const measure = () => setScale(Math.min(window.innerWidth / STAGE.width, window.innerHeight / STAGE.height));
+    const measure = () => setScale(Math.min(window.innerWidth / width, window.innerHeight / height));
     measure();
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
-  }, []);
+  }, [width, height]);
+
+  return scale;
+}
+
+/** How far to shrink a canvas this wide so it fits the window's width, never enlarging it past `max`. */
+export function useWidthScale(width: number, max = 1, margin = 0) {
+  const [scale, setScale] = useState(max);
+
+  useEffect(() => {
+    const measure = () => setScale(Math.min(max, (window.innerWidth - margin) / width));
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [width, max, margin]);
 
   return scale;
 }

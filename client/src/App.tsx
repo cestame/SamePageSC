@@ -67,15 +67,15 @@ export function App() {
   const { parts, params } = useHashRoute();
   const current = sectionOf(parts[0]);
   const [ready, setReady] = useState(false);
-  // The intro plays on every load of the landing page and closes itself when it finishes or is skipped.
-  // Only a visit that starts on the landing page plays the intro; moving around the site never replays it.
+  // The intro appears on every load of the landing page. Reduced-motion users get a still version.
+  // Only a visit that starts on the landing page shows the intro; moving around the site never replays it.
   const [introPending, setIntroPending] = useState(() => isLanding(parts[0]));
   const reduceMotion = useReducedMotion();
   useEffect(() => { restoreSession().finally(() => setReady(true)); }, []);
   useEffect(() => followExtensionRoutes(navigate), []);
   const user = currentUser();
   // The side panel never shows the landing page, so it never plays the intro.
-  const showIntro = introPending && !reduceMotion && isLanding(parts[0]);
+  const showIntro = introPending && isLanding(parts[0]);
 
   async function logOut() {
     await signOut();
@@ -83,7 +83,7 @@ export function App() {
   }
   return (
     <MotionConfig reducedMotion="user">
-      {showIntro && <IntroSequence onDone={() => setIntroPending(false)} />}
+      {showIntro && <IntroSequence reducedMotion={Boolean(reduceMotion)} onDone={() => setIntroPending(false)} />}
       <header className="topbar">
         <div className="topbar__inner">
           <a className="brand" href="#/" aria-label={`${PRODUCT_NAME} home`}>

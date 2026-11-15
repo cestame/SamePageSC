@@ -102,9 +102,9 @@ function paint(refs: Refs, f: Frame) {
 /**
  * The opening of the landing page. A pixel horse gallops across, a bird lands on its back, then the page
  * turns like a book page to the wordmark, which waits with a button that brings the student into the site.
- * "Skip intro" or Escape goes straight in. The caller leaves it out when reduced motion is on.
+ * "Skip intro" or Escape goes straight in. Reduced-motion users get a still cover with an enter button.
  */
-export function IntroSequence({ onDone }: { onDone: () => void }) {
+export function IntroSequence({ onDone, reducedMotion }: { onDone: () => void; reducedMotion: boolean }) {
   const coverRef = useRef<HTMLDivElement>(null);
   const logoPageRef = useRef<HTMLDivElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
@@ -112,6 +112,7 @@ export function IntroSequence({ onDone }: { onDone: () => void }) {
   const birdRef = useRef<HTMLDivElement>(null);
   const seatRef = useRef<HTMLDivElement>(null);
   const enterRef = useRef<HTMLButtonElement>(null);
+  const skipRef = useRef<HTMLButtonElement>(null);
   const doneRef = useRef(onDone);
   const [closing, setClosing] = useState(false);
   useEffect(() => { doneRef.current = onDone; }, [onDone]);
@@ -123,6 +124,11 @@ export function IntroSequence({ onDone }: { onDone: () => void }) {
     const root = document.documentElement;
     const previousOverflow = root.style.overflow;
     root.style.overflow = 'hidden';
+
+    if (reducedMotion) {
+      skipRef.current?.focus({ preventScroll: true });
+      return () => { root.style.overflow = previousOverflow; };
+    }
 
     const start = performance.now();
     let frame = 0;
@@ -140,13 +146,13 @@ export function IntroSequence({ onDone }: { onDone: () => void }) {
       cancelAnimationFrame(frame);
       root.style.overflow = previousOverflow;
     };
-  }, []);
+  }, [reducedMotion]);
 
   useEffect(() => {
     if (!closing) return;
-    const timer = window.setTimeout(() => doneRef.current(), CLOSE_MS);
+    const timer = window.setTimeout(() => doneRef.current(), reducedMotion ? 0 : CLOSE_MS);
     return () => window.clearTimeout(timer);
-  }, [closing]);
+  }, [closing, reducedMotion]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -158,8 +164,10 @@ export function IntroSequence({ onDone }: { onDone: () => void }) {
 
   const enter = () => setClosing(true);
 
+  const introClass = ['intro', reducedMotion && 'intro--reduced-motion', closing && 'intro--closing'].filter(Boolean).join(' ');
+
   return (
-    <div className={closing ? 'intro intro--closing' : 'intro'} aria-label={`${PRODUCT_NAME} opening animation`} role="region">
+    <div className={introClass} aria-label={`${PRODUCT_NAME} opening ${reducedMotion ? 'screen' : 'animation'}`} role="region">
       <div className="intro__page intro__page--logo" ref={logoPageRef}>
         <div className="intro__face intro__face--front">
           <div className="intro__logo-block" ref={logoRef}>
@@ -181,7 +189,7 @@ export function IntroSequence({ onDone }: { onDone: () => void }) {
             <p className="intro__headline">Find the one that fits.</p>
           </div>
           <div className="intro__ground" aria-hidden="true" />
-          <div className="intro-horse" ref={horseRef}>
+          <div className={reducedMotion ? 'intro-horse intro-horse--carrying' : 'intro-horse'} ref={horseRef}>
             <div className="intro-horse__body">
               <PixelHorse />
               <div className="intro-horse__seat" ref={seatRef}>
@@ -196,9 +204,13 @@ export function IntroSequence({ onDone }: { onDone: () => void }) {
         <div className="intro__face intro__face--back" />
       </div>
 
-      <button type="button" className="intro__skip" onClick={enter}>Skip intro</button>
+      <button type="button" className="intro__skip" ref={skipRef} onClick={enter}>
+        {reducedMotion ? `Enter ${PRODUCT_NAME}` : 'Skip intro'}
+      </button>
       <p className="visually-hidden">
-        A cardinal pixel horse gallops across while a yellow bird lands on its back. The page turns to the {PRODUCT_NAME} wordmark, with a button to enter the site.
+        {reducedMotion
+          ? `A still cardinal pixel horse carries a yellow bird. Enter ${PRODUCT_NAME} to continue.`
+          : `A cardinal pixel horse gallops across while a yellow bird lands on its back. The page turns to the ${PRODUCT_NAME} wordmark, with a button to enter the site.`}
       </p>
     </div>
   );

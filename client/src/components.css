@@ -572,6 +572,29 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
 .intro { transition: opacity 320ms var(--ease-out); }
 .intro--closing { opacity: 0; pointer-events: none; }
 
+/* Keep the horse intro visible without motion for visitors who request reduced motion. */
+.intro--reduced-motion { --horse-width: min(76vw, 680px); perspective: none; }
+.intro--reduced-motion .intro__page--logo { display: none; }
+.intro--reduced-motion .intro__page--cover { transform: none !important; visibility: visible !important; }
+.intro--reduced-motion .intro-horse {
+  top: auto;
+  bottom: 14svh;
+  left: 50%;
+  transform: translateX(-50%) !important;
+}
+.intro--reduced-motion .intro-horse__body { animation: none; }
+.intro--reduced-motion .intro-horse__seat { visibility: visible; }
+.intro--reduced-motion .intro-bird { display: none; }
+.intro--reduced-motion .intro__skip {
+  top: auto;
+  right: 50%;
+  bottom: max(var(--space-4), env(safe-area-inset-bottom, 0px));
+  transform: translateX(50%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro { transition: none; }
+}
+
 .intro__title {
   position: absolute;
   z-index: 2;

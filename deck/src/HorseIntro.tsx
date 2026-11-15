@@ -62,8 +62,15 @@ export function HorseIntro({ width, startX }: { width: number; startX: number })
     <div role="img" aria-label={ALT} className="relative shrink-0" style={{ width, height }}>
       <motion.div
         className="absolute inset-0"
-        initial={still ? false : { x: startX }}
-        animate={{ x: 0, transition: { duration: HORSE_SECONDS, ease: easeSamePage } }}
+        initial={still ? false : { x: startX, scale: 0.94 }}
+        animate={{
+          x: 0,
+          scale: [0.94, 1.02, 1],
+          transition: {
+            x: { duration: HORSE_SECONDS, ease: easeSamePage },
+            scale: { duration: HORSE_SECONDS, ease: easeSamePage, times: [0, 0.82, 1] },
+          },
+        }}
       >
         <img src={sprite(`horse-gallop-${horsePose}`)} alt="" className="block size-full" />
       </motion.div>
