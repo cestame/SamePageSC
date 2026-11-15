@@ -13,11 +13,13 @@ import { sampleCourse } from "./content";
 import type { DeckConfig, SamePageSlide } from "./slides";
 import { Heading, Wordmark } from "./ui";
 import { PaperSlide } from "./PaperScene";
+import { sfx, useMuteKey, useSoundCues } from "./sfx";
 import "./styles.css";
 
 /** The story pitch: Dean Garrett's paper joke, the star-rating problem, Srinija's class demo on video, and the egret and horse. */
 
 function Stars() {
+  useSoundCues([...[0, 1, 2, 3, 4].map((i): [number, () => void] => [0.4 + i * 0.12, () => sfx.pop(1 + i * 0.12)]), [1.4, sfx.chime]]);
   return (
     <motion.div variants={fadeReveal(0.3, 20)} className="flex gap-4 text-[120px] leading-none" aria-hidden>
       {[0, 1, 2, 3, 4].map((i) => (
@@ -158,8 +160,13 @@ const slides: SamePageSlide[] = [
 
 const storyDeck: DeckConfig = { slides, deckPath: "/story.html", printPath: "/story.html", scriptPath: "/story.html" };
 
+function StoryDeck() {
+  useMuteKey();
+  return <SamePageDeck deck={storyDeck} />;
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <SamePageDeck deck={storyDeck} />
+    <StoryDeck />
   </StrictMode>,
 );

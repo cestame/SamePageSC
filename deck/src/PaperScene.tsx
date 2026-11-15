@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import type { ReactNode } from "react";
 import { Heading } from "./ui";
+import { sfx, useSoundCues } from "./sfx";
 
 const EASE = [0.22, 0.8, 0.2, 1] as const;
 const LINE_WIDTHS = [90, 70, 85, 60, 80, 65, 75, 55];
@@ -47,6 +48,12 @@ function FakeReview() {
   );
 }
 
+/** Sounds for the paper beat: the sheet lands, or it tears and the review whooshes out. */
+function PaperSounds({ split }: { split: boolean }) {
+  useSoundCues(split ? [[0.05, sfx.tear], [0.55, sfx.whoosh], [1.25, sfx.thud]] : [[0.3, sfx.thud]]);
+  return null;
+}
+
 function PaperBeat({ split }: { split: boolean }) {
   return (
     <motion.div key="paper" exit={{ opacity: 0, transition: { duration: 0.6 } }} className="stage-gutter absolute inset-0 flex flex-col justify-between">
@@ -58,6 +65,7 @@ function PaperBeat({ split }: { split: boolean }) {
         <PaperHalf side="right" split={split} />
       </div>
       {split && <FakeReview />}
+      <PaperSounds split={split} />
       <span />
     </motion.div>
   );
@@ -111,6 +119,12 @@ function GarbledMessage() {
 }
 
 function PeopleBeat() {
+  useSoundCues([
+    [0.4, sfx.whoosh],
+    [1.6, () => sfx.pop(1)],
+    [3.2, sfx.glitch],
+    [4.8, () => sfx.pop(0.7)],
+  ]);
   const apart = { duration: 1.6, delay: 0.4, ease: EASE };
   return (
     <motion.div key="people" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { duration: 0.8 } }} className="stage-gutter absolute inset-0 flex flex-col justify-between">
