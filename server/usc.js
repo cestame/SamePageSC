@@ -8,6 +8,7 @@ import { readFileSync } from 'node:fs';
 import { query } from './db.js';
 
 const CURATED = JSON.parse(readFileSync(new URL('../shared/requirements.json', import.meta.url), 'utf8'));
+const curatedCourses = (program) => program.groups.flatMap((g) => g.courses);
 const LIVE_FETCH = process.env.CATALOGUE_LIVE_FETCH === 'true';
 
 const USER_AGENT = 'Mozilla/5.0 (Trojan Fit student course-matching project)';
@@ -105,7 +106,9 @@ export function parseRequirementCourses(html) {
 /** Returns cached requirements, or starts a polite fetch and reports that it is queued. */
 export async function getRequirements(poid) {
   const curated = CURATED[String(poid)];
-  if (curated) return { status: 'ready', courses: curated.courses, source: curated.source };
+  if (curated) {
+    return { status: 'ready', courses: curatedCourses(curated), groups: curated.groups, notes: curated.notes ?? [], source: curated.source };
+  }
   if (!LIVE_FETCH) return { status: 'unavailable', courses: [] };
   const [cached] = await query('SELECT status, courses, fetched_at FROM usc_requirements WHERE poid = $1', [poid]);
   if (cached?.status === 'ready') return { status: 'ready', courses: cached.courses };
@@ -142,7 +145,7 @@ async function saveRequirements(poid, status, courses) {
 /** Searches courses from the requirements file, courses seen in fetched pages, and courses with profiles. */
 export async function searchCourses(rawQuery) {
   const needle = rawQuery.trim().toLowerCase();
-  const fromFile = Object.values(CURATED).flatMap((p) => p.courses)
+  const fromFile = Object.values(CURATED).flatMap(curatedCourses)
     .filter((c) => c.code.toLowerCase().includes(needle) || c.title.toLowerCase().includes(needle));
   const q = `%${rawQuery.trim().slice(0, 40)}%`;
   const fromDb = await query(

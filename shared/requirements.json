@@ -1,1 +1,193 @@
-{}
+{
+  "32086": {
+    "name": "Computer Science (BS)",
+    "source": "https://catalogue.usc.edu/preview_program.php?catoid=22&poid=32086",
+    "groups": [
+      {
+        "label": "Composition and writing",
+        "rule": "Take both. WRIT 340 for engineers is strongly recommended.",
+        "courses": [
+          { "code": "WRIT 150", "title": "Writing and Critical Reasoning–Thematic Approaches" },
+          { "code": "WRIT 340", "title": "Advanced Writing and Critical Engagement" }
+        ]
+      },
+      {
+        "label": "Engineering",
+        "rule": "Take this course.",
+        "courses": [{ "code": "ENGR 102", "title": "Viterbi First-Year Academy" }]
+      },
+      {
+        "label": "Mathematics",
+        "rule": "Take MATH 125, then one from each pair: MATH 126 or 129, MATH 225 or 235, MATH 226 or 229.",
+        "courses": [
+          { "code": "MATH 125", "title": "Calculus I" },
+          { "code": "MATH 126", "title": "Calculus II" },
+          { "code": "MATH 129", "title": "Calculus II for Engineers and Scientists" },
+          { "code": "MATH 225", "title": "Linear Algebra and Linear Differential Equations" },
+          { "code": "MATH 235", "title": "Linear Algebra and Applications" },
+          { "code": "MATH 226", "title": "Calculus III" },
+          { "code": "MATH 229", "title": "Calculus III for Engineers and Scientists" }
+        ]
+      },
+      {
+        "label": "Statistics and probability",
+        "rule": "Take this course.",
+        "courses": [{ "code": "EE 364", "title": "Probability and Statistics for Engineers and Computer Scientists" }]
+      },
+      {
+        "label": "Life sciences",
+        "rule": "Take one.",
+        "courses": [
+          { "code": "BISC 120L", "title": "General Biology: Organismal Biology and Evolution" },
+          { "code": "BISC 121L", "title": "Advanced General Biology: Organismal Biology and Evolution" },
+          { "code": "BISC 220L", "title": "General Biology: Cell Biology and Physiology" }
+        ]
+      },
+      {
+        "label": "Physical sciences",
+        "rule": "Take one.",
+        "courses": [
+          { "code": "CHEM 105AL", "title": "General Chemistry" },
+          { "code": "CHEM 115AL", "title": "Advanced General Chemistry" },
+          { "code": "PHYS 151L", "title": "Fundamentals of Physics I: Mechanics, Oscillations and Waves" },
+          { "code": "PHYS 161L", "title": "Advanced Principles of Physics I" }
+        ]
+      },
+      {
+        "label": "Computer science core",
+        "rule": "Take all twelve. CSCI 102L, 103, 104, 170 and 201 need a C or better.",
+        "courses": [
+          { "code": "CSCI 102L", "title": "Introduction to Programming" },
+          { "code": "CSCI 103L", "title": "Object Oriented Programming" },
+          { "code": "CSCI 104L", "title": "Data Structures" },
+          { "code": "CSCI 170", "title": "Discrete Methods in Computer Science" },
+          { "code": "CSCI 201", "title": "Principles of Software Development" },
+          { "code": "CSCI 270", "title": "Introduction to Algorithms and Theory of Computing" },
+          { "code": "CSCI 310", "title": "Software Engineering" },
+          { "code": "CSCI 350", "title": "Fundamentals of Operating Systems" },
+          { "code": "CSCI 353", "title": "Internetworking" },
+          { "code": "CSCI 356", "title": "Computer Systems" },
+          { "code": "CSCI 360", "title": "Artificial Intelligence: Principles and Foundations" },
+          { "code": "CSCI 401", "title": "Capstone: Design and Construction of Large Software Systems" }
+        ]
+      },
+      {
+        "label": "Electrical engineering",
+        "rule": "Take this course.",
+        "courses": [{ "code": "EE 109L", "title": "Introduction to Embedded Systems" }]
+      },
+      {
+        "label": "Practicum",
+        "rule": "Take this course (0 units).",
+        "courses": [{ "code": "ENGR 495", "title": "Practicum" }]
+      }
+    ],
+    "notes": [
+      "Also take at least four 300- or 400-level CSCI courses (16 units), 20 units of general education and 4 units of free electives."
+    ]
+  },
+  "31776": {
+    "name": "Economics (BA)",
+    "source": "https://catalogue.usc.edu/preview_program.php?catoid=22&poid=31776",
+    "groups": [
+      {
+        "label": "Economics core",
+        "rule": "Take all six. ECON 303, 305, 317 and 318 need a C or better.",
+        "courses": [
+          { "code": "ECON 203", "title": "" },
+          { "code": "ECON 205", "title": "" },
+          { "code": "ECON 303", "title": "" },
+          { "code": "ECON 305", "title": "" },
+          { "code": "ECON 317", "title": "" },
+          { "code": "ECON 318", "title": "" }
+        ]
+      },
+      {
+        "label": "Mathematics",
+        "rule": "Take one, ideally by the end of sophomore year.",
+        "courses": [
+          { "code": "MATH 118", "title": "" },
+          { "code": "MATH 125", "title": "Calculus I" }
+        ]
+      },
+      {
+        "label": "Computing",
+        "rule": "Take one two-unit course.",
+        "courses": [
+          { "code": "TAC 101", "title": "" },
+          { "code": "CSCI 101L", "title": "" }
+        ]
+      }
+    ],
+    "notes": [
+      "Also take four economics electives at the 300 level or above. At least two must be 400 level or higher, and the other two need approval from the director of undergraduate studies."
+    ]
+  },
+  "31586": {
+    "name": "Arts, Technology and the Business of Innovation (BS)",
+    "source": "https://catalogue.usc.edu/preview_program.php?catoid=22&poid=31586",
+    "groups": [
+      {
+        "label": "Challenge Based Reflective Learning",
+        "rule": "Take all of these. ACAD 174 is taken twice, and ACAD 376 can be replaced by credit-bearing internships.",
+        "courses": [
+          { "code": "ACAD 174", "title": "Innovators Forum" },
+          { "code": "ACAD 376", "title": "Industry Practicum I: Designing and Implementing Real-World Solutions" },
+          { "code": "ACAD 418", "title": "Innovation Practicum" },
+          { "code": "ACAD 475A", "title": "The Garage Experience" },
+          { "code": "ACAD 475B", "title": "The Garage Experience" }
+        ]
+      },
+      {
+        "label": "Business",
+        "rule": "Take ACAD 183, plus ACAD 184 or ACAD 185.",
+        "courses": [
+          { "code": "ACAD 183", "title": "Product Management for Challenge-Based Innovation" },
+          { "code": "ACAD 184", "title": "Operations Management and Finance for Challenge-Based Innova" },
+          { "code": "ACAD 185", "title": "Analytics and Marketing for Challenge-Based Innovation" }
+        ]
+      },
+      {
+        "label": "Design",
+        "rule": "Take ACAD 176 and 8 units from one path. Path 1 is ACAD 324 or 325, plus ACAD 360. Path 2 is the product design courses.",
+        "courses": [
+          { "code": "ACAD 176", "title": "Rapid Visualization" },
+          { "code": "ACAD 324", "title": "The Practice of Design: Ideation to Innovation" },
+          { "code": "ACAD 325", "title": "Human Technology Interaction and the User Experience" },
+          { "code": "ACAD 360", "title": "Design Strategy: Problem Solving for Organizations" },
+          { "code": "ACAD 187", "title": "Digital Toolbox: 3D Design" },
+          { "code": "ACAD 188", "title": "Modeling Products with Solidworks" },
+          { "code": "ACAD 245", "title": "Fundamentals of Product Design" },
+          { "code": "ACAD 288", "title": "Constructing Digital Worlds" },
+          { "code": "ACAD 444", "title": "Designing Products for Industry" },
+          { "code": "ACAD 445", "title": "Designing Products For Licensing" }
+        ]
+      },
+      {
+        "label": "Technology",
+        "rule": "Take ACAD 274 and 12 units from one tech path. Shown here: the Transformative AI and Full Stack Web Development paths.",
+        "courses": [
+          { "code": "ACAD 274", "title": "Designing Interactive Data Systems" },
+          { "code": "ACAD 191", "title": "Python for Machine Intelligence" },
+          { "code": "ACAD 220", "title": "Introduction to Data Innovation and Analytics" },
+          { "code": "ACAD 222", "title": "Introduction to Machine Intelligence" },
+          { "code": "ACAD 275", "title": "Dev I" },
+          { "code": "ACAD 276", "title": "Dev II" },
+          { "code": "ACAD 280", "title": "Information Design" },
+          { "code": "ACAD 415", "title": "Dev III: Designing Applications for Emerging Platforms" }
+        ]
+      },
+      {
+        "label": "Writing",
+        "rule": "Both appear in the sample four-year program.",
+        "courses": [
+          { "code": "WRIT 150", "title": "Writing and Critical Reasoning–Thematic Approaches" },
+          { "code": "WRIT 340", "title": "Advanced Writing and Critical Engagement" }
+        ]
+      }
+    ],
+    "notes": [
+      "Also complete 36 units of major electives (no more than 20 outside the Academy) and the general education program. Other tech paths are physical and embedded computing and extended reality; see the catalogue."
+    ]
+  }
+}

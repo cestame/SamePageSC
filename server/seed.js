@@ -3,7 +3,7 @@
 import { query } from './db.js';
 
 const COURSES = [
-  { id: 'csci-103', code: 'CSCI 103', title: 'Introduction to Programming' },
+  { id: 'csci-103', code: 'CSCI 103', title: 'Object Oriented Programming' },
   { id: 'econ-203', code: 'ECON 203', title: 'Principles of Microeconomics' },
 ];
 
