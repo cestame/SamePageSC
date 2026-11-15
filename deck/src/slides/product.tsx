@@ -22,13 +22,12 @@ export function ShapesSlide() {
           <motion.figure key={section.number} variants={fadeReveal(0.5 + index * 0.6, 24)} className="flex flex-col gap-8 rounded-card bg-paper-raised px-10 pt-8 pb-10 shadow-card">
             <figcaption>
               <p className="text-point leading-tight font-bold">{section.instructor}</p>
-              <p className="text-fineprint text-ink-faint">{sampleLabel}</p>
             </figcaption>
             <ProfileLine profile={section.profile} label={`Teaching profile for ${section.instructor}'s section`} size={profileSizes.card} delay={0.8 + index * 0.6} />
           </motion.figure>
         ))}
       </div>
-      <span />
+      <Note delay={2.3}>All instructors shown are fictional samples.</Note>
     </StepView>
   );
 }

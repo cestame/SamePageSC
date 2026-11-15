@@ -22,7 +22,7 @@ const THUMB_SCALE = 0.2;
 function Thumbnail({ slide, step }: { slide: SamePageSlide; step: number }) {
   return (
     <div className="shrink-0 overflow-hidden rounded-lg shadow-card" style={{ width: 1920 * THUMB_SCALE, height: 1080 * THUMB_SCALE }} aria-hidden>
-      <div className="stage relative origin-top-left bg-paper" style={{ scale: THUMB_SCALE }}>
+      <div className="stage relative origin-top-left bg-paper" style={{ transform: `scale(${THUMB_SCALE})` }}>
         <slide.Content step={step} />
       </div>
     </div>

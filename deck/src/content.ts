@@ -144,21 +144,20 @@ export const sampleCourse = {
 
 export const title = {
   wordmarkAlt: "Same Page SC",
-  pitch: ["Pick the section", "that fits how", "you learn."],
-  tagline: "Your next chapter begins with the right class.",
-  byline: "Built by Trojans, for Trojans. AI@USC hackathon, November 2026.",
+  pitch: ["Find the section", "that fits you."],
+  byline: "Lia Choi, Alexis Limary, Ame Wang, and Srinija Chukkapalli",
   script: [
     "Hi, we're Same Page SC. Every semester, Trojans pick sections with almost nothing to go on. Same Page shows how each section is actually taught and how well it fits the way you learn, right inside Web Registration.",
   ],
 };
 
 export const survey = {
-  heading: ["29 USC students told us", "how they pick a class."],
+  heading: ["29 students. 3 signals."],
   respondents: 29,
   rows: [
     { count: 19, percent: 66, line: "use Rate My Professors" },
-    { count: 22, percent: 76, line: "say the rating matters" },
-    { count: 13, percent: 45, line: "found the ratings only somewhat accurate, or worse" },
+    { count: 22, percent: 76, line: "say ratings matter" },
+    { count: 13, percent: 45, line: "found ratings only somewhat accurate or worse" },
   ],
   script: [
     "This weekend we surveyed 29 USC students, from freshmen to grad students in more than 20 majors. Each dot is one of them. 19 of the 29 use Rate My Professors to choose a class, and 22 say a professor's rating matters when they pick. But 13 told us the class they got matched the ratings only somewhat or worse. Their average accuracy score was 3.4 out of 5.",
@@ -167,17 +166,16 @@ export const survey = {
 
 export const ratings = {
   learning: {
-    heading: ["Star ratings track easy grades", "and not learning."],
-    easiness: { value: 0.61, label: "Easiness and rating move together" },
-    grades: { up: "Grade you expect", down: "How you do next course", label: "Ratings follow grades" },
-    learning: { label: "No link to learning" },
+    heading: ["Stars track ease, not learning."],
+    easiness: { value: 0.61, label: "Easier classes tended to get higher ratings" },
+    grades: { up: "Expected grade", down: "Next-course result" },
+    learning: { label: "No significant link to learning" },
   },
   bias: {
-    heading: ["The same teaching gets a lower score", "depending on who teaches it."],
-    instructors: ["Instructor with a US name", "Instructor with an Asian name"],
-    gap: "0.6 to 0.8 lower on clarity",
+    heading: ["Same teaching. Unequal ratings."],
+    instructors: ["US-named instructor", "Asian-named instructor"],
+    gap: "0.6–0.8 lower on clarity",
     scaleNote: "Bars illustrative. The gap is to scale on a 1 to 5 rating.",
-    more: ["Black and Asian faculty rated lower", "Bias against women can't be adjusted away"],
   },
   script: [
     "The deeper problem is what a star rating measures. Across 3,190 professors on Rate My Professors, easiness and the quality score correlate at 0.61. In a randomized study, ratings went up with the grades students expected and down with how well they did in the next course. A meta-analysis of multisection studies found no significant link between ratings and learning. Students follow the ratings anyway: sections with higher-rated professors fill faster.",
@@ -186,20 +184,20 @@ export const ratings = {
 };
 
 export const shapes = {
-  heading: ["Every section gets a shape."],
+  heading: ["One profile. Seven teaching traits."],
   script: [
     "So instead of a star, Same Page draws every section as a teaching profile. Students who took the section share typed notes and the syllabus, and Claude turns them into seven ratings, from pace down to workload, each tied to the notes behind it. These are three sections of the same course, CSCI 103. Reyes is slow and highly organized and walks you through every example. Natarajan moves fast and grades on exams. Okafor runs discussions and grades on projects. None of them is the best professor, and each one is the best fit for somebody. All three are fictional samples.",
   ],
 };
 
 export const fit = {
-  heading: ["Your answers turn the shape", "into a fit score."],
-  scoreCounts: "fit, from pace, structure, grading and 4 more",
+  heading: ["A match you can see."],
+  scoreCounts: "fit across 7 teaching traits",
   student: [1.5, 3, 4, 3, 2, 1, 3] as Profile,
-  whyTitle: "Why it fits",
-  why: "Step-by-step examples, with room for questions",
-  downsideTitle: "Watch out for",
-  downside: "Stricter deadlines and less discussion than you asked for",
+  whyTitle: "Fits",
+  why: "Step-by-step examples",
+  downsideTitle: "Trade-off",
+  downside: "Fewer discussions. Tighter deadlines.",
   legend: { student: "You", section: "Dr. Reyes", gap: "Where you differ" },
   script: [
     "Then you answer eight quick questions about how you learn best. There's no visual-learner quiz, because the research doesn't support learning styles. Your answers become the dashed line, and the shaded area is where you and the class differ. Our scoring function turns that into a fit score, and the score always says what it counts. Then Claude explains the match in plain words and always names one honest downside. For this new coder, Reyes is a 93 percent fit, and the catch is stricter deadlines and less discussion than they asked for.",
@@ -207,7 +205,7 @@ export const fit = {
 };
 
 export const webreg = {
-  heading: ["A fit badge on every section", "in Web Registration."],
+  heading: ["See fit inside WebReg."],
   page: "Web Registration",
   badge: (score: number, name: string) => `${score}% fit with ${name}`,
   panelTitle: "Chrome side panel",
@@ -218,7 +216,7 @@ export const webreg = {
 };
 
 export const tryClass = {
-  heading: ["Sit in on the class", "before you register."],
+  heading: ["Preview the room before class."],
   moments: ["How class opens", "A question to the class", "A student's question", "A worked example", "How class ends"],
   status: "Fictional professors, synthetic voices",
   script: [
@@ -228,19 +226,19 @@ export const tryClass = {
 
 export const ai = {
   pipeline: {
-    heading: ["Claude explains the match.", "A fixed formula ranks it."],
-    stages: ["Student notes", "Claude builds the profile", "Formula ranks sections", "Claude explains the fit"],
+    heading: ["Claude reads. Formula ranks."],
+    stages: ["Notes", "Profile", "Rank", "Explain"],
     explanation: ["Why it fits", "One honest downside"],
-    safeguard: "The API key never leaves our server",
+    safeguard: "API key stays on our server",
   },
   model: {
-    heading: ["Our prototype predicts a range", "instead of one number."],
-    aucTitle: "Knowledge tracing on 130,000 real student answers",
+    heading: ["Predictions come with ranges."],
+    aucTitle: "Next-answer prediction (AUC)",
     auc: [
       { label: "Our model", value: 0.74 },
       { label: "Skill difficulty only", value: 0.58 },
     ],
-    rangeTitle: "Predicted fit for one synthetic student",
+    rangeTitle: "Synthetic student's fit range",
     ranges: [
       { label: "Section A", low: 56, high: 79 },
       { label: "Section B", low: 63, high: 82 },
@@ -253,28 +251,28 @@ export const ai = {
 };
 
 export const fairness = {
-  heading: ["Profiles describe the class", "and never the person."],
-  rules: ["Typed notes only, no recordings", "Names removed first", "No comments on looks or accent", "No learning-style labels", "Professors can respond"],
+  heading: ["Trust, built into the rules."],
+  rules: ["Typed notes, no recordings", "Names removed", "Describe the class", "No learning-style labels", "Professors can respond"],
   script: [
     "Fairness is built into the rules. We only take typed notes and syllabi, never recordings. Names come out before anything is saved. Comments about a professor's personality, looks or accent get dropped, so a profile can only describe how the class runs. We don't sort students into learning styles, and professors can see how students describe their class and respond. It's a mirror of the teaching, not a ranking of the teacher.",
   ],
 };
 
 export const rollout = {
-  heading: ["Student Government can pilot it", "next semester."],
+  heading: ["Start with a spring pilot."],
   phases: [
-    { when: "Today", name: "Live at samepage.replit.app" },
-    { when: "Spring 2027", name: "Pilot with Student Government" },
-    { when: "After review", name: "Professors choose what to share" },
+    { when: "Today", name: "Live" },
+    { when: "Spring 2027", name: "Student Government pilot" },
+    { when: "After review", name: "Professor opt-in" },
   ],
-  needsNothing: "No USC login and no IT integration needed",
+  needsNothing: "No USC login. No IT integration.",
   script: [
     "Student Government can run this next semester. It's live today, and a pilot needs nothing from USC IT: no USC login and no data feed, because the extension only reads the page a student already has open. In a spring pilot, USG gathers notes for high-enrollment courses, invites those professors to review and respond, and checks whether students who follow the fit score drop or switch less. Later, professors who want richer profiles can choose to share slides, audio processed on their own device, or Zoom transcripts, but only after review by USC's general counsel and the IRB.",
   ],
 };
 
 export const closing = {
-  heading: ["Your next chapter begins", "with the right class."],
+  heading: ["Try Same Page."],
   cta: "Scan to try it",
   script: [
     "Our goals are fewer drops and switches, fairer treatment of professors, credits well spent and better learning. Scan the code to try Same Page yourself. Your next chapter begins with the right class. Thank you.",

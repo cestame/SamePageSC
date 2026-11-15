@@ -47,7 +47,7 @@ export function SamePageDeck() {
         onPointerUp={handlePointerUp}
         onContextMenu={handleContextMenu}
       >
-        <div className="stage relative shrink-0 overflow-hidden bg-paper" style={{ scale: scale ?? 1, opacity: scale === null || !ready ? 0 : 1 }}>
+        <div className="stage relative shrink-0 overflow-hidden bg-paper" style={{ transform: `scale(${scale ?? 1})`, transformOrigin: "center", opacity: scale === null || !ready ? 0 : 1 }}>
           <AnimatePresence mode="wait">
             {ready && (
               <motion.section

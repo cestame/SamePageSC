@@ -1,3 +1,4 @@
+import { ArrowDown, ArrowRight, ArrowUp, GraduationCap, Star } from "@phosphor-icons/react";
 import { AnimatePresence, motion, type Variants } from "motion/react";
 import { CountUp, MaskedLines, StepView, fadeReveal } from "@/engine/primitives";
 import { easeDrawn, easeSamePage } from "@/engine/motion";
@@ -17,10 +18,23 @@ const HORSE_PAGE_WIDTH = 820;
 /** The cream page the horse runs on, as in the app's intro. It clips the horse so it gallops in from the page's edge. */
 function HorsePage() {
   return (
-    <div className="absolute inset-y-0 right-0 flex items-center justify-center overflow-hidden bg-brand-cream" style={{ width: HORSE_PAGE_WIDTH }}>
-      <div className="flex flex-col items-center">
+    <div
+      className="absolute inset-y-0 right-0 flex items-center justify-center overflow-hidden bg-brand-cream"
+      style={{
+        width: HORSE_PAGE_WIDTH,
+        backgroundImage:
+          "radial-gradient(ellipse at 52% 48%, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.18) 36%, transparent 72%)",
+      }}
+    >
+      <div className="relative flex flex-col items-center">
         <HorseIntro width={620} startX={-HORSE_PAGE_WIDTH} />
-        <div aria-hidden className="h-1 w-[720px] bg-brand-cardinal" />
+        <motion.div
+          aria-hidden
+          initial={{ scaleX: 0, opacity: 0.55 }}
+          animate={{ scaleX: 1, opacity: 1 }}
+          transition={{ duration: 1.2, delay: 1.8, ease: easeSamePage }}
+          className="h-1 w-[720px] origin-left bg-brand-cardinal"
+        />
       </div>
     </div>
   );
@@ -37,8 +51,8 @@ export function TitleSlide() {
         <h1 className="font-display text-headline font-bold">
           <MaskedLines lines={title.pitch} delay={TITLE_TEXT_DELAY + 0.3} />
         </h1>
-        <motion.p variants={fadeReveal(TITLE_TEXT_DELAY + 0.9)} className="text-lede font-bold">
-          {title.tagline}
+        <motion.p variants={fadeReveal(TITLE_TEXT_DELAY + 0.9)} className="text-caption text-ink-muted">
+          {title.byline}
         </motion.p>
       </div>
     </StepView>
@@ -124,51 +138,72 @@ function EasinessMeter() {
   return (
     <motion.figure variants={fadeReveal(0.5, 24)} className={PANEL}>
       <p className="font-display text-display leading-none font-bold text-accent">
-        <CountUp total={easiness.value} format={(value) => value.toFixed(2)} delay={0.7} />
+        <CountUp total={easiness.value} format={(value) => `+${value.toFixed(2)}`} delay={0.7} />
       </p>
-      <svg viewBox="0 0 440 40" className="w-full" aria-hidden>
-        <rect width={440} height={24} y={8} rx={12} className="fill-paper-sunken" />
-        <motion.rect width={440 * easiness.value} height={24} y={8} rx={12} className="fill-accent" style={growFromLeft} variants={grow(0.7, 1.4)} />
+      <p className="text-caption font-bold text-ink-muted">Star rating ↑</p>
+      <svg viewBox="0 0 440 190" className="w-full" role="img" aria-label="Illustrative upward trend: as ease ratings rise, star ratings tend to rise too">
+        <line x1={54} y1={154} x2={410} y2={154} className="stroke-rule" strokeWidth={3} />
+        <path d="M398 146 L410 154 L398 162" fill="none" className="stroke-rule" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
+        <line x1={54} y1={154} x2={54} y2={28} className="stroke-rule" strokeWidth={3} />
+        <path d="M46 40 L54 28 L62 40" fill="none" className="stroke-rule" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
+        <motion.path d="M76 136 C156 126 234 92 300 72 S370 46 394 40" fill="none" className="stroke-accent" strokeWidth={10} strokeLinecap="round" variants={draw(0.7)} />
+        <path d="M380 42 L396 40 L389 55" fill="none" className="stroke-accent" strokeWidth={8} strokeLinecap="round" strokeLinejoin="round" />
       </svg>
+      <div className="flex justify-between text-fineprint text-ink-muted">
+        <span>Lower ease</span>
+        <span>Higher ease</span>
+      </div>
       <figcaption className="text-point font-bold">{easiness.label}</figcaption>
     </motion.figure>
   );
 }
 
-/** Ratings rise with the grade a student expects and fall with how they do in the next course. Directions only, no values. */
+/** The two direction changes are paired explicitly, so there are no unlabeled chart axes to interpret. */
 function GradesSlopes() {
   const { grades } = ratings.learning;
   return (
-    <motion.figure variants={fadeReveal(0.8, 24)} className={PANEL}>
-      <svg viewBox="0 0 440 200" className="w-full" aria-label={`Ratings go up with the ${grades.up.toLowerCase()} and down with ${grades.down.toLowerCase()}`}>
-        <line x1={20} y1={180} x2={420} y2={180} className="stroke-rule" strokeWidth={3} />
-        <motion.path d="M30 160 L410 30" fill="none" className="stroke-accent" strokeWidth={10} strokeLinecap="round" variants={draw(1)} />
-        <motion.path d="M30 40 L410 150" fill="none" className="stroke-ink-muted" strokeWidth={10} strokeLinecap="round" strokeDasharray="2 18" variants={fadeReveal(1.6)} />
-      </svg>
-      <dl className="flex flex-col gap-2 text-caption">
-        <div className="flex items-center gap-3">
-          <dt className="h-2.5 w-10 rounded-full bg-accent" />
-          <dd>{grades.up}</dd>
+    <motion.figure variants={fadeReveal(0.8, 24)} className={`${PANEL} justify-center`}>
+      <div className="flex flex-col gap-5">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-xl bg-paper-sunken p-4">
+          <p className="flex items-center justify-center gap-2 text-caption font-bold">
+            <span>{grades.up}</span><ArrowUp size={30} className="text-accent" aria-hidden />
+          </p>
+          <ArrowRight size={30} className="text-ink-faint" aria-hidden />
+          <p className="flex items-center justify-center gap-2 text-caption font-bold">
+            <span>Rating</span><ArrowUp size={30} className="text-accent" aria-hidden />
+          </p>
         </div>
-        <div className="flex items-center gap-3">
-          <dt className="h-2.5 w-10 rounded-full border-t-[5px] border-dotted border-ink-muted" />
-          <dd>{grades.down}</dd>
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-xl bg-paper-sunken p-4">
+          <p className="flex items-center justify-center gap-2 text-caption font-bold">
+            <span>{grades.down}</span><ArrowUp size={30} className="text-accent" aria-hidden />
+          </p>
+          <ArrowRight size={30} className="text-ink-faint" aria-hidden />
+          <p className="flex items-center justify-center gap-2 text-caption font-bold">
+            <span>Rating</span><ArrowDown size={30} className="text-accent" aria-hidden />
+          </p>
         </div>
-      </dl>
-      <figcaption className="text-point font-bold">{grades.label}</figcaption>
+      </div>
     </motion.figure>
   );
 }
 
-/** A flat line: across multisection studies, ratings and learning are not related. */
+/** A broken connector shows the meta-analysis found no significant link with learning. */
 function NoLinkLine() {
   return (
-    <motion.figure variants={fadeReveal(1.1, 24)} className={PANEL}>
-      <svg viewBox="0 0 440 200" className="w-full" aria-label="Ratings and learning show no relation">
-        <line x1={20} y1={180} x2={420} y2={180} className="stroke-rule" strokeWidth={3} />
-        <line x1={20} y1={20} x2={20} y2={180} className="stroke-rule" strokeWidth={3} />
-        <motion.path d="M40 100 L410 100" fill="none" className="stroke-accent" strokeWidth={10} strokeLinecap="round" variants={draw(1.4)} />
-      </svg>
+    <motion.figure variants={fadeReveal(1.1, 24)} className={`${PANEL} justify-center`}>
+      <div className="flex items-center justify-center gap-5">
+        <div className="flex flex-col items-center gap-3 text-caption font-bold">
+          <Star size={76} weight="fill" className="text-accent" aria-hidden />
+          <span>Ratings</span>
+        </div>
+        <svg viewBox="0 0 112 40" width={112} aria-hidden>
+          <motion.path d="M2 20 H40 M72 20 H110 M49 10 L63 30 M63 10 L49 30" fill="none" className="stroke-ink-faint" strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" variants={draw(1.4)} />
+        </svg>
+        <div className="flex flex-col items-center gap-3 text-caption font-bold">
+          <GraduationCap size={76} className="text-ink-muted" aria-hidden />
+          <span>Learning</span>
+        </div>
+      </div>
       <figcaption className="text-point font-bold">{ratings.learning.learning.label}</figcaption>
     </motion.figure>
   );
@@ -233,11 +268,6 @@ function BiasView() {
         <SameTeaching label={bias.instructors[1]} lower delay={0.6} />
         <motion.div variants={fadeReveal(2.3)} className="flex flex-col gap-5 pb-4">
           <p className="font-display text-title leading-tight font-bold text-accent">{bias.gap}</p>
-          {bias.more.map((line) => (
-            <p key={line} className="text-caption text-ink-soft">
-              {line}
-            </p>
-          ))}
         </motion.div>
       </div>
       <motion.p variants={fadeReveal(2.6)} className="text-fineprint text-ink-faint">

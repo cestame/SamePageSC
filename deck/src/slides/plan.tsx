@@ -1,4 +1,4 @@
-import { ChatCircleText, EyeSlash, Function as FunctionIcon, LockKey, NotePencil, Prohibit, Sparkle, UserCircleMinus, type Icon } from "@phosphor-icons/react";
+import { ChatCircleText, EyeSlash, Function as FunctionIcon, LockKey, NotePencil, Prohibit, RocketLaunch, ShieldCheck, Sparkle, UserCircleMinus, UsersThree, type Icon } from "@phosphor-icons/react";
 import { AnimatePresence, motion, type Variants } from "motion/react";
 import type { ReactNode } from "react";
 import qrcode from "qrcode-generator";
@@ -277,19 +277,23 @@ export function FairnessSlide() {
 /* ---------- Rollout: a timeline that draws left to right ---------- */
 
 export function RolloutSlide() {
+  const phaseIcons: Icon[] = [RocketLaunch, UsersThree, ShieldCheck];
   return (
     <StepView className="flex flex-col justify-between">
       <Heading lines={rollout.heading} />
       <div className="relative">
-        <svg aria-hidden viewBox="0 0 1696 20" className="absolute top-[18px] left-0 w-full">
+        <svg aria-hidden viewBox="0 0 1696 20" className="absolute top-[38px] left-0 w-full">
           <motion.line x1={20} x2={1676} y1={10} y2={10} className="stroke-rule" strokeWidth={6} strokeLinecap="round" style={growFromLeft} variants={grow(0.5, 2)} />
         </svg>
         <ol className="relative grid grid-cols-3 gap-gap">
           {rollout.phases.map((phase, index) => {
             const isNow = index === 0;
+            const PhaseIcon = phaseIcons[index];
             return (
               <motion.li key={phase.name} variants={fadeReveal(0.7 + index * 0.6, 16)} className="flex flex-col gap-6">
-                <span className={`size-14 rounded-full ${isNow ? "bg-accent" : "bg-paper ring-[6px] ring-rule"}`} />
+                <span className={`flex size-24 items-center justify-center rounded-full ${isNow ? "bg-accent text-paper" : "bg-paper-raised text-ink-muted ring-[8px] ring-rule"}`}>
+                  <PhaseIcon size={52} weight="bold" aria-hidden />
+                </span>
                 <p className={`text-caption font-bold ${isNow ? "text-accent" : "text-ink-muted"}`}>{phase.when}</p>
                 <p className="font-display text-title leading-tight font-bold">{phase.name}</p>
               </motion.li>
