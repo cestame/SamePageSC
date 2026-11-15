@@ -47,10 +47,11 @@ export function answersForCourse(general, perCourse, courseId, validate) {
 const profileValues = (profile) => Object.fromEntries(Object.entries(profile).map(([k, f]) => [k, f.value]));
 
 /**
- * One result per section the extension sent.
+ * One result per section the extension sent. Sample professors match only when `includeSamples` is set,
+ * which the demo class list does; on real webReg pages they never do.
  * `courses` is every course row; `professorsFor(courseId)` loads that course's merged profiles.
  */
-export async function lookupSections({ sections, general, perCourse, courses, professorsFor, score, validate }) {
+export async function lookupSections({ sections, general, perCourse, courses, professorsFor, score, validate, includeSamples = false }) {
   const byCode = new Map(courses.map((c) => [normalizeCode(c.code), c]));
   const results = [];
   for (const s of sections) {
@@ -59,13 +60,13 @@ export async function lookupSections({ sections, general, perCourse, courses, pr
       results.push({ key: s.key, status: 'no-notes' });
       continue;
     }
-    const real = (await professorsFor(course.id)).filter((p) => !p.is_sample);
-    const prof = real.find((p) => (s.instructors || []).some((name) => sameInstructor(name, p.name)));
+    const candidates = (await professorsFor(course.id)).filter((p) => includeSamples || !p.is_sample);
+    const prof = candidates.find((p) => (s.instructors || []).some((name) => sameInstructor(name, p.name)));
     if (!prof) {
       results.push({ key: s.key, status: 'no-notes', courseId: course.id });
       continue;
     }
-    const base = { key: s.key, courseId: course.id, professorId: prof.id, name: prof.name, profile: profileValues(prof.profile) };
+    const base = { key: s.key, courseId: course.id, professorId: prof.id, name: prof.name, isSample: Boolean(prof.is_sample), profile: profileValues(prof.profile) };
     const answers = answersForCourse(general, perCourse, course.id, validate);
     if (answers.status !== 'ready') {
       results.push({ ...base, status: answers.status });

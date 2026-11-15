@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Same Page",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Shows how each section in USC Web Registration fits the way you learn, from notes by students who took it.",
   "icons": { "16": "icons/icon-16.png", "48": "icons/icon-48.png", "128": "icons/icon-128.png" },
   "action": { "default_title": "Open Same Page", "default_icon": { "16": "icons/icon-16.png", "48": "icons/icon-48.png" } },
@@ -11,9 +11,15 @@
   "host_permissions": ["http://localhost:3000/*", "https://*.replit.app/*", "https://*.replit.dev/*"],
   "content_scripts": [
     {
-      "matches": ["https://webreg.usc.edu/*"],
+      "matches": ["https://webreg.usc.edu/*", "http://localhost:3000/demo/*", "https://*.replit.app/demo/*", "https://*.replit.dev/demo/*"],
       "js": ["webreg.js"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": ["http://localhost:3000/*", "https://*.replit.app/*", "https://*.replit.dev/*"],
+      "exclude_matches": ["http://localhost:3000/demo/*", "https://*.replit.app/demo/*", "https://*.replit.dev/demo/*"],
+      "js": ["site.js"],
+      "run_at": "document_start"
     }
   ]
 }

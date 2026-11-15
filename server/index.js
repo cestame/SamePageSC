@@ -2,7 +2,7 @@ import express from 'express';
 import crypto from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { initDb, query } from './db.js';
+import { closeDb, initDb, query } from './db.js';
 import { seedSamples } from './seed.js';
 import { FIELD_KEYS, PRODUCT_NAME } from '../shared/content.js';
 import { scoreProfile, mergeContributions, validateAnswers } from './scoring.js';
@@ -12,6 +12,7 @@ import { planSchedule } from './planner.js';
 import { authRoutes, loadUser, migrateAuth } from './auth.js';
 import { getRequirements, migrateUsc, searchCourses, searchPrograms } from './usc.js';
 import { lookupSections } from './sections.js';
+import { renderDemoPage } from './demoPage.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -228,7 +229,7 @@ app.post('/api/plan', asyncRoute(async (req, res) => {
 
 // The Chrome extension: fit for the sections a student is looking at in USC web registration.
 app.post('/api/sections/lookup', rateLimit({ windowMs: 60_000, max: 60 }), asyncRoute(async (req, res) => {
-  const { sections, general, perCourse } = req.body || {};
+  const { sections, general, perCourse, includeSamples } = req.body || {};
   if (!Array.isArray(sections) || sections.length === 0 || sections.length > 100) {
     return res.status(400).json({ error: 'Send between 1 and 100 sections.' });
   }
@@ -251,7 +252,19 @@ app.post('/api/sections/lookup', rateLimit({ windowMs: 60_000, max: 60 }), async
     professorsFor,
     score: scoreProfile,
     validate: validateAnswers,
+    // Only the demo class list (fictional sections) asks for sample professors.
+    includeSamples: includeSamples === true,
   }));
+}));
+
+// The demo class list for trying the extension without a USC login. Fictional sample sections only.
+app.get('/demo/webreg', asyncRoute(async (req, res) => {
+  const courses = await query('SELECT id, code, title FROM courses ORDER BY code');
+  const samples = await loadProfessors('p.is_sample = TRUE', []);
+  const listed = courses
+    .map((c) => ({ ...c, sections: samples.filter((p) => p.course_id === c.id && p.section) }))
+    .filter((c) => c.sections.length > 0);
+  res.type('html').send(renderDemoPage(listed));
 }));
 
 // Explanation: written by the AI from the two profiles, cached per (answers, profile) pair.
@@ -408,3 +421,11 @@ if (seeded) console.log(`Added ${seeded} sample sections.`);
 app.listen(port, '0.0.0.0', () => {
   console.log(`${PRODUCT_NAME} running on http://localhost:${port} (db: ${kind}, ai: ${aiConfigured() ? 'on' : 'OFF - set ANTHROPIC_API_KEY'})`);
 });
+
+// Ctrl+C locally, or Replit stopping the app: finish closing the database before exiting.
+for (const signal of ['SIGINT', 'SIGTERM']) {
+  process.once(signal, () => {
+    console.log(`Closing the database (${signal}).`);
+    closeDb().catch((err) => console.error('Closing the database failed:', err.message)).finally(() => process.exit(0));
+  });
+}

@@ -11,7 +11,7 @@ export async function initDb() {
       connectionString: process.env.DATABASE_URL,
       ssl: /localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL) ? false : { rejectUnauthorized: false },
     });
-    impl = { query: (text, params) => pool.query(text, params), kind: 'postgres' };
+    impl = { query: (text, params) => pool.query(text, params), close: () => pool.end(), kind: 'postgres' };
   } else {
     const { PGlite } = await import('@electric-sql/pglite');
     const { mkdirSync } = await import('node:fs');
@@ -19,7 +19,7 @@ export async function initDb() {
     mkdirSync(dir, { recursive: true });
     const db = new PGlite(dir);
     await db.waitReady;
-    impl = { query: (text, params) => db.query(text, params), kind: 'pglite' };
+    impl = { query: (text, params) => db.query(text, params), close: () => db.close(), kind: 'pglite' };
   }
   await migrate();
   return impl.kind;
@@ -80,4 +80,9 @@ async function migrate() {
     )`,
   ];
   for (const s of statements) await impl.query(s, []);
+}
+
+/** Close the connection cleanly. PGlite's files can be damaged if the process is killed mid-write. */
+export async function closeDb() {
+  await impl?.close();
 }

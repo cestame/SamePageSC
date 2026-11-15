@@ -49,3 +49,15 @@ test('says which answers are missing instead of guessing', async () => {
   const [needsSetup] = await lookup({}, [{ key: 'b', code: 'CSCI 103', instructors: ['Maya Reyes'] }], {});
   assert.equal(needsSetup.status, 'needs-setup');
 });
+
+test('sample professors match only on the demo class list', async () => {
+  const run = (includeSamples) => lookupSections({
+    sections: [{ key: 'a', code: 'CSCI 103', instructors: ['Sample, Ada'] }],
+    general, perCourse: { 'csci-103': { prior: 2, workload: 3 } }, courses,
+    professorsFor: async () => professors, score: scoreProfile, validate: validateAnswers, includeSamples,
+  });
+  assert.equal((await run(false))[0].status, 'no-notes');
+  const [demo] = await run(true);
+  assert.equal(demo.status, 'scored');
+  assert.equal(demo.isSample, true);
+});

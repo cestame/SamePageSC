@@ -12,13 +12,14 @@ openPanelOnIconClick();
 chrome.runtime.onInstalled.addListener(openPanelOnIconClick);
 chrome.runtime.onStartup.addListener(openPanelOnIconClick);
 
-async function lookupSections(sections) {
-  const { server } = await configReady;
+const serverOrigin = async () => (await configReady).server.replace(/\/+$/, '');
+
+async function lookupSections(sections, includeSamples) {
   const { answers } = await chrome.storage.local.get('answers');
-  const res = await fetch(`${server.replace(/\/+$/, '')}/api/sections/lookup`, {
+  const res = await fetch(`${await serverOrigin()}/api/sections/lookup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ sections, general: answers?.general ?? {}, perCourse: answers?.perCourse ?? {} }),
+    body: JSON.stringify({ sections, includeSamples, general: answers?.general ?? {}, perCourse: answers?.perCourse ?? {} }),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || `Same Page answered with an error (${res.status}).`);
@@ -33,13 +34,17 @@ async function showInPanel(route) {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === 'open-panel' && sender.tab?.id !== undefined) {
+    const route = String(message.route || '#/');
     // sidePanel.open only works during the student's click, so it runs before anything is awaited.
-    chrome.sidePanel.open({ tabId: sender.tab.id }).catch(() => undefined);
-    showInPanel(String(message.route || '#/'));
+    // If Chrome refuses (an older version, or no user gesture), open the same page in a new tab instead.
+    chrome.sidePanel.open({ tabId: sender.tab.id }).then(
+      () => showInPanel(route),
+      async () => chrome.tabs.create({ url: `${await serverOrigin()}/${route}`, index: sender.tab.index + 1 }),
+    );
     return false;
   }
   if (message?.type === 'lookup-sections' && Array.isArray(message.sections)) {
-    lookupSections(message.sections).then(sendResponse, (err) => sendResponse({ error: err.message }));
+    lookupSections(message.sections, message.includeSamples === true).then(sendResponse, (err) => sendResponse({ error: err.message }));
     return true;
   }
   return false;

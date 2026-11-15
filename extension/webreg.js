@@ -4,6 +4,8 @@
 
 (() => {
   const BADGE_ATTR = 'data-same-page-key';
+  // Anywhere but USC's own webReg, this is Same Page's demo class list of fictional sample sections.
+  const ON_DEMO = location.hostname !== 'webreg.usc.edu';
   const FIELD_ORDER = ['pace', 'format', 'structure', 'assessment', 'participation', 'guidance', 'workload'];
 
   /*
@@ -93,21 +95,22 @@
 
   /** What each result looks like, what it says to a screen reader, and which app page it opens. */
   function describe(result, code) {
+    const who = result.isSample ? `${result.name} (sample professor, fictional)` : result.name;
     const course = encodeURIComponent(result.courseId ?? '');
     const lookup = {
       scored: {
-        text: [['score', `${result.score}%`], ['muted', `teaching fit with ${result.name}, based on pace, structure, grading and 4 more`]],
-        label: `${result.score}% teaching fit with ${result.name}, based on pace, structure, grading and four more. Open the match in Same Page.`,
+        text: [['score', `${result.score}%`], ['muted', `teaching fit with ${who}, based on pace, structure, grading and 4 more`]],
+        label: `${result.score}% teaching fit with ${who}, based on pace, structure, grading and four more. Open the match in Same Page.`,
         route: `#/matches?course=${course}`,
       },
       'needs-answers': {
         text: [['muted', 'Answer 2 questions for your fit']],
-        label: `Same Page has notes on ${result.name} for ${code}. Answer 2 questions to see your fit.`,
+        label: `Same Page has notes on ${who} for ${code}. Answer 2 questions to see your fit.`,
         route: '#/home',
       },
       'needs-setup': {
         text: [['muted', 'Set up Same Page for your fit']],
-        label: `Same Page has notes on ${result.name} for ${code}. Finish setup to see your fit.`,
+        label: `Same Page has notes on ${who} for ${code}. Finish setup to see your fit.`,
         route: '#/setup',
       },
       'no-notes': {
@@ -163,6 +166,7 @@
       for (let i = 0; i < sections.length; i += 100) {
         const response = await chrome.runtime.sendMessage({
           type: 'lookup-sections',
+          includeSamples: ON_DEMO,
           sections: sections.slice(i, i + 100).map(({ key, code, instructors }) => ({ key, code, instructors })),
         });
         if (!response || response.error) return;

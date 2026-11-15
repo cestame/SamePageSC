@@ -29,10 +29,14 @@ function extensionStorage(): ExtensionStorage | null {
  * it needs into extension storage. Only answers and course ids are shared, never the name or email.
  */
 export function shareAnswersWithExtension(profile: StudentProfile | null) {
-  const storage = extensionStorage();
-  if (!storage) return;
   const answers = profile ? { general: profile.general, perCourse: profile.perCourse, courseIds: profile.courseIds } : null;
-  storage.set({ answers }).catch(() => undefined);
+  const storage = extensionStorage();
+  if (storage) {
+    storage.set({ answers }).catch(() => undefined);
+    return;
+  }
+  // On the website, the extension (if installed) listens for this on our own window and saves it.
+  window.postMessage({ source: 'same-page', type: 'answers', answers }, window.location.origin);
 }
 
 /**
