@@ -17,7 +17,7 @@ test('evidence that is not in the source is not grounded', () => {
 
 test('replaceDashes turns em and en dashes into commas', () => {
   assert.equal(replaceDashes('Fast pace \u2014 lots of homework'), 'Fast pace, lots of homework');
-  assert.equal(replaceDashes('Exams–mostly'), 'Exams, mostly');
+  assert.equal(replaceDashes('Exams\u2013mostly'), 'Exams, mostly');
 });
 
 test('countSentences counts plain sentences', () => {
