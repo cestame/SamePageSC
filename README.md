@@ -90,6 +90,23 @@ client/
   src/screens/         create profile, setup, home (schedule planner), matches, professor, contribute, privacy
 ```
 
+## USC majors and requirements
+
+- **Majors** come from the keyword filter on [usc.edu/majors-minors](https://www.usc.edu/majors-minors/). The server sends one request per search a student types and caches the results. It never pages through the list, because robots.txt disallows the `/page/` links.
+- **Requirements** come from `shared/requirements.json`, filled in by hand from the [USC Catalogue 2026-2027](https://catalogue.usc.edu/index.php?catoid=22). The catalogue turns away automated requests (it answers with an empty 202) and asks for 120 seconds between requests, so the app doesn't scrape it. Each entry is keyed by the program's catalogue `poid` (shown in the program's catalogue URL):
+
+```json
+{
+  "32086": {
+    "name": "Computer Science (BS)",
+    "source": "https://catalogue.usc.edu/preview_program.php?catoid=22&poid=32086",
+    "courses": [{ "code": "CSCI 103", "title": "Introduction to Programming" }]
+  }
+}
+```
+
+- Students can also search any course in that file or add a class by code and title. Classes without section profiles show up on the schedule page with a prompt to add notes.
+
 ## API
 
 | Method | Path | Purpose |
@@ -97,6 +114,11 @@ client/
 | GET | `/api/courses` | Courses with section counts |
 | GET | `/api/courses/:id/professors` | Merged profiles for a course |
 | GET | `/api/professors/:id` | Profile, feedback stats, professor responses |
+| POST | `/api/auth/signup`, `/api/auth/login`, `/api/auth/logout` | Email and password accounts (scrypt hashes, httpOnly session cookie) |
+| GET/PUT | `/api/auth/me`, `/api/profile` | The signed-in student's saved profile |
+| GET | `/api/usc/programs?q=` | Searches USC majors and minors |
+| GET | `/api/usc/programs/:poid/requirements` | Required courses from `shared/requirements.json` |
+| GET/POST | `/api/usc/courses?q=`, `/api/courses` | Course search, and adding a class by code |
 | POST | `/api/plan` | `{courses: [{courseId, answers}], earliest, latest, locked}` → each class's sections ranked, plus the chosen section per class |
 | POST | `/api/match` | `{courseId, answers}` → sections ranked by fit with breakdown |
 | POST | `/api/explain` | `{professorId, answers}` → AI "why" + "watch out" (cached) |

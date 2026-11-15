@@ -17,6 +17,13 @@ What's built and what's next, for whoever picks this up in the next session.
 - Two sample sections were moved (Whitfield to TTh 2:00 pm, Tran to MWF 10:00 am) so the planner has real conflicts to work around.
 - Major is recorded and shown but doesn't change matching, because we have no real degree requirement data.
 
+## Built (2026-11-14, night)
+
+- Real accounts: email and password, scrypt-hashed, 30-day httpOnly session cookie, profile saved per account. "Try it without an account" keeps the browser-only guest profile, which moves into an account on sign-up.
+- Major field searches USC's real majors list (usc.edu keyword filter, cached).
+- Classes step: classes with section profiles, required courses for the major (from `shared/requirements.json`), search, and add-by-code for any other class.
+- catalogue.usc.edu blocks automated requests (empty 202 on content and program pages), so requirements must be added by hand. `shared/requirements.json` is empty: fill in the demo majors before the pitch.
+
 ## Not yet verified
 
 - The AI calls have not run against the real API, because no key was available locally. Test the contribute flow and explanations on Replit with `ANTHROPIC_API_KEY` set.
