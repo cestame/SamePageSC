@@ -2,7 +2,7 @@
 
 What's built, what was decided, and what's next. Read this and CLAUDE.md at the start of every session.
 
-Submission is due **Sunday, November 15, 2026 at 11:00 AM PT** (AI@USC, HackSC x USC AI Committee). The repo is https://github.com/cestame/aiusc (public, `main`).
+Submission is due **Sunday, November 15, 2026 at 11:00 AM PT** (AI@USC, HackSC x USC AI Committee). The repo is https://github.com/cestame/SamePageSC (public, `main`; renamed from `aiusc`).
 
 ## Where things stand
 
@@ -38,7 +38,7 @@ Submission is due **Sunday, November 15, 2026 at 11:00 AM PT** (AI@USC, HackSC x
 
 ## Replit deployment steps
 
-1. Create Repl, Import from GitHub, `cestame/aiusc`. `.replit` sets Node 20 + PostgreSQL; Run does `npm install && npm run build && npm start`.
+1. Create Repl, Import from GitHub, `cestame/SamePageSC`. `.replit` sets Node 20 + PostgreSQL; Run does `npm install && npm run build && npm start`.
 2. Database tool: create a PostgreSQL database (sets `DATABASE_URL`).
 3. Secrets: `ANTHROPIC_API_KEY`. Optional `PROFESSOR_RESPONSE_CODE` (verified professor responses).
 4. Run, then Deploy (Autoscale) with the same secrets and database. Tables and all sample data are created on first start.
