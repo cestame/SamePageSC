@@ -1,0 +1,458 @@
+{
+  "provenance": {
+    "product": "Same Page SC",
+    "learner_model": "REAL-FIT: BKT + NPMLE learner population fit on ASSISTments 2009-10 skill-builder",
+    "course_structure": "SYNTHETIC",
+    "teaching_patterns": "SYNTHETIC",
+    "move_effects": "ASSUMPTION: literature priors, calibrated to Freeman et al. 2014 failure rates"
+  },
+  "validation": {
+    "heldout_auc_bkt": 0.741,
+    "heldout_auc_baseline": 0.575
+  },
+  "calibration": {
+    "scale": 2.0,
+    "w_active": 10.0,
+    "sim_fail_A": 0.336,
+    "sim_fail_B": 0.22,
+    "target_fail_A": 0.338,
+    "target_fail_B": 0.218
+  },
+  "course": {
+    "weeks": [
+      {
+        "week": 1,
+        "concept": "Ordering Fractions",
+        "prereqs": []
+      },
+      {
+        "week": 2,
+        "concept": "Addition and Subtraction Fractions",
+        "prereqs": [
+          "Ordering Fractions"
+        ]
+      },
+      {
+        "week": 3,
+        "concept": "Conversion of Fraction Decimals Percents",
+        "prereqs": [
+          "Ordering Fractions"
+        ]
+      },
+      {
+        "week": 4,
+        "concept": "Percent Of",
+        "prereqs": [
+          "Conversion of Fraction Decimals Percents"
+        ]
+      },
+      {
+        "week": 5,
+        "concept": "Proportion",
+        "prereqs": [
+          "Addition and Subtraction Fractions"
+        ]
+      },
+      {
+        "week": 6,
+        "concept": "Midterm",
+        "prereqs": []
+      },
+      {
+        "week": 7,
+        "concept": "Probability of a Single Event",
+        "prereqs": [
+          "Conversion of Fraction Decimals Percents"
+        ]
+      },
+      {
+        "week": 8,
+        "concept": "Probability of Two Distinct Events",
+        "prereqs": [
+          "Probability of a Single Event"
+        ]
+      },
+      {
+        "week": 9,
+        "concept": "Venn Diagram",
+        "prereqs": [
+          "Probability of a Single Event"
+        ]
+      },
+      {
+        "week": 10,
+        "concept": "Equation Solving Two or Fewer Steps",
+        "prereqs": [
+          "Proportion"
+        ]
+      },
+      {
+        "week": 11,
+        "concept": "Finding Percents",
+        "prereqs": [
+          "Percent Of",
+          "Equation Solving Two or Fewer Steps"
+        ]
+      },
+      {
+        "week": 12,
+        "concept": "Final",
+        "prereqs": []
+      }
+    ]
+  },
+  "sections": {
+    "A": {
+      "label": "Section A: lecture-heavy",
+      "wait_time_s": 1.0,
+      "minutes_per_week": {
+        "explain": 105,
+        "worked_example": 12,
+        "question_to_class": 8,
+        "think_pair_share": 0,
+        "recap": 5,
+        "logistics": 12,
+        "tangent": 8
+      },
+      "population_mastery": [
+        {
+          "week": 1,
+          "p10": 0.392,
+          "p50": 0.906,
+          "p90": 1.0
+        },
+        {
+          "week": 2,
+          "p10": 0.359,
+          "p50": 0.899,
+          "p90": 0.994
+        },
+        {
+          "week": 3,
+          "p10": 0.322,
+          "p50": 0.845,
+          "p90": 0.99
+        },
+        {
+          "week": 4,
+          "p10": 0.294,
+          "p50": 0.84,
+          "p90": 0.987
+        },
+        {
+          "week": 5,
+          "p10": 0.273,
+          "p50": 0.817,
+          "p90": 0.985
+        },
+        {
+          "week": 6,
+          "p10": 0.27,
+          "p50": 0.802,
+          "p90": 0.985
+        },
+        {
+          "week": 7,
+          "p10": 0.307,
+          "p50": 0.817,
+          "p90": 0.987
+        },
+        {
+          "week": 8,
+          "p10": 0.275,
+          "p50": 0.77,
+          "p90": 0.98
+        },
+        {
+          "week": 9,
+          "p10": 0.29,
+          "p50": 0.779,
+          "p90": 0.981
+        },
+        {
+          "week": 10,
+          "p10": 0.28,
+          "p50": 0.765,
+          "p90": 0.981
+        },
+        {
+          "week": 11,
+          "p10": 0.265,
+          "p50": 0.757,
+          "p90": 0.979
+        },
+        {
+          "week": 12,
+          "p10": 0.262,
+          "p50": 0.744,
+          "p90": 0.978
+        }
+      ],
+      "population_fail_rate": 0.341,
+      "student": {
+        "score_p10": 0.561,
+        "score_p50": 0.709,
+        "score_p90": 0.793,
+        "p_fail": 0.151,
+        "hard_weeks": [
+          3,
+          8,
+          10,
+          12
+        ],
+        "weekly_scores": [
+          {
+            "week": 1,
+            "p10": 0.6,
+            "p50": 0.8,
+            "p90": 1.0
+          },
+          {
+            "week": 2,
+            "p10": 0.4,
+            "p50": 0.8,
+            "p90": 1.0
+          },
+          {
+            "week": 3,
+            "p10": 0.4,
+            "p50": 0.6,
+            "p90": 1.0
+          },
+          {
+            "week": 4,
+            "p10": 0.4,
+            "p50": 0.8,
+            "p90": 1.0
+          },
+          {
+            "week": 5,
+            "p10": 0.4,
+            "p50": 0.8,
+            "p90": 1.0
+          },
+          {
+            "week": 6,
+            "p10": 0.55,
+            "p50": 0.725,
+            "p90": 0.85
+          },
+          {
+            "week": 7,
+            "p10": 0.6,
+            "p50": 0.8,
+            "p90": 1.0
+          },
+          {
+            "week": 8,
+            "p10": 0.2,
+            "p50": 0.6,
+            "p90": 0.8
+          },
+          {
+            "week": 9,
+            "p10": 0.4,
+            "p50": 0.8,
+            "p90": 1.0
+          },
+          {
+            "week": 10,
+            "p10": 0.4,
+            "p50": 0.6,
+            "p90": 1.0
+          },
+          {
+            "week": 11,
+            "p10": 0.4,
+            "p50": 0.8,
+            "p90": 1.0
+          },
+          {
+            "week": 12,
+            "p10": 0.533,
+            "p50": 0.667,
+            "p90": 0.8
+          }
+        ]
+      }
+    },
+    "B": {
+      "label": "Section B: active learning",
+      "wait_time_s": 3.5,
+      "minutes_per_week": {
+        "explain": 60,
+        "worked_example": 30,
+        "question_to_class": 20,
+        "think_pair_share": 25,
+        "recap": 8,
+        "logistics": 7,
+        "tangent": 0
+      },
+      "population_mastery": [
+        {
+          "week": 1,
+          "p10": 0.503,
+          "p50": 0.967,
+          "p90": 1.0
+        },
+        {
+          "week": 2,
+          "p10": 0.465,
+          "p50": 0.963,
+          "p90": 0.996
+        },
+        {
+          "week": 3,
+          "p10": 0.41,
+          "p50": 0.918,
+          "p90": 0.993
+        },
+        {
+          "week": 4,
+          "p10": 0.386,
+          "p50": 0.915,
+          "p90": 0.991
+        },
+        {
+          "week": 5,
+          "p10": 0.361,
+          "p50": 0.9,
+          "p90": 0.99
+        },
+        {
+          "week": 6,
+          "p10": 0.351,
+          "p50": 0.885,
+          "p90": 0.989
+        },
+        {
+          "week": 7,
+          "p10": 0.385,
+          "p50": 0.89,
+          "p90": 0.99
+        },
+        {
+          "week": 8,
+          "p10": 0.349,
+          "p50": 0.857,
+          "p90": 0.985
+        },
+        {
+          "week": 9,
+          "p10": 0.368,
+          "p50": 0.858,
+          "p90": 0.986
+        },
+        {
+          "week": 10,
+          "p10": 0.355,
+          "p50": 0.847,
+          "p90": 0.986
+        },
+        {
+          "week": 11,
+          "p10": 0.339,
+          "p50": 0.844,
+          "p90": 0.984
+        },
+        {
+          "week": 12,
+          "p10": 0.336,
+          "p50": 0.83,
+          "p90": 0.984
+        }
+      ],
+      "population_fail_rate": 0.24,
+      "student": {
+        "score_p10": 0.632,
+        "score_p50": 0.743,
+        "score_p90": 0.818,
+        "p_fail": 0.057,
+        "hard_weeks": [
+          8
+        ],
+        "weekly_scores": [
+          {
+            "week": 1,
+            "p10": 0.6,
+            "p50": 1.0,
+            "p90": 1.0
+          },
+          {
+            "week": 2,
+            "p10": 0.6,
+            "p50": 0.8,
+            "p90": 1.0
+          },
+          {
+            "week": 3,
+            "p10": 0.4,
+            "p50": 0.8,
+            "p90": 1.0
+          },
+          {
+            "week": 4,
+            "p10": 0.4,
+            "p50": 0.8,
+            "p90": 1.0
+          },
+          {
+            "week": 5,
+            "p10": 0.4,
+            "p50": 0.8,
+            "p90": 1.0
+          },
+          {
+            "week": 6,
+            "p10": 0.6,
+            "p50": 0.75,
+            "p90": 0.9
+          },
+          {
+            "week": 7,
+            "p10": 0.6,
+            "p50": 0.8,
+            "p90": 1.0
+          },
+          {
+            "week": 8,
+            "p10": 0.4,
+            "p50": 0.6,
+            "p90": 1.0
+          },
+          {
+            "week": 9,
+            "p10": 0.6,
+            "p50": 0.8,
+            "p90": 1.0
+          },
+          {
+            "week": 10,
+            "p10": 0.4,
+            "p50": 0.8,
+            "p90": 1.0
+          },
+          {
+            "week": 11,
+            "p10": 0.4,
+            "p50": 0.8,
+            "p90": 1.0
+          },
+          {
+            "week": 12,
+            "p10": 0.567,
+            "p50": 0.717,
+            "p90": 0.833
+          }
+        ]
+      }
+    }
+  },
+  "student": {
+    "source": "REAL: held-out ASSISTments student (anonymous id)",
+    "id": 79016,
+    "observed_answers": 53,
+    "observed_accuracy": 0.679,
+    "effective_particles": 628
+  }
+}
