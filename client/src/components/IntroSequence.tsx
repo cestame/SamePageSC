@@ -1,24 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { PRODUCT_LINE, PRODUCT_NAME } from '../../../shared/content.js';
-
-const SEEN_KEY = 'same-page-intro-seen';
-
-/** True once this browser has watched or skipped the intro, so returning students land on the form. */
-export function introSeen() {
-  try {
-    return localStorage.getItem(SEEN_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
-
-function markIntroSeen() {
-  try {
-    localStorage.setItem(SEEN_KEY, '1');
-  } catch {
-    /* storage unavailable: the intro plays again next visit */
-  }
-}
+import { PixelHorse } from './PixelHorse';
 
 /** The timeline in milliseconds. Pages turn like a book: the horse page, then the wordmark page. */
 const T = {
@@ -196,7 +178,6 @@ export function IntroSequence({ onDone }: { onDone: () => void }) {
       const f = introFrame(now - start);
       paint(refs, f);
       if (f.done) {
-        markIntroSeen();
         doneRef.current();
         return;
       }
@@ -239,7 +220,7 @@ export function IntroSequence({ onDone }: { onDone: () => void }) {
           <div className="intro__ground" aria-hidden="true" />
           <div className="intro-horse" ref={horseRef}>
             <div className="intro-horse__body">
-              <img src="/pixel-horse.png" alt="" width={876} height={623} />
+              <PixelHorse />
               <div className="intro-horse__seat" ref={seatRef}>
                 <PixelBird seated />
               </div>

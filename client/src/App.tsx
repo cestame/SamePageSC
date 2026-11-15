@@ -8,7 +8,7 @@ import { Home } from './screens/Home';
 import { currentUser, loadProfile, restoreSession, setupComplete, signOut, type StudentProfile } from './lib/storage';
 import { navigate } from './lib/hooks';
 import { LoadingState } from './components/ui';
-import { IntroSequence, introSeen } from './components/IntroSequence';
+import { IntroSequence } from './components/IntroSequence';
 import { Matches } from './screens/Matches';
 import { ProfessorPage } from './screens/ProfessorPage';
 import { Contribute } from './screens/Contribute';
@@ -61,8 +61,8 @@ export function App() {
   const { parts, params } = useHashRoute();
   const current = sectionOf(parts[0]);
   const [ready, setReady] = useState(false);
-  // Decided once per page load; the intro closes itself when it finishes or is skipped.
-  const [introPending, setIntroPending] = useState(() => !introSeen());
+  // The intro plays on every page load of the sign-up screen and closes itself when it finishes or is skipped.
+  const [introPending, setIntroPending] = useState(true);
   const reduceMotion = useReducedMotion();
   useEffect(() => { restoreSession().finally(() => setReady(true)); }, []);
   const user = currentUser();

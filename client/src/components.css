@@ -502,7 +502,7 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
 /*
  * A full-screen stack of two pages over the sign-up form. Each page hinges on its left edge and turns
  * toward the viewer like a book page, showing its paper back as it passes upright.
- * The horse image is about 82.6 tiles wide; the bird is 13 tiles wide, so sizing it from the horse keeps
+ * The horse is 83 tiles wide; the bird is 13 tiles wide, so sizing it from the horse keeps
  * the tiles equal.
  */
 .intro {
@@ -618,18 +618,27 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
 }
 
 .intro-horse { position: absolute; z-index: 3; top: 48svh; left: 0; width: var(--horse-width); pointer-events: none; will-change: transform; }
-/* The gallop bob sits on this wrapper so a seated bird rises and falls with the horse. */
-.intro-horse__body { position: relative; animation: horse-gallop 460ms steps(2, jump-none) infinite; }
-/* The source image faces left; flip it so the horse faces the way it runs. */
-.intro-horse__body img { width: 100%; height: auto; display: block; transform: scaleX(-1); }
 /*
- * The seat: the flat stretch of the back is 34% down the image and 51-60% across (after the flip).
- * The bird's feet are centred across its width and end 88% of the way down, so this places them on the back.
+ * The gallop: four leg poses take turns, 120ms each. The wrapper rises one tile (1/59 of its height)
+ * during the two airborne poses, and a seated bird rises and falls with it.
  */
-.intro-horse__seat { position: absolute; left: 47.6%; top: 20.5%; width: calc(100% * 13 / 82.6); visibility: hidden; }
+.intro-horse__body { position: relative; animation: horse-bob 480ms step-end infinite; }
+/* Drawn facing left, like the source image; flip it so the horse faces the way it runs. */
+.pixel-horse { width: 100%; height: auto; display: block; overflow: visible; fill: var(--brand-cardinal); transform: scaleX(-1); }
+.pixel-horse__far { fill: var(--brand-cardinal-deep); }
+.pixel-horse__frame { animation: horse-frame 480ms step-end infinite; }
+.pixel-horse__frame--1 { animation-delay: -360ms; }
+.pixel-horse__frame--2 { animation-delay: -240ms; }
+.pixel-horse__frame--3 { animation-delay: -120ms; }
+/*
+ * The seat, on the horse's tile grid (83 x 59): the flat stretch of the back starts at row 20 around
+ * column 46 after the flip. The bird's feet are centred and end 7.9 of its 9 rows down, so a box at
+ * column 39, row 12 puts them one tile gap above the back.
+ */
+.intro-horse__seat { position: absolute; left: calc(100% * 39 / 83); top: calc(100% * 12 / 59); width: calc(100% * 13 / 83); visibility: hidden; }
 .intro-horse--carrying .intro-horse__seat { visibility: visible; }
 
-.intro-bird { position: absolute; z-index: 4; top: 0; left: 0; width: calc(var(--horse-width) * 13 / 82.6); pointer-events: none; will-change: transform; }
+.intro-bird { position: absolute; z-index: 4; top: 0; left: 0; width: calc(var(--horse-width) * 13 / 83); pointer-events: none; will-change: transform; }
 /* In flight the bird heads left toward the horse; seated it faces forward with the horse. */
 .pixel-bird { width: 100%; height: auto; display: block; overflow: visible; shape-rendering: crispEdges; fill: var(--brand-gold); transform: scaleX(-1); }
 .pixel-bird--seated { transform: none; }
@@ -643,9 +652,14 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
   .intro__ground { bottom: 9svh; }
 }
 
-@keyframes horse-gallop {
-  0%, 100% { transform: translateY(0) rotate(-0.4deg); }
-  50% { transform: translateY(-7px) rotate(0.5deg); }
+@keyframes horse-frame {
+  0% { opacity: 1; }
+  25% { opacity: 0; }
+}
+@keyframes horse-bob {
+  0% { transform: translateY(calc(-100% / 59)); }
+  25% { transform: translateY(0); }
+  75% { transform: translateY(calc(-100% / 59)); }
 }
 @keyframes wing-up {
   0% { opacity: 1; }
