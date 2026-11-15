@@ -10,7 +10,9 @@
     "dev:client": "vite",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "node --test server/*.test.js",
+    "test": "node --test server/*.test.js extension/test/*.test.js evals/**/*.test.js",
+    "build:extension": "node extension/scripts/build-content.mjs",
+    "eval:explanations": "node evals/explanations/run.js",
     "check": "npm run lint && npm run typecheck && npm test"
   },
   "repository": {

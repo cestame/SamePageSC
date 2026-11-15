@@ -7,8 +7,13 @@ export default tseslint.config(
   { ignores: ['dist', 'node_modules', 'data'] },
   js.configs.recommended,
   {
-    files: ['server/**/*.js', 'shared/**/*.js', 'eslint.config.js'],
+    files: ['server/**/*.js', 'shared/**/*.js', 'evals/**/*.js', 'extension/scripts/**/*.mjs', 'extension/test/**/*.js', 'eslint.config.js'],
     languageOptions: { globals: globals.node },
+    rules: { 'no-unused-vars': ['error', { argsIgnorePattern: '^_' }] },
+  },
+  {
+    files: ['extension/src/**/*.js'],
+    languageOptions: { globals: { ...globals.browser, ...globals.webextensions } },
     rules: { 'no-unused-vars': ['error', { argsIgnorePattern: '^_' }] },
   },
   {

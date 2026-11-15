@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "Same Page for USC Web Registration",
+  "short_name": "Same Page",
+  "version": "0.1.0",
+  "description": "Shows how each section is taught, how well it fits you, and schedule conflicts, right on USC Web Registration. Not an official USC tool.",
+  "minimum_chrome_version": "116",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://*.replit.app/*",
+    "https://*.replit.dev/*",
+    "http://localhost:3000/*"
+  ],
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://webreg.usc.edu/*", "https://classes.usc.edu/*"],
+      "js": ["src/content-loader.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["src/content-main.js", "src/config.js", "src/lib/*.js", "src/ui/*.js"],
+      "matches": ["https://webreg.usc.edu/*", "https://classes.usc.edu/*"],
+      "use_dynamic_url": true
+    }
+  ],
+  "action": {
+    "default_title": "Same Page",
+    "default_popup": "src/popup.html"
+  },
+  "options_ui": {
+    "page": "src/popup.html",
+    "open_in_tab": true
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
+  }
+}

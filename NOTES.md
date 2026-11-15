@@ -85,8 +85,12 @@ Fix these during the redesign:
 4. Submission checklist from spec: working link, public repo, 3-minute video, slide deck, project description, screenshot, teammates on Devpost.
 5. Stretch: Chrome extension mockup for the pitch (fit scores on the registration page).
 
-## Try this class prototype (branch try-this-class)
+## Try this class and the Web Registration extension (branch try-this-class)
 
-- `prototypes/try-this-class/index.html` is a standalone 3D lecture hall (Three.js) modeled on USC's published specs for GFS 106. Open it directly in a browser; it does not touch the main app or its build.
-- Students can sit in any seat and jump to moments: how class opens, a question to the class, a student question, engagement, a worked example and how class ends. Prof. A and Prof. B are fictional and every number is simulated.
-- `audio/` holds the two lessons rendered with Windows text-to-speech from the same lesson JSON. `master-prompt.md` describes the recording-based concept and is scoped to this folder only.
+- `client/public/try-this-class/` is a standalone 3D lecture hall (Three.js) modeled on USC's published specs for GFS 106. Vite copies it into `dist`, so the deployed site serves it at `/try-this-class/`. Prof. A and Prof. B are fictional and every number is simulated. `audio/` holds both lessons rendered with Windows text-to-speech from the lesson JSON inside `index.html`. `prototypes/try-this-class/master-prompt.md` describes the recording-based concept and applies only to that prototype.
+- `extension/` is a Manifest V3 Chrome extension for webreg.usc.edu and classes.usc.edu. It reads section tables (read-only), matches sections to Same Page profiles by course code and section number, shows fit scores from `/api/match`, Claude explanations from `/api/explain`, early/late flags and conflicts with pinned sections. Schedule checks work with no server. The Claude key stays on the server.
+- Load it: `chrome://extensions`, turn on Developer mode, Load unpacked, pick `extension/`. Settings open on install; set the server address (a replit.app URL, or http://localhost:3000). "Open the practice page" shows it working on fictional sections without a USC login.
+- Security rules are enforced by `extension/test/security.test.js`: storage is the only permission, content scripts run only on the two registration origins, closed shadow roots, no innerHTML or eval, only `lib/api.js` makes requests (no cookies, no referrer, no redirects), and every message is validated against an allowlist.
+- `npm run build:extension` regenerates the extension's questions from `shared/content.js`; a test fails if they drift.
+- `evals/explanations/` grades Claude's match explanations: 6 cases (including a prompt injection and a personal remark hidden in contributed notes), 9 deterministic checks and a Claude judge. `npm run eval:explanations` needs `ANTHROPIC_API_KEY` and makes 2 Claude calls per case. Not run yet.
+- Not verified yet: the real Web Registration DOM (it needs a USC login). Save a logged-in registration page's HTML and check `extension/src/lib/dom-extract.js` against it.

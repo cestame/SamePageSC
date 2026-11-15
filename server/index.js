@@ -7,7 +7,7 @@ import { seedSamples } from './seed.js';
 import { FIELD_KEYS, PRODUCT_NAME } from '../shared/content.js';
 import { scoreProfile, mergeContributions, validateAnswers } from './scoring.js';
 import { scrubText, isAboutThePerson } from './privacy.js';
-import { extractProfile, explainMatch, aiConfigured, AiUnavailableError } from './ai.js';
+import { extractProfile, explainMatch, answersToText, aiConfigured, AiUnavailableError } from './ai.js';
 import { planSchedule } from './planner.js';
 import { authRoutes, loadUser, migrateAuth } from './auth.js';
 import { getRequirements, migrateUsc, searchCourses, searchPrograms } from './usc.js';
@@ -65,20 +65,6 @@ async function loadProfessors(where, params) {
       return { ...p, ...mergeContributions(mine), feedback: fb };
     })
     .filter(Boolean);
-}
-
-function answersToText(a) {
-  const goal = { requirement: 'just meet the requirement', foundation: 'build a solid foundation', mastery: 'master it and go further' }[a.goal];
-  return [
-    `- Prior knowledge of the subject: ${a.prior}/5`,
-    `- Preferred format: ${a.format}/5 (1 = lecture, 5 = discussion)`,
-    `- Structure wanted: ${a.structure}/5 (1 = loose, 5 = highly organized)`,
-    `- Assessment preference: ${a.assessment}/5 (1 = exams, 5 = projects)`,
-    `- Comfort with participation / cold-calling: ${a.participation}/5`,
-    `- Pace preference: ${a.pace}/5 (1 = slow, 5 = fast)`,
-    `- Workload they can take on: ${a.workload}/5`,
-    `- Goal: ${goal}`,
-  ].join('\n');
 }
 
 // Used when the AI model is unavailable. Built only from the score breakdown, and labeled as such in the UI.

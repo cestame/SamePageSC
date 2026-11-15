@@ -84,6 +84,21 @@ export async function extractProfile({ text, sourceType, courseLabel }) {
 
 // ---------- Match explanation ----------
 
+/** The student's intake answers as prompt text. Shared by the /api/explain route and evals/explanations. */
+export function answersToText(a) {
+  const goal = { requirement: 'just meet the requirement', foundation: 'build a solid foundation', mastery: 'master it and go further' }[a.goal];
+  return [
+    `- Prior knowledge of the subject: ${a.prior}/5`,
+    `- Preferred format: ${a.format}/5 (1 = lecture, 5 = discussion)`,
+    `- Structure wanted: ${a.structure}/5 (1 = loose, 5 = highly organized)`,
+    `- Assessment preference: ${a.assessment}/5 (1 = exams, 5 = projects)`,
+    `- Comfort with participation / cold-calling: ${a.participation}/5`,
+    `- Pace preference: ${a.pace}/5 (1 = slow, 5 = fast)`,
+    `- Workload they can take on: ${a.workload}/5`,
+    `- Goal: ${goal}`,
+  ].join('\n');
+}
+
 const ExplanationSchema = z.object({
   why: z.string().describe('2-3 sentences on why this section fits this student'),
   watch_out: z.string().describe('one honest sentence on what this student should watch out for'),
