@@ -88,6 +88,13 @@ Submission is due **Sunday, November 15, 2026 at 11:00 AM PT** (AI@USC, HackSC x
 - The app moved to `#/home`; the extension panel's root is still the app. Product name is now "Same Page SC".
 - The brief also describes a new matches screen and quiz; not started. The person asked to see the landing page first.
 - Deployed at https://samepage.replit.app (Replit calls deploying "Publish"; it builds from GitHub `main`). `extension/config.json` points there. The download `client/public/same-page-extension.zip` is the `extension/` folder (panel built) inside a `same-page-extension/` folder. Rebuild it after extension or client changes: `npm run build:extension`, copy `extension/` into a folder named `same-page-extension`, zip it with Windows `tar.exe -a -cf` (Git Bash tar writes a tar, PowerShell Compress-Archive writes backslash paths), then Republish on Replit.
+## Pitch deck (2026-11-15)
+
+- `deck/` is the finalist slide deck: a standalone Vite + React + Tailwind app with its own `package.json`, kept out of the root lint and builds (root `eslint.config.js` ignores `deck`). It follows the Same Page brand kit in its dark theme, repeats the profile line and opens with the tile horse and bird.
+- 12 slides: title, survey (19, 22 and 13 of 29), what star ratings measure and their bias, three sample CSCI 103 profiles, the Reyes 93% fit with its downside, the WebReg badge, Try this class, how the AI splits work between Claude and the scorer (plus the knowledge-tracing prototype), fairness rules, the Student Government pilot plan, closing, sources.
+- Survey slide shows counts beside percentages, which the landing page deliberately leaves out. Check with the person before presenting.
+- Not yet checked against the papers: Reid 2010, Boring et al. 2016, Carrell and West 2010, Uttl et al. 2017, Brown and Kosovich 2015. Felton 2004 (r = 0.61), Subtirelu 2015 (0.6 to 0.8) and USC's 2018 tenure change were checked.
+
 ## Open audit items (current UI vs CLAUDE.md)
 
 Fix these during the redesign:

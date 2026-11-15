@@ -4,7 +4,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'data', 'extension/panel'] },
+  { ignores: ['dist', 'node_modules', 'data', 'extension/panel', 'deck'] },
   js.configs.recommended,
   {
     files: ['server/**/*.js', 'shared/**/*.js', 'eslint.config.js'],

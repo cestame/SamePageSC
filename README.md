@@ -88,7 +88,22 @@ client/
   src/theme.css        color, type, spacing, radius, shadow and motion tokens
   src/components/      Button, Card, ProfileLine (the profile diagram), FitScore, QuizQuestion, states
   src/screens/         create profile, setup, home (schedule planner), matches, professor, contribute, privacy
+deck/           the finalist pitch deck, its own small Vite app (see below)
 ```
+
+### The pitch deck
+
+`deck/` holds the slides for the live finalist presentation. It's separate from the app, with its own packages, so nothing in it can break the site. All slide copy, figures, sources and speaker notes are in `deck/src/content.ts`.
+
+```
+cd deck
+npm install
+npm run dev       # the deck; arrow keys to move, N for notes, F for full screen, P for the print version
+npm run build     # dist/index.html is the deck, dist/print.html has one beat per landscape page
+npm run check     # lint, types and the em dash check
+```
+
+Devpost wants the slides as images: open `print.html` and save each page, or print it to PDF.
 
 ## USC majors and requirements
 
