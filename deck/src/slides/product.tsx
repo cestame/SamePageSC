@@ -12,9 +12,9 @@ const [reyes] = sampleCourse.sections;
 const percent = (value: number) => `${Math.round(value)}%`;
 
 /** On the portrait canvas the three sections stack, each card carrying its own field names at a smaller size. */
-function ShapeCards({ tall }: { tall: boolean }) {
+function ShapeCards({ tall, sections }: { tall: boolean; sections: readonly SampleSection[] }) {
   const size = tall ? profileSizes.mini : profileSizes.card;
-  return sampleCourse.sections.map((section, index) => (
+  return sections.map((section, index) => (
     <motion.figure
       key={section.number}
       variants={fadeReveal(0.5 + index * 0.6, 24)}
@@ -31,7 +31,8 @@ function ShapeCards({ tall }: { tall: boolean }) {
   ));
 }
 
-export function ShapesSlide() {
+/** `sections` and `note` let another deck show different people, such as a teammate playing the professor. */
+export function ShapesSlide({ sections = sampleCourse.sections, note = "All instructors shown are fictional samples." }: { step?: number; sections?: readonly SampleSection[]; note?: string }) {
   const tall = useIsPortrait();
   return (
     <StepView className="flex flex-col justify-between">
@@ -42,9 +43,9 @@ export function ShapesSlide() {
             <ProfileLabels size={profileSizes.card} showRange={false} />
           </motion.div>
         )}
-        <ShapeCards tall={tall} />
+        <ShapeCards tall={tall} sections={sections} />
       </div>
-      <Note delay={2.3}>All instructors shown are fictional samples.</Note>
+      <Note delay={2.3}>{note}</Note>
     </StepView>
   );
 }
