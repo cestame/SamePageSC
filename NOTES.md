@@ -132,6 +132,11 @@ Submission is due **Sunday, November 15, 2026 at 11:00 AM PT** (AI@USC, HackSC x
 - Prompts were hardened: pasted text is treated as data (instructions inside it are ignored), evidence must reuse the source's words, no learning styles, no dashes, and explanations may only quote the given score and breakdown numbers.
 - `scrubText` now also removes names after "Notes by", "Submitted by", "Taken by" and "Written by" with no colon (the eval cases found this gap).
 
+## Name and deck labels (2026-11-15)
+
+- The product is called "Same Page SC" everywhere people see it: the website, the extension (its name, toolbar title and badge labels), Add notes, Try this class and the deck. `shared/content.js` already had `PRODUCT_NAME = 'Same Page SC'`; the hard-coded "Same Page" strings were updated, and the extension download was rebuilt.
+- The deck no longer shows the "Slide x, beat y" label or the B key that toggled it. The script page labels multi-part slides "Part 1 of 2".
+
 ## Open audit items (current UI vs CLAUDE.md)
 
 Fix these during the redesign:

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Try this class, Same Page</title>
+<title>Try this class, Same Page SC</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -119,9 +119,9 @@
 </head>
 <body>
 <header class="topbar">
-  <a class="home-link" href="/" aria-label="Same Page SC home page"><img class="wordmark" src="../same-page-logo.png" alt="Same Page"></a>
+  <a class="home-link" href="/" aria-label="Same Page SC home page"><img class="wordmark" src="../same-page-logo.png" alt="Same Page SC"></a>
   <h1>Try this class</h1>
-  <a class="home-text" href="/">Back to Same Page</a>
+  <a class="home-text" href="/">Back to Same Page SC</a>
   <span class="fine">Simulated class with fictional professors. Not an official USC site.</span>
 </header>
 <div class="layout">
@@ -476,7 +476,7 @@ function wrap(c,text,x,y,maxW){const words=text.split(' ');let line='',yy=y;for(
 function arrow(c,x1,y1,x2,y2,col,w,dash){c.save();c.strokeStyle=col;c.fillStyle=col;c.lineWidth=w;if(dash)c.setLineDash([16,10]);c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();c.setLineDash([]);const a=Math.atan2(y2-y1,x2-x1);c.beginPath();c.moveTo(x2,y2);c.lineTo(x2-24*Math.cos(a-0.4),y2-24*Math.sin(a-0.4));c.lineTo(x2-24*Math.cos(a+0.4),y2-24*Math.sin(a+0.4));c.closePath();c.fill();c.restore();}
 function footer(c,t){c.fillStyle='#9a9a9a';c.font=`22px ${FB}`;c.textBaseline='alphabetic';c.fillText(t,48,700);}
 function drawSlide(sl){const c=sCtx;c.fillStyle='#fffefa';c.fillRect(0,0,1280,720);c.fillStyle='#922e2e';c.fillRect(0,0,1280,112);c.fillStyle='#e0b600';c.fillRect(0,112,1280,6);
-  if(!sl){footer(c,'Same Page prototype');sTex.needsUpdate=true;return;}
+  if(!sl){footer(c,'Same Page SC prototype');sTex.needsUpdate=true;return;}
   c.fillStyle='#fff';c.font=`700 54px ${FT}`;c.textBaseline='middle';c.fillText(sl.title,48,58);
   const art=sl.matrix||sl.diagram;c.font=`40px ${FB}`;c.textBaseline='top';
   (sl.bullets||[]).forEach((b,i)=>{c.fillStyle='#922e2e';c.fillRect(56,184+i*84,14,14);c.fillStyle='#030027';wrap(c,b,90,170+i*84,art?640:1120);});
@@ -487,7 +487,7 @@ function drawSlide(sl){const c=sCtx;c.fillStyle='#fffefa';c.fillRect(0,0,1280,72
     for(let i=0;i<=6;i++){c.beginPath();c.moveTo(ox+i*s,oy);c.lineTo(ox+i*s,oy-6*s+20);c.stroke();c.beginPath();c.moveTo(ox,oy-i*s);c.lineTo(ox+6*s,oy-i*s);c.stroke();}
     arrow(c,ox,oy,ox+4*s,oy,'#2f6b4f',8);arrow(c,ox,oy,ox+2*s,oy-3*s,'#922e2e',6);arrow(c,ox,oy,ox+3.5*s,oy-3*s,'#922e2e',6,true);arrow(c,ox,oy,ox,oy-4*s,'#151e3f',6);arrow(c,ox,oy,ox+2*s,oy-4*s,'#151e3f',6,true);
     c.font=`26px ${FB}`;c.fillStyle='#5e5c69';c.textBaseline='top';c.fillText('Solid is before the shear, dashed is after',ox,oy+16);}
-  footer(c,'Synthetic demo lesson, Same Page prototype');sTex.needsUpdate=true;}
+  footer(c,'Synthetic demo lesson, Same Page SC prototype');sTex.needsUpdate=true;}
 let docLines=[],docT=0;
 function drawDoc(){const c=sCtx;c.fillStyle='#2a2a2a';c.fillRect(0,0,1280,720);c.save();c.translate(640,370);c.rotate(-0.015);c.fillStyle='#fbf8ee';c.fillRect(-500,-330,1000,660);
   c.strokeStyle='rgba(70,110,200,0.25)';c.lineWidth=2;for(let y=-258;y<320;y+=72){c.beginPath();c.moveTo(-500,y);c.lineTo(500,y);c.stroke();}
@@ -505,7 +505,7 @@ function drawPoll(){const c=sCtx;c.fillStyle='#fbf8ee';c.fillRect(0,0,1280,720);
     c.fillStyle='#030027';c.font=`38px ${FB}`;c.fillText(o,136,y+32);c.fillStyle='#e2ddcf';c.fillRect(400,y+8,700,48);
     c.fillStyle=ok?'#2f6b4f':(pollFinal?'#b9b4a6':'#e0b600');c.fillRect(400,y+8,700*share/0.7,48);
     c.fillStyle='#030027';c.font=`30px ${FB}`;c.fillText(f>0?Math.round(poll.dist[i]*100)+'%':'',1120,y+32);if(ok){c.fillStyle='#2f6b4f';c.font=`700 30px ${FB}`;c.fillText('✓',362,y+32);}});
-  footer(c,'Simulated responses, Same Page prototype');sTex.needsUpdate=true;}
+  footer(c,'Simulated responses, Same Page SC prototype');sTex.needsUpdate=true;}
 let screenMode='slides',lastSlide=null;
 function renderScreen(){if(screenMode==='doccam')drawDoc();else if(screenMode==='poll')drawPoll();else drawSlide(lastSlide);}
 

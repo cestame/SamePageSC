@@ -1,6 +1,6 @@
 /**
- * Every line of copy, figure and source in the Same Page deck. Edit here, not in the slide components.
- * Profiles and fit scores are the fictional samples the live Same Page app ships with, read from its public API.
+ * Every line of copy, figure and source in the Same Page SC deck. Edit here, not in the slide components.
+ * Profiles and fit scores are the fictional samples the live Same Page SC app ships with, read from its public API.
  */
 
 export const links = {
@@ -16,8 +16,8 @@ export type Source = { cite: string; title: string; url?: string; status: Source
 
 export const sources = {
   survey: {
-    cite: "Same Page survey of 29 USC students, Nov 14 and 15, 2026",
-    title: "Same Page team survey of 29 USC students, freshmen through grad students in more than 20 majors, November 14 and 15, 2026",
+    cite: "Same Page SC survey of 29 USC students, Nov 14 and 15, 2026",
+    title: "Same Page SC team survey of 29 USC students, freshmen through grad students in more than 20 majors, November 14 and 15, 2026",
     url: "https://samepage.replit.app",
     status: "survey",
   },
@@ -76,13 +76,13 @@ export const sources = {
     status: "study",
   },
   assistments: {
-    cite: "Same Page prototype notebook on ASSISTments data",
-    title: "Same Page prototype notebook: knowledge tracing on the public ASSISTments data set (130,000 answers from 3,239 students). The section ranges are for one synthetic student",
+    cite: "Same Page SC prototype notebook on ASSISTments data",
+    title: "Same Page SC prototype notebook: knowledge tracing on the public ASSISTments data set (130,000 answers from 3,239 students). The section ranges are for one synthetic student",
     status: "prototype",
   },
   samples: {
-    cite: "Same Page sample profiles (fictional professors)",
-    title: "Sample teaching profiles shipped with the Same Page app. Every professor named in them is fictional",
+    cite: "Same Page SC sample profiles (fictional professors)",
+    title: "Sample teaching profiles shipped with the Same Page SC app. Every professor named in them is fictional",
     url: "https://samepage.replit.app/demo/webreg",
     status: "sample",
   },
@@ -197,7 +197,7 @@ export const ratings = {
 export const shapes = {
   heading: ["One profile. Seven teaching traits."],
   script: [
-    "So instead of a star, Same Page gives every section a shape. Students share typed notes and syllabi, and Claude turns them into seven teaching traits, from pace to workload. Here are three sections of CSCI 103. Reyes walks you through every example, Natarajan moves fast and grades on exams, and Okafor runs discussions. All three are fictional samples.",
+    "So instead of a star, Same Page SC gives every section a shape. Students share typed notes and syllabi, and Claude turns them into seven teaching traits, from pace to workload. Here are three sections of CSCI 103. Reyes walks you through every example, Natarajan moves fast and grades on exams, and Okafor runs discussions. All three are fictional samples.",
   ],
 };
 
@@ -211,7 +211,7 @@ export const fit = {
   downside: "Fewer discussions. Tighter deadlines.",
   legend: { student: "You", section: "Dr. Reyes", gap: "Where you differ" },
   script: [
-    "You answer eight quick questions, and your answers become the dashed line. Our scoring formula turns the gap into a fit score. For this new coder, Reyes is a 93 percent fit, and Same Page always names one honest trade-off: fewer discussions and tighter deadlines.",
+    "You answer eight quick questions, and your answers become the dashed line. Our scoring formula turns the gap into a fit score. For this new coder, Reyes is a 93 percent fit, and Same Page SC always names one honest trade-off: fewer discussions and tighter deadlines.",
   ],
 };
 
@@ -282,7 +282,7 @@ export const rollout = {
 };
 
 export const closing = {
-  heading: ["Try Same Page."],
+  heading: ["Try Same Page SC."],
   cta: "Scan to try it",
   script: [
     "Scan the code to try it. Your next chapter begins with the right class. Thank you.",

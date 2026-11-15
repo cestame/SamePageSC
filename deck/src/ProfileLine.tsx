@@ -82,7 +82,7 @@ type ProfileLineProps = {
 };
 
 /**
- * The teaching profile: seven 1 to 5 ratings joined into one line, the motif the Same Page app uses everywhere.
+ * The teaching profile: seven 1 to 5 ratings joined into one line, the motif the Same Page SC app uses everywhere.
  * With `student`, the student's answers are a dashed line (faded in, because drawing a path in with pathLength replaces its dashes) and the space between the two lines is shaded.
  * The SVG draws at its own pixel size so `ProfileLabels` beside it lines up row for row.
  */

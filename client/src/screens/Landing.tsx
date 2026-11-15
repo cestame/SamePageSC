@@ -366,7 +366,7 @@ function ExtensionSection() {
   return (
     <div className="landing-extension">
       <div className="stack-4">
-        <h2 id="extension-title" className="text-display">Same Page works where you register.</h2>
+        <h2 id="extension-title" className="text-display">Same Page SC works where you register.</h2>
         <p className="text-body band__muted landing-measure">A fit badge appears under every section in Web Registration. Tap it to see the full match.</p>
         <div className="landing-hero__actions">
           <Button className="button--large" href={EXTENSION_PAGE} icon={<ArrowDown size={22} aria-hidden />}>Download the extension</Button>
@@ -381,7 +381,7 @@ function ExtensionSection() {
 /** A drawn example of a class row with the extension's badge under it. Not a copy of USC's page. */
 function BadgeIllustration() {
   return (
-    <figure className="badge-demo" aria-label="Example: a CSCI 103 section row with a Same Page badge under it reading 93% teaching fit with Dr. Maya Reyes">
+    <figure className="badge-demo" aria-label="Example: a CSCI 103 section row with a Same Page SC badge under it reading 93% teaching fit with Dr. Maya Reyes">
       <div className="badge-demo__row" aria-hidden="true">
         <span><b>29901 R</b></span><span>Lecture</span><span>10:00am-11:50am</span><span>MW</span><span>Reyes, Maya</span>
       </div>

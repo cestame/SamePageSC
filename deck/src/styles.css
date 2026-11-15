@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /*
- * The Same Page brand kit, dark theme (the app's client/src/theme.css), sized for a 1920 by 1080 stage.
+ * The Same Page SC brand kit, dark theme (the app's client/src/theme.css), sized for a 1920 by 1080 stage.
  * Color names describe roles: `paper` is the page, `ink` the text, `accent` the coral profile line.
  */
 @theme static {

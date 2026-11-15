@@ -4,7 +4,7 @@ import { asset } from "@/engine/asset";
 import { easeSamePage } from "@/engine/motion";
 
 /**
- * The tile horse and bird from the Same Page intro: the horse gallops in and stops, then the bird flies in
+ * The tile horse and bird from the Same Page SC intro: the horse gallops in and stops, then the bird flies in
  * and lands on its back. Timing and proportions follow the team's horse animation kit: poses change every
  * 120ms, the bird is 13/83 of the horse's width, and it sits at 39/83 across and 12/59 down the horse.
  */

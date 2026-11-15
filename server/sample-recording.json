@@ -1,5 +1,5 @@
 {
- "about": "A fictional CSCI 103 lecture, written by the Same Page team, in pyannoteAI's output format. Every speaker and line is invented. Student lines are placeholders, and the app never reads them.",
+ "about": "A fictional CSCI 103 lecture, written by the Same Page SC team, in pyannoteAI's output format. Every speaker and line is invented. Student lines are placeholders, and the app never reads them.",
  "courseLabel": "CSCI 103 Object Oriented Programming",
  "output": {
   "diarization": [

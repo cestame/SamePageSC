@@ -4,7 +4,7 @@
 
 (() => {
   const BADGE_ATTR = 'data-same-page-key';
-  // Anywhere but USC's own webReg, this is Same Page's demo class list of fictional sample sections.
+  // Anywhere but USC's own webReg, this is Same Page SC's demo class list of fictional sample sections.
   const ON_DEMO = location.hostname !== 'webreg.usc.edu';
   const FIELD_ORDER = ['pace', 'format', 'structure', 'assessment', 'participation', 'guidance', 'workload'];
 
@@ -102,22 +102,22 @@
     const lookup = {
       scored: {
         text: [['score', `${result.score}%`], ['muted', `teaching fit with ${who}, based on pace, structure, grading and 4 more`]],
-        label: `${result.score}% teaching fit with ${who}, based on pace, structure, grading and four more. Open the match in Same Page.`,
+        label: `${result.score}% teaching fit with ${who}, based on pace, structure, grading and four more. Open the match in Same Page SC.`,
         route: matches,
       },
       'needs-answers': {
         text: [['muted', 'Answer 2 questions for your fit']],
-        label: `Same Page has notes on ${who} for ${code}. Answer 2 questions to see your fit.`,
+        label: `Same Page SC has notes on ${who} for ${code}. Answer 2 questions to see your fit.`,
         route: matches,
       },
       'needs-setup': {
         text: [['muted', 'Answer 8 questions for your fit']],
-        label: `Same Page has notes on ${who} for ${code}. Answer 8 quick questions to see your fit.`,
+        label: `Same Page SC has notes on ${who} for ${code}. Answer 8 quick questions to see your fit.`,
         route: matches,
       },
       'no-notes': {
         text: [['muted', 'No notes yet']],
-        label: `No one has added notes for this ${code} section yet. If you took it, you can add your notes in Same Page.`,
+        label: `No one has added notes for this ${code} section yet. If you took it, you can add your notes in Same Page SC.`,
         route: '#/contribute',
       },
     };

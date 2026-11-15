@@ -1,4 +1,4 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 import { asset } from "./asset";
 
 function toggleFullscreen() {
@@ -9,40 +9,6 @@ function toggleFullscreen() {
   void document.documentElement.requestFullscreen({ navigationUI: "hide" });
 }
 
-const BEAT_LABEL_KEY = "same-page-deck:beat-label";
-const beatLabelListeners = new Set<() => void>();
-
-function readBeatLabelVisible() {
-  try {
-    return window.localStorage.getItem(BEAT_LABEL_KEY) !== "hidden";
-  } catch {
-    return true;
-  }
-}
-
-function toggleBeatLabel() {
-  const nextValue = readBeatLabelVisible() ? "hidden" : "shown";
-  try {
-    window.localStorage.setItem(BEAT_LABEL_KEY, nextValue);
-  } catch {
-    return;
-  }
-  beatLabelListeners.forEach((notify) => notify());
-}
-
-function subscribeToBeatLabel(notify: () => void) {
-  beatLabelListeners.add(notify);
-  window.addEventListener("storage", notify);
-  return () => {
-    beatLabelListeners.delete(notify);
-    window.removeEventListener("storage", notify);
-  };
-}
-
-export function useBeatLabelVisible() {
-  return useSyncExternalStore(subscribeToBeatLabel, readBeatLabelVisible, () => true);
-}
-
 export function usePresenterKeys(printPath: string) {
   const [notesOpen, setNotesOpen] = useState(false);
 
@@ -50,7 +16,6 @@ export function usePresenterKeys(printPath: string) {
     const actions: Record<string, () => void> = {
       n: () => setNotesOpen((open) => !open),
       f: toggleFullscreen,
-      b: toggleBeatLabel,
       p: () => window.open(asset(printPath), "_blank"),
       Escape: () => setNotesOpen(false),
     };
