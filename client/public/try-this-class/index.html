@@ -23,7 +23,10 @@
   button{font:inherit;color:inherit;cursor:pointer}
   .topbar{height:64px;display:flex;align-items:center;gap:16px;padding:0 20px;background:var(--surface);border-bottom:1px solid var(--line)}
   .topbar h1{font-size:22px;font-weight:700}
-  .topbar .product{font-family:var(--font-display);font-weight:700;color:var(--accent)}
+  .topbar .wordmark{height:34px;width:auto;display:block}
+  .start-wrap{position:relative;max-width:440px}
+  .start-wrap::before{content:"";position:absolute;inset:16px -14px -16px 14px;border-radius:var(--radius-lg);
+    background:repeating-linear-gradient(135deg,var(--accent) 0 3px,var(--inverse) 3px 6px)}
   .topbar .fine{margin-left:auto;color:var(--text-muted);font-size:13px}
   .layout{display:grid;grid-template-columns:minmax(0,1fr) 380px;height:calc(100% - 64px)}
   #view{position:relative;min-width:0;background:#1b1a22}
@@ -46,7 +49,7 @@
   .ghost{border:0;background:none;padding:8px 10px;border-radius:var(--radius-pill);min-height:36px;color:var(--text-soft);white-space:nowrap}
   .ghost:hover{background:var(--surface-sunk)}
   .start{position:absolute;inset:0;display:grid;place-items:center;background:rgb(3 0 39 / .45)}
-  .start-card{background:var(--surface);border-radius:var(--radius-lg);padding:28px 30px;max-width:440px;box-shadow:var(--shadow-offset)}
+  .start-card{position:relative;background:var(--surface);border-radius:var(--radius-lg);padding:28px 30px}
   .start-card h2{font-size:28px;line-height:1.1;margin-bottom:10px}
   .start-card p{color:var(--text-muted);margin:0 0 18px;line-height:1.5}
   .primary{border:0;background:var(--text);color:var(--surface);border-radius:var(--radius-pill);padding:12px 22px;min-height:var(--tap);font-weight:600}
@@ -100,7 +103,7 @@
 </head>
 <body>
 <header class="topbar">
-  <span class="product">Same Page</span>
+  <img class="wordmark" src="../same-page-logo.png" alt="Same Page">
   <h1>Try this class</h1>
   <span class="fine">Simulated class with fictional professors. Not an official USC site.</span>
 </header>
@@ -123,11 +126,11 @@
       </div>
     </div>
     <div class="start" id="startOverlay">
-      <div class="start-card">
+      <div class="start-wrap"><div class="start-card">
         <h2>Sit in on a class before you register</h2>
         <p>Pick a section, choose any seat in a 144-seat lecture hall, and watch a four-minute lesson the way that section is usually taught. Sound is on, so check your volume.</p>
         <button class="primary" id="startBtn">Start the class</button>
-      </div>
+      </div></div>
     </div>
   </div>
 
@@ -251,6 +254,8 @@ import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {GTAOPass} from 'three/addons/postprocessing/GTAOPass.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniformsLib.js';
 
 const LESSONS=JSON.parse(document.getElementById('lessons').textContent);
 const FIELDS=[['pace','Pace'],['format','Format'],['structure','Structure'],['assessment','Grading'],['participation','Participation'],['guidance','Guidance'],['workload','Workload']];
@@ -279,9 +284,11 @@ const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamp
 const composer=new EffectComposer(renderer,new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,samples:4}));
 composer.addPass(new RenderPass(scene,camera));
 const ao=new GTAOPass(scene,camera,1,1);ao.updateGtaoMaterial({radius:0.5,distanceExponent:1.2,thickness:1,scale:1.15,samples:16});
-composer.addPass(ao);composer.addPass(new OutputPass());
+composer.addPass(ao);
+const bloom=new UnrealBloomPass(new THREE.Vector2(1,1),0.22,0.5,0.92);composer.addPass(bloom);
+composer.addPass(new OutputPass());
 let useAO=true;
-function resize(){const w=view.clientWidth,h=view.clientHeight;renderer.setSize(w,h);composer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();}
+function resize(){const w=view.clientWidth,h=view.clientHeight;renderer.setSize(w,h);composer.setSize(w,h);bloom?.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();}
 addEventListener('resize',resize);resize();
 
 // ---------- procedural textures ----------
@@ -296,6 +303,15 @@ const wallTex=canvasTex(256,256,(g,w,h)=>{g.fillStyle='#e9e1d2';g.fillRect(0,0,w
 const tileTex=canvasTex(256,256,(g,w,h)=>{g.fillStyle='#ecebe6';g.fillRect(0,0,w,h);speckle(g,w,h,1400,['rgba(120,118,110,.35)','rgba(160,158,150,.3)'],2);g.strokeStyle='#bdbab2';g.lineWidth=5;g.strokeRect(0,0,w,h);},[24,25]);
 const fabricTex=canvasTex(128,128,(g,w,h)=>{g.fillStyle='#7f1b15';g.fillRect(0,0,w,h);for(let i=0;i<w;i+=2){g.fillStyle='rgba(0,0,0,.10)';g.fillRect(i,0,1,h);g.fillStyle='rgba(255,255,255,.04)';g.fillRect(0,i,w,1);}},[2,2]);
 const acousticTex=canvasTex(128,128,(g,w,h)=>{g.fillStyle='#57606d';g.fillRect(0,0,w,h);speckle(g,w,h,1800,['rgba(0,0,0,.12)','rgba(255,255,255,.06)'],1.4);},[2,2]);
+// Hair: thousands of thin strands drawn along the texture's vertical axis, used as both color detail and bump.
+const hairTex=canvasTex(512,512,(g,w,h)=>{g.fillStyle='#bdbdbd';g.fillRect(0,0,w,h);
+  for(let i=0;i<5200;i++){const x=rnd()*w,len=60+rnd()*220,l=120+Math.floor(rnd()*135),bend=(rnd()-0.5)*26;
+    g.strokeStyle=`rgba(${l},${l},${l},${0.35+rnd()*0.5})`;g.lineWidth=0.6+rnd()*1.4;g.beginPath();g.moveTo(x,rnd()*h);g.quadraticCurveTo(x+bend,len/2,x+bend*0.4,len);g.stroke();}},[3,2]);
+const curlTex=canvasTex(256,256,(g,w,h)=>{g.fillStyle='#b0b0b0';g.fillRect(0,0,w,h);
+  for(let i=0;i<1400;i++){const l=110+Math.floor(rnd()*145);g.strokeStyle=`rgba(${l},${l},${l},.8)`;g.lineWidth=1+rnd()*1.5;g.beginPath();g.arc(rnd()*w,rnd()*h,2+rnd()*4,rnd()*6,rnd()*6+3);g.stroke();}},[4,3]);
+// Clothing: a fine knit used as a bump map so shirts and sweaters read as fabric.
+const knitTex=canvasTex(128,128,(g,w,h)=>{g.fillStyle='#808080';g.fillRect(0,0,w,h);
+  for(let y=0;y<h;y+=4)for(let x=0;x<w;x+=4){const l=100+Math.floor(rnd()*80);g.fillStyle=`rgb(${l},${l},${l})`;g.fillRect(x,y,3,3);}},[6,6]);
 const exitTex=canvasTex(256,96,(g,w,h)=>{g.fillStyle='#f4f4f4';g.fillRect(0,0,w,h);g.fillStyle='#c4161c';g.font='bold 70px Arial';g.textAlign='center';g.textBaseline='middle';g.fillText('EXIT',w/2,h/2+4);});
 
 // ---------- materials (faceted polygons on people and furniture) ----------
@@ -311,15 +327,22 @@ const M={
   exit:new THREE.MeshBasicMaterial({map:exitTex,toneMapped:false}),
 };
 const lightPanelFront=std({color:'#fffdf4',emissive:'#fff7e2',emissiveIntensity:1.6}),lightPanelRest=std({color:'#fffdf4',emissive:'#fff7e2',emissiveIntensity:1.6});
+const hairMats={},clothMats={};
+const hairMat=(c,curly)=>hairMats[c+curly]||(hairMats[c+curly]=std({color:c,map:curly?curlTex:hairTex,bumpMap:curly?curlTex:hairTex,bumpScale:2.2,roughness:0.5,metalness:0.05}));
+const clothMat=(c)=>clothMats[c]||(clothMats[c]=std({color:c,bumpMap:knitTex,bumpScale:1.2,roughness:0.92,flatShading:true}));
 const colorMats={};const cm=(c,o={})=>colorMats[c+JSON.stringify(o)]||(colorMats[c+JSON.stringify(o)]=std({color:c,roughness:0.8,flatShading:true,...o}));
 function add(geo,mat,x,y,z,opts={}){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);if(opts.rx)m.rotation.x=opts.rx;if(opts.ry)m.rotation.y=opts.ry;if(opts.rz)m.rotation.z=opts.rz;
   m.castShadow=!!opts.cast;m.receiveShadow=opts.receive!==false;(opts.parent||scene).add(m);return m;}
 const B=(w,h,d)=>new THREE.BoxGeometry(w,h,d),RB=(w,h,d,r=0.02)=>new RoundedBoxGeometry(w,h,d,2,r);
 
 // ---------- lights ----------
-scene.add(new THREE.HemisphereLight('#fff7ea','#40444f',0.6));
-const key=new THREE.DirectionalLight('#fff4e4',1.35);key.position.set(4,9,9);key.castShadow=true;
-key.shadow.mapSize.set(2048,2048);Object.assign(key.shadow.camera,{left:-9,right:9,top:9,bottom:-9,near:1,far:30});key.shadow.bias=-0.0004;key.shadow.normalBias=0.02;
+scene.add(new THREE.HemisphereLight('#fff7ea','#40444f',0.42));
+// Area lights sit under the ceiling panels, the way a lecture hall is actually lit.
+RectAreaLightUniformsLib.init();
+for(const [x,z] of [[-2.7,0.6],[2.7,0.6],[-2.7,5.4],[2.7,5.4],[-2.7,8.8],[2.7,8.8],[0,-1.8]]){
+  const l=new THREE.RectAreaLight('#fff4e2',z<1?5:7,2.4,1.2);l.position.set(x,4.92,z);l.lookAt(x,0,z);scene.add(l);}
+const key=new THREE.DirectionalLight('#fff4e4',0.95);key.position.set(4,9,9);key.castShadow=true;
+key.shadow.mapSize.set(4096,4096);key.shadow.radius=3;Object.assign(key.shadow.camera,{left:-9,right:9,top:9,bottom:-9,near:1,far:30});key.shadow.bias=-0.0004;key.shadow.normalBias=0.02;
 key.target.position.set(0,0,3);scene.add(key,key.target);
 const coolFill=new THREE.DirectionalLight('#cfdcff',0.35);coolFill.position.set(-6,6,-2);scene.add(coolFill);
 const fill=new THREE.PointLight('#ffe8c8',8,16,2);fill.position.set(-3,4.5,2);scene.add(fill);
@@ -487,18 +510,24 @@ const armGeo=(()=>{const a=caps(0.045,0.3);a.translate(0,-0.2,0);const h=new THR
 const headGeo=new THREE.IcosahedronGeometry(0.11,2);headGeo.scale(0.92,1.06,1);
 const noseGeo=new THREE.ConeGeometry(0.018,0.04,4);noseGeo.rotateX(-Math.PI/2);
 const hairShortGeo=new THREE.SphereGeometry(0.119,12,6,0,Math.PI*2,0,Math.PI*0.55);hairShortGeo.rotateX(0.42);
-const hairLongGeo=(()=>{const cap=hairShortGeo.clone();const back=caps(0.085,0.16);back.scale(1.2,1,0.6);back.translate(0,-0.12,0.07);return mergeG([cap,back]);})();
+const hairLongGeo=(()=>{const cap=hairShortGeo.clone();const back=caps(0.085,0.2);back.scale(1.25,1,0.6);back.translate(0,-0.14,0.07);return mergeG([cap,back]);})();
+const hairBunGeo=(()=>{const cap=hairShortGeo.clone();const bun=new THREE.SphereGeometry(0.055,12,8);bun.translate(0,0.06,0.12);return mergeG([cap,bun]);})();
+const hairCurlyGeo=(()=>{const parts=[];const rr=prng(5);for(let i=0;i<46;i++){const th=rr()*Math.PI*2,ph=rr()*Math.PI*0.5;const s=new THREE.IcosahedronGeometry(0.038+rr()*0.018,1);
+  s.translate(Math.sin(ph)*Math.cos(th)*0.115,Math.cos(ph)*0.115+0.005,Math.sin(ph)*Math.sin(th)*0.115+0.02);parts.push(s);}return mergeG(parts);})();
+const eyeGeo=new THREE.SphereGeometry(0.011,8,6),eyeMat=std({color:'#1a1410',roughness:0.2});
 const lapBaseG=RB(0.32,0.018,0.22,0.008),lapScrG=RB(0.32,0.21,0.01,0.006),phoneG=RB(0.075,0.01,0.15,0.008),bagG=RB(0.3,0.36,0.17,0.06);
 const lapScrMat=std({color:'#666',metalness:0.5,roughness:0.35,emissive:'#9cc8ff',emissiveIntensity:0.35}),lapMat=std({color:'#b8bcc2',metalness:0.7,roughness:0.3,flatShading:true});
 const phoneMat=std({color:'#222',emissive:'#ffe7a0',emissiveIntensity:0.9});
 seats.forEach(s=>{
   const g=new THREE.Group();g.position.set(s.x,s.y+0.5,s.z+0.05);const up=new THREE.Group();g.add(up);
-  const shirt=cm(pick(SHIRT)),skin=cm(pick(SKIN),{roughness:0.6}),hair=cm(pick(HAIR),{roughness:0.9}),pants=cm(pick(PANTS)),shoe=cm(pick(['#f0f0f0','#222','#6b4a2b','#3b5a8a']));
+  const style=R();const curly=style>0.78;
+  const shirt=clothMat(pick(SHIRT)),skin=cm(pick(SKIN),{roughness:0.6}),hair=hairMat(pick(HAIR),curly),pants=clothMat(pick(PANTS)),shoe=cm(pick(['#f0f0f0','#222','#6b4a2b','#3b5a8a']));
   const legsSit=new THREE.Mesh(sitLegsGeo,[pants,shoe]),legsStand=new THREE.Mesh(standLegsGeo,[pants,shoe]);legsStand.visible=false;g.add(legsSit,legsStand);
   up.add(new THREE.Mesh(torsoGeo,[shirt,skin]));
   const head=new THREE.Mesh(headGeo,skin);head.position.y=0.74;up.add(head);
   const nose=new THREE.Mesh(noseGeo,skin);nose.position.set(0,-0.005,-0.11);head.add(nose);
-  head.add(new THREE.Mesh(R()<0.35?hairLongGeo:hairShortGeo,hair));
+  head.add(new THREE.Mesh(curly?hairCurlyGeo:style<0.33?hairLongGeo:style<0.45?hairBunGeo:hairShortGeo,hair));
+  for(const ex of [-0.035,0.035])add(eyeGeo,eyeMat,ex,0.02,-0.1,{parent:head,receive:false});
   const armL=new THREE.Group(),armR=new THREE.Group();armL.position.set(-0.21,0.52,0);armR.position.set(0.21,0.52,0);
   armL.add(new THREE.Mesh(armGeo,[shirt,skin]));armR.add(new THREE.Mesh(armGeo,[shirt,skin]));armL.rotation.x=armR.rotation.x=0.75;up.add(armL,armR);
   const lap=new THREE.Group();const desk=s.kind==='table'?{x:0,y:0.255,z:-0.5}:{x:0.1,y:0.205,z:-0.33};lap.position.set(desk.x,desk.y,desk.z);
@@ -517,7 +546,7 @@ for(let r=2;r<ROWS;r++)TIER_BLOCKS.forEach(([a,b],k)=>heatStrip(a-0.3,b+0.3,rowY
 // ---------- professor (stylized, fictional) ----------
 const prof=new THREE.Group();scene.add(prof);
 const pPants=cm('#3b3b40'),pShoe=cm('#2a1d14',{roughness:0.4}),pSkin=cm('#e0ac69',{roughness:0.6});
-const pShirt=std({color:'#2f3b52',roughness:0.85,flatShading:true}),pHairM=std({color:'#9a9a9a',roughness:0.9,flatShading:true});
+const pShirt=std({color:'#2f3b52',bumpMap:knitTex,bumpScale:1.2,roughness:0.85,flatShading:true}),pHairM=std({color:'#9a9a9a',map:hairTex,bumpMap:hairTex,bumpScale:2.2,roughness:0.5});
 const pLegGeo=(()=>{const l=caps(0.075,0.72);l.translate(0,-0.44,0);const sh=new RoundedBoxGeometry(0.11,0.08,0.27,1,0.03);sh.translate(0,-0.88,0.05);return mergeG([l,sh],true);})();
 const pLegL=new THREE.Group(),pLegR=new THREE.Group();pLegL.position.set(-0.11,0.92,0);pLegR.position.set(0.11,0.92,0);
 pLegL.add(new THREE.Mesh(pLegGeo,[pPants,pShoe]));pLegR.add(new THREE.Mesh(pLegGeo,[pPants,pShoe]));prof.add(pLegL,pLegR);
@@ -586,19 +615,27 @@ function drawSeatMap(){const svg=$('seatMap');svg.textContent='';
 
 // ---------- speech ----------
 const synthOK='speechSynthesis' in window;let voices=[];
-function loadVoices(){voices=synthOK?speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang)):[];const sel=$('voiceSel');sel.textContent='';
-  if(!voices.length){const o=document.createElement('option');o.textContent='No voices, captions only';sel.append(o);}
-  voices.forEach((v,i)=>{const o=document.createElement('option');o.value=i;o.textContent=v.name;sel.append(o);});pickVoice();}
-function pickVoice(){if(!voices.length)return;const re=new RegExp(L.voiceHint,'i');let i=voices.findIndex(v=>re.test(v.name)&&/Natural|Online/i.test(v.name));if(i<0)i=voices.findIndex(v=>re.test(v.name));$('voiceSel').value=Math.max(0,i);}
+function loadVoices(){voices=synthOK?speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang)):[];const sel=$('voiceSel');const keep=sel.value||'neural';sel.textContent='';
+  const neural=document.createElement('option');neural.value='neural';neural.textContent='Recorded neural voices (Kokoro)';sel.append(neural);
+  voices.forEach((v,i)=>{const o=document.createElement('option');o.value=i;o.textContent=`Browser voice: ${v.name}`;sel.append(o);});sel.value=keep;}
+function pickVoice(){}
 function studentVoice(){const p=+$('voiceSel').value;const alt=voices.findIndex((v,i)=>i!==p&&/Natural|Online/i.test(v.name));return voices[alt>=0?alt:(p+1)%voices.length];}
-if(synthOK){loadVoices();speechSynthesis.onvoiceschanged=loadVoices;}
+loadVoices();if(synthOK)speechSynthesis.onvoiceschanged=loadVoices;
 function setCaption(who,text){$('capWho').textContent=who;$('capText').textContent=text;}
 let speaking=false,studentSpeaking=false;
-function speak(text,cb,who){const my=token;const parts=(text.match(/[^.!?]+[.!?]*/g)||[text]).map(s=>s.trim()).filter(Boolean);let i=0;const isStudent=who==='student';
-  const label=isStudent?'A student asks':`${L.name}, ${MOVE_NAMES[curStep().move]}`;
+// Lines play from neural recordings in audio/voice (rendered by render_voices.py). Browser
+// text-to-speech is only a fallback when a recording can't load or the user picks it.
+let currentAudio=null;
+function stopAudio(){if(currentAudio){currentAudio.onended=currentAudio.onerror=null;currentAudio.pause();currentAudio=null;}}
+function speak(text,cb,who,part='say'){const my=token;const parts=(text.match(/[^.!?]+[.!?]*/g)||[text]).map(s=>s.trim()).filter(Boolean);let i=0;const isStudent=who==='student';
+  const label=isStudent?'A student asks':`${L.name}, ${MOVE_NAMES[curStep().move]}`;const step=stepI;
   const next=()=>{if(my!==token)return;if(i>=parts.length){speaking=studentSpeaking=false;cb();return;}
-    const sent=parts[i++];setCaption(label,sent);speaking=!isStudent;studentSpeaking=isStudent;let done=false,fb=null;
-    const fin=()=>{if(done||my!==token)return;done=true;if(fb)fb.dead=true;next();};const words=sent.split(/\s+/).length;
+    const n=i;const sent=parts[i++];setCaption(label,sent);speaking=!isStudent;studentSpeaking=isStudent;let done=false,fb=null;
+    const fin=()=>{if(done||my!==token)return;done=true;if(fb)fb.dead=true;currentAudio=null;next();};const words=sent.split(/\s+/).length;
+    if($('voiceSel').value==='neural'){
+      const a=new Audio(`audio/voice/${secKey}-${step}-${part}-${n}.mp3`);a.muted=muted;currentAudio=a;
+      a.onended=fin;a.onerror=()=>{currentAudio=null;fb=after(words/2.6*1000/L.rate+250,fin);};
+      a.play().catch(()=>{if(!done&&!fb)fb=after(words/2.6*1000/L.rate+250,fin);});return;}
     if(muted||!synthOK||!voices.length){fb=after(words/2.6*1000/L.rate+250,fin);return;}
     const u=new SpeechSynthesisUtterance(sent);u.voice=isStudent?studentVoice():(voices[+$('voiceSel').value]||null);u.rate=isStudent?1.05:L.rate;u.pitch=isStudent?1.2:L.pitch;
     u.onend=fin;u.onerror=fin;speechSynthesis.speak(u);fb=after((words*0.8+4)*1000,fin);};
@@ -613,7 +650,7 @@ function initAudio(){if(AC){AC.resume();return;}AC=new (window.AudioContext||win
 // ---------- lesson engine ----------
 function curStep(){return L.steps[Math.max(0,Math.min(stepI,L.steps.length-1))];}
 function playFrom(i,sceneKey){
-  token++;timers=[];speaking=studentSpeaking=false;if(synthOK){speechSynthesis.cancel();speechSynthesis.resume();}
+  token++;timers=[];speaking=studentSpeaking=false;stopAudio();if(synthOK){speechSynthesis.cancel();speechSynthesis.resume();}
   $('startOverlay').style.display='none';initAudio();
   activeScene=sceneKey||null;buildMoments();stopAt=(sceneKey&&!$('keepGoing').checked)?i:null;$('continueBtn').hidden=true;
   boardLines=[];lastSlide=null;for(let k=0;k<i;k++){const s=L.steps[k];if(s.slide)lastSlide=s.slide;if(s.board&&s.tool!=='doccam'){boardLines.push(s.board);if(boardLines.length>4)boardLines.shift();}}
@@ -636,10 +673,10 @@ function nextStep(){
   const afterSay=()=>{if(s.wait){phase='wait';phaseT=0;phaseDur=s.wait;setCaption(`${L.name} waits`,`${s.wait} seconds of silence for students to think.`);}
     else if(s.pair){phase='pair';phaseT=0;phaseDur=s.pair;setCaption('Students talk in pairs','The professor walks the room while pairs discuss.');}
     else nextStep();};
-  if(s.ask){asker=pickAsker();phase='ask';phaseT=0;after(900,()=>speak(s.ask,()=>{phase='speak';speak(s.say,afterSay);},'student'));setCaption('A student raises a hand','');}
-  else{phase='speak';speak(s.say,afterSay);}}
+  if(s.ask){asker=pickAsker();phase='ask';phaseT=0;after(900,()=>speak(s.ask,()=>{phase='speak';speak(s.say,afterSay,'prof','say');},'student','ask'));setCaption('A student raises a hand','');}
+  else{phase='speak';speak(s.say,afterSay,'prof','say');}}
 function pickAsker(){const c=seats.filter(s=>present(s)&&s.kind==='tier'&&s.r>=3&&s.r<=5).sort((a,b)=>b.eng-a.eng);return c[0]||seats.find(present)||null;}
-function togglePause(){if(!running)return;paused=!paused;if(synthOK)paused?speechSynthesis.pause():speechSynthesis.resume();if(AC)paused?AC.suspend():AC.resume();setPlayIcon();}
+function togglePause(){if(!running)return;paused=!paused;if(currentAudio)paused?currentAudio.pause():currentAudio.play().catch(()=>{});if(synthOK)paused?speechSynthesis.pause():speechSynthesis.resume();if(AC)paused?AC.suspend():AC.resume();setPlayIcon();}
 function changeSection(k){secKey=k;L=LESSONS[k];styleProf();pickVoice();buildSections();buildChips();fingerprint();toolsUI([]);setOcc();updateYou();
   lastSlide=L.steps[0].slide;screenMode='slides';renderScreen();boardLines=[];drawBoard();
   if(activeScene){const i=L.steps.findIndex(s=>s.scene===activeScene);playFrom(Math.max(0,i),activeScene);}else if(running||phase==='done'||phase==='held')playFrom(0,null);}
@@ -647,7 +684,7 @@ function changeSection(k){secKey=k;L=LESSONS[k];styleProf();pickVoice();buildSec
 $('startBtn').onclick=()=>playFrom(0,null);
 $('playBtn').onclick=()=>{if(phase==='idle'||phase==='done')playFrom(0,null);else if(phase==='held')$('continueBtn').click();else togglePause();};
 $('continueBtn').onclick=()=>{if(phase!=='held')return;stopAt=null;activeScene=null;buildMoments();$('continueBtn').hidden=true;nextStep();setPlayIcon();};
-$('muteBtn').onclick=()=>{muted=!muted;$('muteBtn').textContent=muted?'Unmute':'Mute';if(room)room.gain.value=muted?0:0.02;if(muted&&synthOK)speechSynthesis.cancel();};
+$('muteBtn').onclick=()=>{muted=!muted;$('muteBtn').textContent=muted?'Unmute':'Mute';if(currentAudio)currentAudio.muted=muted;if(room)room.gain.value=muted?0:0.02;if(muted&&synthOK)speechSynthesis.cancel();};
 $('week').oninput=e=>{week=+e.target.value;$('wk').textContent=week;setOcc();updateYou();};
 $('heatToggle').onchange=e=>heatStrips.forEach(h=>h.p.visible=e.target.checked);
 $('aoToggle').onchange=e=>{useAO=e.target.checked;};
@@ -685,18 +722,26 @@ renderer.domElement.addEventListener('pointerup',e=>{if(!downAt||Math.hypot(e.cl
 function professorTarget(move){
   const writing=writeT>0&&phase==='speak',lect=(screenMode==='doccam'&&running)||move==='recap'||move==='logistics';
   if(writing)return [[-4.6+((boardLines.length-1)%3)*1.35,FRONT+0.65],Math.PI,'write'];
-  if(phase==='pair')return [[Math.sin(time*0.3)*5,0.55],0,'walk'];
+  if(phase==='pair')return [[[-4.5,-1.5,1.5,4.5][Math.floor(time/5)%4],0.55],0,'walk'];
   if(lect)return [[LECT.x,LECT.z-0.6],0,screenMode==='doccam'&&running?'doc':'talk'];
   if(move==='studentq'&&asker)return [[0.8,-0.6],Math.atan2(asker.x-0.8,asker.z+0.6),'listen'];
   if(move==='question')return [[0.9,-0.4],0,'talk'];
   if(move==='worked')return [[-1.0,-1.4],0.3,'talk'];
-  return [[1.6+Math.sin(time*0.25)*1.6,-1.3],-0.1,'talk'];}
+  return [[[0.6,2.4,1.4][Math.floor(time/9)%3],-1.3],-0.1,'talk'];}
+// Walking uses a smoothed target, start/stop hysteresis, eased speed, a capped turn rate and a
+// stride phase driven by distance travelled, so the feet never slide and the body never flips.
+const walk={target:new THREE.Vector3(LECT.x,0,LECT.z-0.6),active:false,speed:0,phase:0};
 function animateProfessor(dt,move){
   const [[tx,tz],face,pose]=professorTarget(move);profTarget.set(tx,0,tz);
-  const to=profTarget.clone().sub(prof.position);to.y=0;const dist=to.length();let walking=false;
-  if(dist>0.05&&!paused){prof.position.addScaledVector(to.normalize(),Math.min(dist,1.25*dt));walking=true;}
-  let dr=(walking?Math.atan2(to.x,to.z):face)-prof.rotation.y;dr=Math.atan2(Math.sin(dr),Math.cos(dr));prof.rotation.y+=dr*Math.min(1,dt*6);
-  const sw=walking?Math.sin(time*8)*0.42:0;pLegL.rotation.x=sw;pLegR.rotation.x=-sw;
+  if(!paused)walk.target.lerp(profTarget,Math.min(1,dt*2.5));
+  const to=walk.target.clone().sub(prof.position);to.y=0;const dist=to.length();
+  if(!walk.active&&dist>0.3)walk.active=true;if(walk.active&&dist<0.06)walk.active=false;
+  const wanted=walk.active?Math.min(1.1,dist*1.6):0;walk.speed=lerp(walk.speed,paused?0:wanted,Math.min(1,dt*4));
+  const stepLen=Math.min(dist,walk.speed*dt);if(stepLen>0)prof.position.addScaledVector(to.normalize(),stepLen);
+  const walking=walk.speed>0.15;
+  let dr=(walking?Math.atan2(to.x,to.z):face)-prof.rotation.y;dr=Math.atan2(Math.sin(dr),Math.cos(dr));prof.rotation.y+=Math.sign(dr)*Math.min(Math.abs(dr),dt*3.2);
+  walk.phase+=stepLen/0.36*Math.PI;const amp=0.42*Math.min(1,walk.speed/0.9);
+  const sw=walking?Math.sin(walk.phase)*amp:lerp(pLegL.rotation.x,0,0.2);pLegL.rotation.x=sw;pLegR.rotation.x=-sw;prof.position.y=walking?Math.abs(Math.cos(walk.phase))*0.025*amp:0;
   const rTarget={write:-2.3+Math.sin(time*14)*0.1,doc:-1.0+Math.sin(time*12)*0.07,talk:speaking?-0.45-Math.max(0,Math.sin(time*2.3))*0.6:-sw*0.6,listen:-0.15,walk:-sw*0.6}[pose];
   pArmR.rotation.x=lerp(pArmR.rotation.x,walking&&pose!=='write'?-sw*0.6:rTarget,0.15);
   pArmL.rotation.x=lerp(pArmL.rotation.x,clickT>0?-1.5:(speaking&&!walking?-0.2-Math.max(0,Math.sin(time*1.7+1))*0.35:sw*0.6),0.2);pHead.rotation.x=pose==='doc'?0.35:0;}
@@ -728,7 +773,7 @@ function tick(){const dt=Math.min(0.05,clock.getDelta());
   if(!paused){time+=dt;lessonT+=running?dt:0;stepT+=dt;if(phase==='done')doneT+=dt;
     for(const t of timers){if(t.dead)continue;t.ms-=dt*1000;if(t.ms<=0){t.dead=true;t.f();}}timers=timers.filter(t=>!t.dead);
     if(phase==='wait'||phase==='pair'){phaseT+=dt;if(phase==='wait')$('waitNow').textContent=Math.min(phaseT,phaseDur).toFixed(1)+' seconds';
-      if(phaseT>=phaseDur){const s=curStep();if(phase==='wait'&&s.then){phase='answer';phaseT=0;if(s.tool==='poll')pollFinal=true;speak(s.then,nextStep);}else nextStep();}}
+      if(phaseT>=phaseDur){const s=curStep();if(phase==='wait'&&s.then){phase='answer';phaseT=0;if(s.tool==='poll')pollFinal=true;speak(s.then,nextStep,'prof','then');}else nextStep();}}
     else if(phase==='answer'||phase==='ask')phaseT+=dt;
     if(boardReveal<1){boardReveal=Math.min(1,boardReveal+dt/2.6);drawBoard();}
     if(writeT>0)writeT-=dt;if(clickT>0)clickT-=dt;if(screenMode==='doccam')docT+=dt;
