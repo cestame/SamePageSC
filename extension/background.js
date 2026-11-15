@@ -3,9 +3,14 @@
 
 const configReady = fetch(chrome.runtime.getURL('config.json')).then((res) => res.json());
 
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => undefined);
-});
+// Clicking the toolbar icon opens the side panel. Set on every worker start, not only on install,
+// so it also holds after Chrome restarts the worker or the extension is reloaded.
+function openPanelOnIconClick() {
+  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch((err) => console.error('Same Page: could not set the side panel to open on click.', err));
+}
+openPanelOnIconClick();
+chrome.runtime.onInstalled.addListener(openPanelOnIconClick);
+chrome.runtime.onStartup.addListener(openPanelOnIconClick);
 
 async function lookupSections(sections) {
   const { server } = await configReady;
