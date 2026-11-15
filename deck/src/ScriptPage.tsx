@@ -1,5 +1,7 @@
 import { ArrowSquareOut, Printer } from "@phosphor-icons/react";
 import { asset } from "@/engine/asset";
+import { ForcedOrientation, STAGE_SIZES, stageStyle } from "@/engine/orientation";
+import { useWidthScale } from "@/engine/usePresenterKeys";
 import { samePageSlides, type SamePageSlide } from "./slides";
 import { Wordmark } from "./ui";
 
@@ -16,15 +18,24 @@ function duration(totalSeconds: number) {
   return `${minutes}:${rest}`;
 }
 
-const THUMB_SCALE = 0.2;
+/** Thumbnails are at most a fifth of full size, and shrink further to fit a phone's width inside the page's side padding. */
+const THUMB_MAX_SCALE = 0.2;
+const PAGE_SIDE_PADDING = 32;
+const SLIDE = STAGE_SIZES.landscape;
 
-/** The slide at its final state, scaled down, so the presenter sees what's on screen while they talk. */
+/**
+ * The slide at its final state, scaled down, so the presenter sees what's on screen while they talk.
+ * Thumbnails always show the landscape slide the audience sees, even when the script is read on a phone.
+ */
 function Thumbnail({ slide, step }: { slide: SamePageSlide; step: number }) {
+  const scale = useWidthScale(SLIDE.width, THUMB_MAX_SCALE, PAGE_SIDE_PADDING);
   return (
-    <div className="shrink-0 overflow-hidden rounded-lg shadow-card" style={{ width: 1920 * THUMB_SCALE, height: 1080 * THUMB_SCALE }} aria-hidden>
-      <div className="stage relative origin-top-left bg-paper" style={{ transform: `scale(${THUMB_SCALE})` }}>
-        <slide.Content step={step} />
-      </div>
+    <div className="shrink-0 overflow-hidden rounded-lg shadow-card" style={{ width: SLIDE.width * scale, height: SLIDE.height * scale }} aria-hidden>
+      <ForcedOrientation.Provider value="landscape">
+        <div className="relative origin-top-left bg-paper" style={{ ...stageStyle("landscape"), transform: `scale(${scale})` }}>
+          <slide.Content step={step} />
+        </div>
+      </ForcedOrientation.Provider>
     </div>
   );
 }

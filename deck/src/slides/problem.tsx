@@ -2,6 +2,7 @@ import { ArrowDown, ArrowRight, ArrowUp, GraduationCap, Star } from "@phosphor-i
 import { AnimatePresence, motion, type Variants } from "motion/react";
 import { CountUp, MaskedLines, StepView, fadeReveal } from "@/engine/primitives";
 import { easeDrawn, easeSamePage } from "@/engine/motion";
+import { useIsPortrait } from "@/engine/orientation";
 import { ratings, sampleCourse, survey, title } from "../content";
 import { HorseIntro } from "../HorseIntro";
 import { ProfileLine, profileSizes } from "../ProfileLine";
@@ -15,25 +16,29 @@ const percent = (value: number) => `${Math.round(value)}%`;
 const TITLE_TEXT_DELAY = 1.2;
 const HORSE_PAGE_WIDTH = 820;
 
-/** The cream page the horse runs on, as in the app's intro. It clips the horse so it gallops in from the page's edge. */
+/**
+ * The cream page the horse runs on, as in the app's intro. It clips the horse so it gallops in from the page's edge.
+ * On the portrait canvas the page sits along the bottom instead of the right.
+ */
 function HorsePage() {
+  const tall = useIsPortrait();
   return (
     <div
-      className="absolute inset-y-0 right-0 flex items-center justify-center overflow-hidden bg-brand-cream"
+      className={`absolute flex items-center justify-center overflow-hidden bg-brand-cream ${tall ? "inset-x-0 bottom-0 h-[620px]" : "inset-y-0 right-0"}`}
       style={{
-        width: HORSE_PAGE_WIDTH,
+        width: tall ? undefined : HORSE_PAGE_WIDTH,
         backgroundImage:
           "radial-gradient(ellipse at 52% 48%, rgba(255,255,255,0.52) 0%, rgba(255,255,255,0.18) 36%, transparent 72%)",
       }}
     >
       <div className="relative flex flex-col items-center">
-        <HorseIntro width={620} startX={-HORSE_PAGE_WIDTH} />
+        <HorseIntro width={tall ? 540 : 620} startX={-HORSE_PAGE_WIDTH} />
         <motion.div
           aria-hidden
           initial={{ scaleX: 0, opacity: 0.55 }}
           animate={{ scaleX: 1, opacity: 1 }}
           transition={{ duration: 1.2, delay: 1.8, ease: easeSamePage }}
-          className="h-1 w-[720px] origin-left bg-brand-cardinal"
+          className={`h-1 origin-left bg-brand-cardinal ${tall ? "w-[640px]" : "w-[720px]"}`}
         />
       </div>
     </div>
@@ -41,10 +46,11 @@ function HorsePage() {
 }
 
 export function TitleSlide() {
+  const tall = useIsPortrait();
   return (
-    <StepView className="flex items-center">
+    <StepView className={`flex ${tall ? "items-start" : "items-center"}`}>
       <HorsePage />
-      <div className="flex flex-col gap-12" style={{ maxWidth: 1920 - HORSE_PAGE_WIDTH - 200 }}>
+      <div className="flex flex-col gap-12" style={{ maxWidth: tall ? undefined : 1920 - HORSE_PAGE_WIDTH - 200 }}>
         <motion.div variants={fadeReveal(TITLE_TEXT_DELAY, 20)}>
           <Wordmark className="w-[560px]" />
         </motion.div>
@@ -86,6 +92,7 @@ function StudentDots({ count, rowDelay }: { count: number; rowDelay: number }) {
 }
 
 export function SurveySlide() {
+  const tall = useIsPortrait();
   return (
     <StepView className="flex flex-col justify-between">
       <Heading lines={survey.heading} />
@@ -93,7 +100,7 @@ export function SurveySlide() {
         {survey.rows.map((row, index) => {
           const rowDelay = 0.6 + index * 0.9;
           return (
-            <motion.li key={row.line} variants={fadeReveal(rowDelay - 0.2)} className="grid grid-cols-[300px_1fr] items-center gap-gap-sm">
+            <motion.li key={row.line} variants={fadeReveal(rowDelay - 0.2)} className={`grid items-center ${tall ? "grid-cols-1 gap-3" : "grid-cols-[300px_1fr] gap-gap-sm"}`}>
               <p className="font-display text-headline leading-none font-bold">
                 <CountUp total={row.percent} format={percent} delay={rowDelay} />
               </p>
@@ -135,13 +142,14 @@ const growFromLeft = { transformBox: "fill-box", transformOrigin: "left center" 
 /** Easiness and rating correlate at 0.61, shown as a meter from 0 (no relation) to 1 (move in lockstep). */
 function EasinessMeter() {
   const { easiness } = ratings.learning;
+  const tall = useIsPortrait();
   return (
     <motion.figure variants={fadeReveal(0.5, 24)} className={PANEL}>
       <p className="font-display text-display leading-none font-bold text-accent">
         <CountUp total={easiness.value} format={(value) => `+${value.toFixed(2)}`} delay={0.7} />
       </p>
       <p className="text-caption font-bold text-ink-muted">Star rating ↑</p>
-      <svg viewBox="0 0 440 190" className="w-full" role="img" aria-label="Illustrative upward trend: as ease ratings rise, star ratings tend to rise too">
+      <svg viewBox="0 0 440 190" className={tall ? "h-[150px] w-full" : "w-full"} role="img" aria-label="Illustrative upward trend: as ease ratings rise, star ratings tend to rise too">
         <line x1={54} y1={154} x2={410} y2={154} className="stroke-rule" strokeWidth={3} />
         <path d="M398 146 L410 154 L398 162" fill="none" className="stroke-rule" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
         <line x1={54} y1={154} x2={54} y2={28} className="stroke-rule" strokeWidth={3} />
@@ -210,10 +218,11 @@ function NoLinkLine() {
 }
 
 function LearningView() {
+  const tall = useIsPortrait();
   return (
     <StepView className="flex flex-col justify-between">
       <Heading lines={ratings.learning.heading} />
-      <div className="grid grid-cols-3 items-stretch gap-gap-sm">
+      <div className={`grid items-stretch gap-gap-sm ${tall ? "grid-cols-1" : "grid-cols-3"}`}>
         <EasinessMeter />
         <GradesSlopes />
         <NoLinkLine />
@@ -260,10 +269,11 @@ function SameTeaching({ label, lower, delay }: { label: string; lower: boolean; 
 
 function BiasView() {
   const { bias } = ratings;
+  const tall = useIsPortrait();
   return (
     <StepView className="flex flex-col justify-between">
       <Heading lines={bias.heading} />
-      <div className="flex items-end gap-gap">
+      <div className={`flex gap-gap ${tall ? "flex-col items-stretch gap-8" : "items-end"}`}>
         <SameTeaching label={bias.instructors[0]} lower={false} delay={0.4} />
         <SameTeaching label={bias.instructors[1]} lower delay={0.6} />
         <motion.div variants={fadeReveal(2.3)} className="flex flex-col gap-5 pb-4">

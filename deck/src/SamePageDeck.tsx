@@ -3,6 +3,7 @@ import { NotesPanel } from "@/engine/NotesPanel";
 import { useDeckNavigation } from "@/engine/useDeckNavigation";
 import { useBeatLabelVisible, useIdleCursor, usePresenterKeys, useStageScale } from "@/engine/usePresenterKeys";
 import { exitTransition } from "@/engine/motion";
+import { STAGE_SIZES, stageStyle, useOrientation } from "@/engine/orientation";
 import { sources } from "./content";
 import { samePagePrintPath, samePageSlides, type SamePageSlide } from "./slides";
 
@@ -16,7 +17,7 @@ function sourcesForStep(slide: SamePageSlide, step: number) {
 export function Footer({ slide, step, slideNumber }: { slide: SamePageSlide; step: number; slideNumber?: number }) {
   const cited = sourcesForStep(slide, step);
   return (
-    <footer className="pointer-events-none absolute inset-x-0 bottom-0 flex h-(--spacing-footer) items-center gap-gap px-stage-x pb-2">
+    <footer className="pointer-events-none absolute inset-x-0 bottom-0 flex min-h-(--spacing-footer) items-center gap-gap px-stage-x pb-2">
       {cited.length > 0 && (
         <p className="max-w-[1300px] text-fineprint text-ink-faint">
           Source{cited.length > 1 ? "s" : ""}: {cited.map((id) => sources[id].cite).join("; ")}
@@ -37,7 +38,8 @@ export function SamePageDeck() {
   const { notesOpen, toggleNotes } = usePresenterKeys(samePagePrintPath);
   const beatLabelVisible = useBeatLabelVisible();
   const cursorIsIdle = useIdleCursor();
-  const scale = useStageScale();
+  const orientation = useOrientation();
+  const scale = useStageScale(STAGE_SIZES[orientation]);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -47,11 +49,14 @@ export function SamePageDeck() {
         onPointerUp={handlePointerUp}
         onContextMenu={handleContextMenu}
       >
-        <div className="stage relative shrink-0 overflow-hidden bg-paper" style={{ transform: `scale(${scale ?? 1})`, transformOrigin: "center", opacity: scale === null || !ready ? 0 : 1 }}>
+        <div
+          className="relative shrink-0 overflow-hidden bg-paper"
+          style={{ ...stageStyle(orientation), transform: `scale(${scale ?? 1})`, transformOrigin: "center", opacity: scale === null || !ready ? 0 : 1 }}
+        >
           <AnimatePresence mode="wait">
             {ready && (
               <motion.section
-                key={slide.id}
+                key={`${slide.id}-${orientation}`}
                 aria-label={`Slide ${index + 1} of ${samePageSlides.length}: ${slide.name}`}
                 className="absolute inset-0"
                 variants={slideFrame}

@@ -3,6 +3,7 @@ import { motion, type Variants } from "motion/react";
 import { asset } from "@/engine/asset";
 import { CountUp, StepView, fadeReveal } from "@/engine/primitives";
 import { easeSamePage } from "@/engine/motion";
+import { useIsPortrait } from "@/engine/orientation";
 import { fit, links, sampleCourse, sampleLabel, shapes, tryClass, webreg, type SampleSection } from "../content";
 import { ProfileGlyph, ProfileLabels, ProfileLine, profileSizes } from "../ProfileLine";
 import { Heading, Note } from "../ui";
@@ -10,22 +11,38 @@ import { Heading, Note } from "../ui";
 const [reyes] = sampleCourse.sections;
 const percent = (value: number) => `${Math.round(value)}%`;
 
+/** On the portrait canvas the three sections stack, each card carrying its own field names at a smaller size. */
+function ShapeCards({ tall }: { tall: boolean }) {
+  const size = tall ? profileSizes.mini : profileSizes.card;
+  return sampleCourse.sections.map((section, index) => (
+    <motion.figure
+      key={section.number}
+      variants={fadeReveal(0.5 + index * 0.6, 24)}
+      className={`flex rounded-card bg-paper-raised shadow-card ${tall ? "flex-col gap-4 px-8 py-6" : "flex-col gap-8 px-10 pt-8 pb-10"}`}
+    >
+      <figcaption>
+        <p className="text-point leading-tight font-bold">{section.instructor}</p>
+      </figcaption>
+      <div className="flex items-start gap-8">
+        {tall && <ProfileLabels size={size} showRange={false} />}
+        <ProfileLine profile={section.profile} label={`Teaching profile for ${section.instructor}'s section`} size={size} delay={0.8 + index * 0.6} />
+      </div>
+    </motion.figure>
+  ));
+}
+
 export function ShapesSlide() {
+  const tall = useIsPortrait();
   return (
     <StepView className="flex flex-col justify-between">
       <Heading lines={shapes.heading} size="headline" />
-      <div className="flex items-end gap-12">
-        <motion.div variants={fadeReveal(0.5)}>
-          <ProfileLabels size={profileSizes.card} showRange={false} />
-        </motion.div>
-        {sampleCourse.sections.map((section, index) => (
-          <motion.figure key={section.number} variants={fadeReveal(0.5 + index * 0.6, 24)} className="flex flex-col gap-8 rounded-card bg-paper-raised px-10 pt-8 pb-10 shadow-card">
-            <figcaption>
-              <p className="text-point leading-tight font-bold">{section.instructor}</p>
-            </figcaption>
-            <ProfileLine profile={section.profile} label={`Teaching profile for ${section.instructor}'s section`} size={profileSizes.card} delay={0.8 + index * 0.6} />
-          </motion.figure>
-        ))}
+      <div className={`flex gap-12 ${tall ? "flex-col gap-6" : "items-end"}`}>
+        {!tall && (
+          <motion.div variants={fadeReveal(0.5)}>
+            <ProfileLabels size={profileSizes.card} showRange={false} />
+          </motion.div>
+        )}
+        <ShapeCards tall={tall} />
       </div>
       <Note delay={2.3}>All instructors shown are fictional samples.</Note>
     </StepView>
@@ -52,18 +69,20 @@ function Legend() {
 }
 
 export function FitSlide() {
+  const tall = useIsPortrait();
+  const size = tall ? profileSizes.card : profileSizes.large;
   return (
     <StepView className="flex flex-col justify-between">
       <Heading lines={fit.heading} />
-      <div className="grid grid-cols-[auto_1fr] items-center gap-gap">
-        <div className="flex flex-col gap-10">
+      <div className={tall ? "flex flex-col gap-10" : "grid grid-cols-[auto_1fr] items-center gap-gap"}>
+        <div className={`flex flex-col ${tall ? "gap-6" : "gap-10"}`}>
           <div className="flex items-start gap-10">
-            <ProfileLabels size={profileSizes.large} showRange={false} />
-            <ProfileLine profile={reyes.profile} student={fit.student} label="Dr. Reyes's profile with the student's answers drawn over it" size={profileSizes.large} delay={0.4} />
+            <ProfileLabels size={size} showRange={false} />
+            <ProfileLine profile={reyes.profile} student={fit.student} label="Dr. Reyes's profile with the student's answers drawn over it" size={size} delay={0.4} />
           </div>
           <Legend />
         </div>
-        <motion.article variants={fadeReveal(1.6, 24)} className="flex flex-col gap-10 rounded-card bg-paper-raised p-12 shadow-offset">
+        <motion.article variants={fadeReveal(1.6, 24)} className={`flex flex-col rounded-card bg-paper-raised shadow-offset ${tall ? "gap-6 p-10" : "gap-10 p-12"}`}>
           <div>
             <p className="text-point font-bold">
               {reyes.instructor}, {sampleCourse.code}
@@ -178,14 +197,15 @@ const panelSlide: Variants = {
 };
 
 function SidePanelMock() {
+  const tall = useIsPortrait();
   return (
-    <motion.aside variants={panelSlide} className="flex w-[520px] flex-col gap-6 rounded-card bg-paper-raised p-10 shadow-offset">
+    <motion.aside variants={panelSlide} className={`flex flex-col gap-6 rounded-card bg-paper-raised p-10 shadow-offset ${tall ? "w-full" : "w-[520px]"}`}>
       <p className="text-caption text-ink-muted">{webreg.panelTitle}</p>
       <p className="flex items-baseline gap-4">
         <span className="font-display text-title leading-none font-extrabold">{reyes.fit}%</span>
         <span className="text-caption">fit with {reyes.instructor}</span>
       </p>
-      <ProfileLine profile={reyes.profile} student={fit.student} label="The side panel shows the profile with your answers" size={profileSizes.card} delay={PANEL_AT + 0.4} />
+      <ProfileLine profile={reyes.profile} student={fit.student} label="The side panel shows the profile with your answers" size={tall ? profileSizes.mini : profileSizes.card} delay={PANEL_AT + 0.4} />
       <p className="flex items-start gap-2 text-caption text-ink-soft">
         <WarningCircle size={28} className="mt-0.5 shrink-0 text-warning" aria-hidden />
         {fit.downside}
@@ -195,10 +215,11 @@ function SidePanelMock() {
 }
 
 export function WebRegSlide() {
+  const tall = useIsPortrait();
   return (
     <StepView className="flex flex-col justify-between">
       <Heading lines={webreg.heading} />
-      <div className="grid grid-cols-[1fr_auto] items-center gap-gap">
+      <div className={tall ? "flex flex-col gap-8" : "grid grid-cols-[1fr_auto] items-center gap-gap"}>
         <WebRegMock />
         <SidePanelMock />
       </div>
@@ -235,11 +256,12 @@ function MomentHighlight() {
 }
 
 export function TryClassSlide() {
+  const tall = useIsPortrait();
   return (
     <StepView className="flex flex-col justify-between">
       <Heading lines={tryClass.heading} />
-      <div className="grid grid-cols-[1fr_440px] items-center gap-gap">
-        <motion.figure variants={fadeReveal(0.3, 24)} className="relative overflow-hidden rounded-card shadow-float" style={{ height: 600 }}>
+      <div className={tall ? "flex flex-col gap-8" : "grid grid-cols-[1fr_440px] items-center gap-gap"}>
+        <motion.figure variants={fadeReveal(0.3, 24)} className="relative overflow-hidden rounded-card shadow-float" style={{ height: tall ? 480 : 600 }}>
           <motion.img variants={slowZoom} src={asset("/hall.jpg")} alt="The simulated 3D lecture hall, seen from the back during a lesson" className="size-full object-cover" />
           <motion.span
             aria-hidden

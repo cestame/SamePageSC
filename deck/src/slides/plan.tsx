@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import qrcode from "qrcode-generator";
 import { StepView, fadeReveal } from "@/engine/primitives";
 import { easeSamePage } from "@/engine/motion";
+import { useIsPortrait } from "@/engine/orientation";
 import { ai, appendix, closing, fairness, links, rollout, sampleCourse, sources, statusLabel, type Source } from "../content";
 import { ProfileLine, profileSizes } from "../ProfileLine";
 import { Heading, Note, Wordmark } from "../ui";
@@ -28,15 +29,17 @@ function Stage({ index, label, icon: StageIcon, plain = false, children }: { ind
   return (
     <motion.li variants={fadeReveal(stageAt(index), 24)} className="flex flex-col items-center gap-6">
       <div className={`flex h-[300px] w-[330px] items-center justify-center rounded-card shadow-card ${plain ? "bg-mark" : "bg-paper-raised"}`}>{children}</div>
-      <p className="flex items-center gap-3 text-point font-bold">
-        <StageIcon size={36} className={plain ? "text-ink" : "text-accent"} aria-hidden />
+      <p className="flex max-w-[360px] items-center justify-center gap-3 text-center text-point font-bold">
+        <StageIcon size={36} className={`shrink-0 ${plain ? "text-ink" : "text-accent"}`} aria-hidden />
         {label}
       </p>
     </motion.li>
   );
 }
 
+/** On the portrait canvas the four stages sit in a 2 by 2 grid, read left to right, so the arrows are left out. */
 function Arrow({ index }: { index: number }) {
+  if (useIsPortrait()) return null;
   return (
     <li aria-hidden className="flex h-[300px] items-center">
       <svg viewBox="0 0 80 24" width={80}>
@@ -128,10 +131,11 @@ function ExplanationBubble() {
 
 function PipelineView() {
   const [notes, profile, rank, explain] = ai.pipeline.stages;
+  const tall = useIsPortrait();
   return (
     <StepView className="flex flex-col justify-between">
       <Heading lines={ai.pipeline.heading} />
-      <ol className="flex items-start justify-between">
+      <ol className={tall ? "grid grid-cols-2 justify-items-center gap-x-8 gap-y-12" : "flex items-start justify-between"}>
         <Stage index={0} label={notes} icon={NotePencil}>
           <NoteStack />
         </Stage>
@@ -234,10 +238,11 @@ function RangeChart() {
 }
 
 function ModelView() {
+  const tall = useIsPortrait();
   return (
     <StepView className="flex flex-col justify-between">
       <Heading lines={ai.model.heading} />
-      <div className="grid grid-cols-2 gap-gap">
+      <div className={`grid gap-gap ${tall ? "grid-cols-1" : "grid-cols-2"}`}>
         <AucChart />
         <RangeChart />
       </div>
@@ -255,15 +260,20 @@ export function AiSlide({ step }: SlideProps) {
 const ruleIcons: Icon[] = [NotePencil, EyeSlash, UserCircleMinus, Prohibit, ChatCircleText];
 
 export function FairnessSlide() {
+  const tall = useIsPortrait();
   return (
     <StepView className="flex flex-col justify-between">
       <Heading lines={fairness.heading} size="headline" />
-      <ul className="grid grid-cols-5 gap-gap-sm">
+      <ul className={`grid gap-gap-sm ${tall ? "grid-cols-1 gap-5" : "grid-cols-5"}`}>
         {fairness.rules.map((rule, index) => {
           const RuleIcon = ruleIcons[index];
           return (
-            <motion.li key={rule} variants={fadeReveal(0.6 + index * 0.25, 24)} className="flex flex-col gap-8 rounded-card bg-paper-raised p-9 shadow-card">
-              <RuleIcon size={88} className="text-accent" aria-hidden />
+            <motion.li
+              key={rule}
+              variants={fadeReveal(0.6 + index * 0.25, 24)}
+              className={`flex rounded-card bg-paper-raised shadow-card ${tall ? "flex-row items-center gap-8 px-8 py-6" : "flex-col gap-8 p-9"}`}
+            >
+              <RuleIcon size={tall ? 64 : 88} className="shrink-0 text-accent" aria-hidden />
               <p className="text-point leading-tight font-bold">{rule}</p>
             </motion.li>
           );
@@ -276,26 +286,46 @@ export function FairnessSlide() {
 
 /* ---------- Rollout: a timeline that draws left to right ---------- */
 
+const phaseIcons: Icon[] = [RocketLaunch, UsersThree, ShieldCheck];
+
+/** The line behind the phase markers: across on the landscape canvas, down on the portrait one. */
+function TimelineLine({ tall }: { tall: boolean }) {
+  if (tall) {
+    return (
+      <motion.span
+        aria-hidden
+        className="absolute top-12 bottom-12 left-[45px] w-1.5 origin-top rounded-full bg-rule"
+        variants={{ enter: { scaleY: 0 }, present: { scaleY: 1, transition: { duration: 2, ease: easeSamePage, delay: 0.5 } } }}
+      />
+    );
+  }
+  return (
+    <svg aria-hidden viewBox="0 0 1696 20" className="absolute top-[38px] left-0 w-full">
+      <motion.line x1={20} x2={1676} y1={10} y2={10} className="stroke-rule" strokeWidth={6} strokeLinecap="round" style={growFromLeft} variants={grow(0.5, 2)} />
+    </svg>
+  );
+}
+
 export function RolloutSlide() {
-  const phaseIcons: Icon[] = [RocketLaunch, UsersThree, ShieldCheck];
+  const tall = useIsPortrait();
   return (
     <StepView className="flex flex-col justify-between">
       <Heading lines={rollout.heading} />
       <div className="relative">
-        <svg aria-hidden viewBox="0 0 1696 20" className="absolute top-[38px] left-0 w-full">
-          <motion.line x1={20} x2={1676} y1={10} y2={10} className="stroke-rule" strokeWidth={6} strokeLinecap="round" style={growFromLeft} variants={grow(0.5, 2)} />
-        </svg>
-        <ol className="relative grid grid-cols-3 gap-gap">
+        <TimelineLine tall={tall} />
+        <ol className={`relative grid ${tall ? "grid-cols-1 gap-14" : "grid-cols-3 gap-gap"}`}>
           {rollout.phases.map((phase, index) => {
             const isNow = index === 0;
             const PhaseIcon = phaseIcons[index];
             return (
-              <motion.li key={phase.name} variants={fadeReveal(0.7 + index * 0.6, 16)} className="flex flex-col gap-6">
-                <span className={`flex size-24 items-center justify-center rounded-full ${isNow ? "bg-accent text-paper" : "bg-paper-raised text-ink-muted ring-[8px] ring-rule"}`}>
+              <motion.li key={phase.name} variants={fadeReveal(0.7 + index * 0.6, 16)} className={`flex gap-6 ${tall ? "flex-row items-start gap-10" : "flex-col"}`}>
+                <span className={`flex size-24 shrink-0 items-center justify-center rounded-full ${isNow ? "bg-accent text-paper" : "bg-paper-raised text-ink-muted ring-[8px] ring-rule"}`}>
                   <PhaseIcon size={52} weight="bold" aria-hidden />
                 </span>
-                <p className={`text-caption font-bold ${isNow ? "text-accent" : "text-ink-muted"}`}>{phase.when}</p>
-                <p className="font-display text-title leading-tight font-bold">{phase.name}</p>
+                <div className="flex flex-col gap-6">
+                  <p className={`text-caption font-bold ${isNow ? "text-accent" : "text-ink-muted"}`}>{phase.when}</p>
+                  <p className="font-display text-title leading-tight font-bold">{phase.name}</p>
+                </div>
               </motion.li>
             );
           })}
@@ -332,8 +362,9 @@ function SiteQrCode({ size }: { size: number }) {
 }
 
 export function ClosingSlide() {
+  const tall = useIsPortrait();
   return (
-    <StepView className="grid grid-cols-[1fr_auto] items-center gap-gap">
+    <StepView className={tall ? "flex flex-col items-start justify-center gap-14" : "grid grid-cols-[1fr_auto] items-center gap-gap"}>
       <div className="flex flex-col gap-14">
         <motion.div variants={fadeReveal(0.1, 20)}>
           <Wordmark className="w-[460px]" />
@@ -351,7 +382,7 @@ export function ClosingSlide() {
         </motion.a>
       </div>
       <motion.figure variants={fadeReveal(0.8, 24)} className="flex flex-col items-center gap-6 rounded-card bg-paper-raised p-10 shadow-offset">
-        <SiteQrCode size={440} />
+        <SiteQrCode size={tall ? 380 : 440} />
         <figcaption className="text-point font-bold">{closing.cta}</figcaption>
       </motion.figure>
     </StepView>
@@ -360,7 +391,7 @@ export function ClosingSlide() {
 
 /* ---------- Sources ---------- */
 
-function SourceRow({ source }: { source: Source }) {
+function SourceRow({ source, tall }: { source: Source; tall: boolean }) {
   const title = source.url ? (
     <a href={source.url} target="_blank" rel="noreferrer" data-interactive className="pointer-events-auto hover:underline">
       {source.title}
@@ -369,7 +400,7 @@ function SourceRow({ source }: { source: Source }) {
     source.title
   );
   return (
-    <li className="grid grid-cols-[220px_1fr] gap-6">
+    <li className={tall ? "grid grid-cols-1" : "grid grid-cols-[220px_1fr] gap-6"}>
       <span className="font-bold text-ink-muted">{statusLabel[source.status]}</span>
       <span>{title}</span>
     </li>
@@ -377,15 +408,16 @@ function SourceRow({ source }: { source: Source }) {
 }
 
 export function SourcesSlide() {
+  const tall = useIsPortrait();
   return (
-    <StepView className="flex flex-col gap-10">
+    <StepView className={`flex flex-col ${tall ? "gap-6" : "gap-10"}`}>
       <h2 className="font-display text-title font-bold">{appendix.heading}</h2>
-      <motion.ul variants={fadeReveal(0.3)} className="flex flex-col gap-3 text-fineprint">
+      <motion.ul variants={fadeReveal(0.3)} className={`flex flex-col text-fineprint ${tall ? "gap-2.5" : "gap-3"}`}>
         {Object.values(sources).map((source) => (
-          <SourceRow key={source.title} source={source} />
+          <SourceRow key={source.title} source={source} tall={tall} />
         ))}
       </motion.ul>
-      <Note delay={0.6}>{appendix.script[0]}</Note>
+      {!tall && <Note delay={0.6}>{appendix.script[0]}</Note>}
     </StepView>
   );
 }

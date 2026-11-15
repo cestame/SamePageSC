@@ -141,3 +141,10 @@
     box-shadow: none !important;
   }
 }
+
+/* The print page on screen: each page shrinks to the window's width. Printing keeps pages at full size. */
+@media screen {
+  .print-page {
+    zoom: var(--page-zoom, 1);
+  }
+}
