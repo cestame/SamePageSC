@@ -7,13 +7,13 @@ import { seedSamples } from './seed.js';
 import { PRODUCT_NAME } from '../shared/content.js';
 import { scoreProfile, mergeContributions, validateAnswers } from './scoring.js';
 import { scrubText } from './privacy.js';
-import { extractProfile, explainMatch, aiConfigured, AiUnavailableError } from './ai.js';
+import { extractProfile, explainMatch, answersToText, aiConfigured, AiUnavailableError } from './ai.js';
 import { planSchedule } from './planner.js';
 import { authRoutes, loadUser, migrateAuth } from './auth.js';
 import { getRequirements, migrateUsc, searchCourses, searchPrograms } from './usc.js';
 import { lookupSections } from './sections.js';
 import { renderDemoPage } from './demoPage.js';
-import { keepEvidencedFields, resolveProfessor, saveContribution } from './contributions.js';
+import { profileFromExtraction, resolveProfessor, saveContribution } from './contributions.js';
 import { measuredRatings, publicAnalysis, recordingConfigured, summarizeLecture, transcribeLecture } from './recording.js';
 import { readFileSync } from 'node:fs';
 
@@ -70,20 +70,6 @@ async function loadProfessors(where, params) {
       return { ...p, ...mergeContributions(mine), feedback: fb };
     })
     .filter(Boolean);
-}
-
-function answersToText(a) {
-  const goal = { requirement: 'just meet the requirement', foundation: 'build a solid foundation', mastery: 'master it and go further' }[a.goal];
-  return [
-    `- Prior knowledge of the subject: ${a.prior}/5`,
-    `- Preferred format: ${a.format}/5 (1 = lecture, 5 = discussion)`,
-    `- Structure wanted: ${a.structure}/5 (1 = loose, 5 = highly organized)`,
-    `- Assessment preference: ${a.assessment}/5 (1 = exams, 5 = projects)`,
-    `- Comfort with participation / cold-calling: ${a.participation}/5`,
-    `- Pace preference: ${a.pace}/5 (1 = slow, 5 = fast)`,
-    `- Workload they can take on: ${a.workload}/5`,
-    `- Goal: ${goal}`,
-  ].join('\n');
 }
 
 // Used when the AI model is unavailable. Built only from the score breakdown, and labeled as such in the UI.
@@ -332,13 +318,11 @@ app.post('/api/contribute', rateLimit({ windowMs: 60 * 60_000, max: 15 }), async
     return res.status(422).json({ error: 'That doesn\'t look like class notes or a syllabus, so nothing was saved.' });
   }
 
-  // 3. Keep only fields with evidence; scrub evidence again and drop anything about the person.
-  const { profile, dropped, found } = keepEvidencedFields(extracted);
+  // 3. Keep only fields with evidence found in the notes; scrub evidence again and drop anything about the person.
+  const { profile, dropped, found, summary } = profileFromExtraction(extracted, scrubbed);
   if (found < 2) {
     return res.status(422).json({ error: 'There wasn\'t enough about how the class is taught to build a profile. Try adding notes about lectures, assignments, or exams.' });
   }
-  const summary = scrubText(extracted.summary).slice(0, 600);
-
   // 4. Store the profile (never the raw notes) and merge with existing contributions.
   const id = await saveContribution(query, { courseId, prof, profile, summary, sourceType });
   const [merged] = await loadProfessors('p.id = $1', [id]);
@@ -376,8 +360,8 @@ async function draftFromLecture(lecture, course) {
   if (transcript.trim().length < 80) throw Object.assign(new Error('There wasn\'t enough of the professor speaking to build a profile.'), { status: 422 });
   const extracted = await extractProfile({ text: transcript, sourceType: 'lecture transcript (professor only)', courseLabel: `${course.code} ${course.title}` });
   if (!extracted.is_course_material) throw Object.assign(new Error('That recording doesn\'t sound like a class, so nothing was kept.'), { status: 422 });
-  const { profile, dropped } = keepEvidencedFields(extracted);
-  return { profile: { ...profile, ...measuredRatings(lecture) }, summary: scrubText(extracted.summary).slice(0, 600), dropped };
+  const { profile, dropped, summary } = profileFromExtraction(extracted, transcript);
+  return { profile: { ...profile, ...measuredRatings(lecture) }, summary, dropped };
 }
 
 app.get('/api/recordings/sample', (req, res) => {

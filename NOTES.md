@@ -32,7 +32,7 @@ Submission is due **Sunday, November 15, 2026 at 11:00 AM PT** (AI@USC, HackSC x
 - Node 20+, Express API (`server/`), React + TypeScript + Vite (`client/`), shared copy in `shared/content.js`.
 - Database: Postgres on Replit via `DATABASE_URL`; PGlite in `./data/pglite` locally when it's unset.
 - AI: Claude via `@anthropic-ai/sdk`, model `claude-opus-5-5`, structured outputs, server-side fallback enabled, key only on the server.
-- `npm run build && npm start` serves on http://localhost:3000. `npm run check` = lint + type check + tests (12 tests, all passing).
+- `npm run build && npm start` serves on http://localhost:3000. `npm run check` = lint + type check + tests (47 tests, all passing, no API key needed). `npm run eval` runs the AI evals against the real model (needs `ANTHROPIC_API_KEY`, billed).
 - Local server note: it has been started in the background by Claude Code before and was killed once when the machine ran low on memory. Start it again only when the person asks. Stop it with Ctrl+C, never a force-kill: on 2026-11-14 a force-kill corrupted the local PGlite data, which was moved to `data/pglite-damaged-2026-11-14` and replaced with a fresh database (samples re-seed on start). AI is off locally until `ANTHROPIC_API_KEY` is set.
 - A Figma MCP server was added to Claude Code for this project (`claude mcp add --transport http figma https://mcp.figma.com/mcp`, local scope for `C:/Users/alexi/aiusc`). The person must run `/mcp` and log in to Figma. They are making a design in Figma Make; if the MCP server can't read a Make file, ask for a regular Figma Design file or screenshots.
 
@@ -121,6 +121,16 @@ Submission is due **Sunday, November 15, 2026 at 11:00 AM PT** (AI@USC, HackSC x
 - Demo safety: "Try it with a sample recording" loads `server/sample-recording.json`, a fictional CSCI 103 lecture in pyannoteAI's output shape, through the same summary code. Without `PYANNOTE_API_KEY`, recording falls back to that sample and says so.
 - Not yet tested against the live pyannoteAI API (no key here). Its docs don't say whether browser WebM/Opus audio is accepted.
 - Try this class: the Same Page logo and a "Back to Same Page" link go to the home page, and the camera is clamped inside the hall so zooming or panning never leaves the room.
+
+## AI evals and output guards (2026-11-15)
+
+- `evals/` grades the two Claude tasks with plain-code checks, no second model. `cases.js` has 8 fictional extraction cases (lecture syllabus, discussion seminar, notes with student names and an email, notes with remarks about the professor's accent and clothes, a recipe, a prompt injection, sparse exam-only notes, a professor-only lecture transcript) and 4 explanation cases. Expected ratings are hand-labeled ranges.
+- Checks: ratings in range, fields with no evidence left out, evidence found in the source, no names or personal details stored, nothing about the professor as a person, injected instructions ignored, no em dashes, no learning styles, no hype words, no fit number the scorer didn't compute, second person, sentence counts. "Watch out names the weakest fit" and "summary is two sentences" are reported but don't fail a case.
+- `npm run eval` (options `--task extraction|explanation`, `--trials N`, `--min-pass 0.9`) prints a pass/fail table and saves JSON to `evals/results/` (gitignored). It has not been run yet because no API key was available in this session. Run it once the Replit secret is set, and fix cases or prompts from what fails.
+- `evals/harness.test.js` runs the graders on fixed good and bad outputs inside `npm test`, so the graders themselves are tested offline.
+- Production now uses the same checks (`server/aiGuards.js`): evidence that can't be found in the scrubbed notes or transcript is dropped before storing (`keepEvidencedFields(extracted, sourceText)`, shared post-processing in `profileFromExtraction`); em and en dashes in AI text become commas; an explanation that breaks a content rule is retried once, then the labeled template explanation is shown.
+- Prompts were hardened: pasted text is treated as data (instructions inside it are ignored), evidence must reuse the source's words, no learning styles, no dashes, and explanations may only quote the given score and breakdown numbers.
+- `scrubText` now also removes names after "Notes by", "Submitted by", "Taken by" and "Written by" with no colon (the eval cases found this gap).
 
 ## Open audit items (current UI vs CLAUDE.md)
 

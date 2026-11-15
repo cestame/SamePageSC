@@ -58,3 +58,9 @@ test('scrubber removes personal details', () => {
   for (const leak of ['Jane', 'jane@usc.edu', '1234567890', '555-0199', 'Jake']) assert.ok(!out.includes(leak), leak + ' leaked: ' + out);
   assert.ok(out.includes('pointers'));
 });
+
+test('scrubText removes a contributor name written as "Notes by"', () => {
+  const out = scrubText('Notes by Priya Ramanathan. Notes taken by the professor were posted.');
+  assert.ok(!out.includes('Priya'));
+  assert.ok(out.includes('taken by the professor'));
+});

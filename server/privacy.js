@@ -10,6 +10,8 @@ const PATTERNS = [
   // "my name is Jane Doe", "I'm Jane", "Name: Jane Doe", "Student: Jane Doe", "by Jane Doe"
   [/\b([Mm]y name is|I am|I'm|[Tt]his is)\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?/g, '$1 [name]'],
   [/\b(name|student|author|submitted by|notes by|taken by)\s*[:-]\s*[A-Z][a-zA-Z'-]+(?:\s+[A-Z][a-zA-Z'-]+)*/gi, '$1: [name]'],
+  // "Notes by Jane Doe" with no colon. Case-sensitive name match, so "taken by the professor" is left alone.
+  [/\b([Ss]ubmitted by|[Nn]otes by|[Tt]aken by|[Ww]ritten by)\s+[A-Z][a-zA-Z'-]+(?:\s+[A-Z][a-zA-Z'-]+)*/g, '$1 [name]'],
   // Classmate names followed by a classroom verb, e.g. "Jake asked", "Maria Lopez said"
   [/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?\s+(?=(asked|said|answered|presented|mentioned|raised)\b)/g, '[student] '],
 ];

@@ -12,8 +12,9 @@
     "dev:client": "vite",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "node --test server/*.test.js",
-    "check": "npm run lint && npm run typecheck && npm test"
+    "test": "node --test server/*.test.js evals/*.test.js",
+    "check": "npm run lint && npm run typecheck && npm test",
+    "eval": "node evals/run.js"
   },
   "repository": {
     "type": "git",

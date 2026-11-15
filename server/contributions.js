@@ -1,26 +1,43 @@
 // Shared steps for turning an AI extraction into a stored contribution, used by pasted notes and recordings.
 import { FIELD_KEYS } from '../shared/content.js';
 import { scrubText, isAboutThePerson } from './privacy.js';
+import { isGroundedIn, replaceDashes } from './aiGuards.js';
 
 /**
  * Keeps only fields with evidence, scrubs the evidence again, and drops anything about the person.
- * Returns the profile, the fields dropped for describing the person, and how many fields were found.
+ * When the source text is given, it also drops evidence that isn't found in the source, so a stored rating
+ * always points at something a reader could check.
+ * Returns the profile, the fields dropped for describing the person, the fields dropped as ungrounded,
+ * and how many fields were kept.
  */
-export function keepEvidencedFields(extracted) {
+export function keepEvidencedFields(extracted, sourceText) {
   const profile = {};
   const dropped = [];
+  const ungrounded = [];
   for (const key of FIELD_KEYS) {
     const f = extracted[key];
-    const evidence = scrubText(f.evidence || '').slice(0, 240);
-    if (!f.found || isAboutThePerson(evidence)) {
-      if (f.found) dropped.push(key);
-      profile[key] = { value: null, evidence: '' };
-      continue;
-    }
-    profile[key] = { value: Math.min(5, Math.max(1, Math.round(f.value))), evidence };
+    const evidence = replaceDashes(scrubText(f.evidence || '')).slice(0, 240);
+    const reason = rejectionReason(f, evidence, sourceText);
+    if (reason === 'person') dropped.push(key);
+    if (reason === 'ungrounded') ungrounded.push(key);
+    profile[key] = reason ? { value: null, evidence: '' } : { value: Math.min(5, Math.max(1, Math.round(f.value))), evidence };
   }
   const found = FIELD_KEYS.filter((k) => profile[k].value !== null).length;
-  return { profile, dropped, found };
+  return { profile, dropped, ungrounded, found };
+}
+
+function rejectionReason(field, evidence, sourceText) {
+  if (!field.found) return 'not found';
+  if (isAboutThePerson(evidence)) return 'person';
+  if (sourceText !== undefined && !isGroundedIn(evidence, sourceText)) return 'ungrounded';
+  return null;
+}
+
+/** The whole post-processing step after extraction, shared by pasted notes, recordings and the eval suite. */
+export function profileFromExtraction(extracted, sourceText) {
+  const { profile, dropped, ungrounded, found } = keepEvidencedFields(extracted, sourceText);
+  const summary = replaceDashes(scrubText(extracted.summary)).slice(0, 600);
+  return { profile, dropped, ungrounded, found, summary };
 }
 
 /** Finds the chosen professor for a course, or prepares a new one by name. Returns { prof } or { error }. */
