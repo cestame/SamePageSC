@@ -52,7 +52,7 @@
   // ---------- badge ----------
 
   const BADGE_STYLE = `
-    :host { all: initial; display: block; padding: 0 0 4px; }
+    :host { all: initial; display: flex; flex-wrap: wrap; gap: 8px; padding: 0 0 4px; }
     button {
       display: inline-flex; align-items: center; min-height: 44px; padding: 0; border: 0;
       background: transparent; cursor: pointer; font: 600 13px/1.2 Lato, "Segoe UI", system-ui, sans-serif;
@@ -144,8 +144,31 @@
       event.stopPropagation();
       chrome.runtime.sendMessage({ type: 'open-panel', route });
     });
-    root.append(style, button);
+    root.append(style, button, simulationButton(result, code));
     return host;
+  }
+
+  /** Opens the 3D "Try this class" simulation for this section in a new tab. */
+  function simulationButton(result, code) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'try';
+    const label = `Try a simulated class for ${code}, section ${result.key}`;
+    button.setAttribute('aria-label', label);
+    button.title = label;
+    const pill = document.createElement('span');
+    pill.className = 'pill';
+    const text = document.createElement('span');
+    text.textContent = 'Try this class';
+    pill.append(text);
+    button.append(pill);
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const profile = result.profile ? FIELD_ORDER.map((key) => result.profile[key] ?? 3) : null;
+      chrome.runtime.sendMessage({ type: 'open-simulation', code, section: result.key, name: result.name ?? '', profile });
+    });
+    return button;
   }
 
   // ---------- scanning ----------

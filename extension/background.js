@@ -20,6 +20,26 @@ async function lookupSections(sections) {
   return { results: data };
 }
 
+const COURSE_CODE = /^[A-Z]{2,5} \d{3}[A-Z]{0,2}$/;
+const SECTION_KEY = /^\d{5}[A-Z]?$/;
+
+/**
+ * Opens the 3D simulation, served by the Same Page server at /try-this-class/, for one webReg section.
+ * Everything in the URL is checked first, because the message comes from a content script on webReg.
+ */
+async function openSimulation({ code, section, name, profile }) {
+  if (!COURSE_CODE.test(String(code)) || !SECTION_KEY.test(String(section))) return;
+  const { server } = await configReady;
+  const url = new URL('/try-this-class/', server);
+  url.searchParams.set('course', code);
+  url.searchParams.set('section', section);
+  if (typeof name === 'string' && name) url.searchParams.set('name', name.slice(0, 80));
+  if (Array.isArray(profile) && profile.length === 7 && profile.every((v) => Number.isFinite(v) && v >= 1 && v <= 5)) {
+    url.searchParams.set('profile', profile.map((v) => Math.round(v * 10) / 10).join(','));
+  }
+  await chrome.tabs.create({ url: url.href });
+}
+
 /** Opens the panel on a page of the app. Clearing the route first means the same route still triggers a change. */
 async function showInPanel(route) {
   await chrome.storage.local.remove('panelRoute');
@@ -31,6 +51,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     // sidePanel.open only works during the student's click, so it runs before anything is awaited.
     chrome.sidePanel.open({ tabId: sender.tab.id }).catch(() => undefined);
     showInPanel(String(message.route || '#/'));
+    return false;
+  }
+  if (message?.type === 'open-simulation') {
+    openSimulation(message);
     return false;
   }
   if (message?.type === 'lookup-sections' && Array.isArray(message.sections)) {
