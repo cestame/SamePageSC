@@ -478,7 +478,10 @@ function footer(c,t){c.fillStyle='#9a9a9a';c.font=`22px ${FB}`;c.textBaseline='a
 function drawSlide(sl){const c=sCtx;c.fillStyle='#fffefa';c.fillRect(0,0,1280,720);c.fillStyle='#922e2e';c.fillRect(0,0,1280,112);c.fillStyle='#e0b600';c.fillRect(0,112,1280,6);
   if(!sl){footer(c,'Same Page SC prototype');sTex.needsUpdate=true;return;}
   c.fillStyle='#fff';c.font=`700 54px ${FT}`;c.textBaseline='middle';c.fillText(sl.title,48,58);
-  const art=sl.matrix||sl.diagram;c.font=`40px ${FB}`;c.textBaseline='top';
+  const art=sl.matrix||sl.diagram||sl.code;c.font=`40px ${FB}`;c.textBaseline='top';
+  if(sl.code){const x0=700,y0=170,h=Math.max(150,sl.code.length*46+40);c.fillStyle='#151e3f';c.fillRect(x0,y0,540,h);
+    c.font="30px 'Cascadia Mono', Consolas, monospace";c.fillStyle='#fff0b6';sl.code.forEach((line,i)=>c.fillText(line,x0+24,y0+22+i*46));
+    c.font=`40px ${FB}`;}
   (sl.bullets||[]).forEach((b,i)=>{c.fillStyle='#922e2e';c.fillRect(56,184+i*84,14,14);c.fillStyle='#030027';wrap(c,b,90,170+i*84,art?640:1120);});
   if(sl.matrix){const x0=820,y0=200;c.strokeStyle='#030027';c.lineWidth=6;
     c.beginPath();c.moveTo(x0+30,y0);c.lineTo(x0,y0);c.lineTo(x0,y0+260);c.lineTo(x0+30,y0+260);c.stroke();c.beginPath();c.moveTo(x0+300,y0);c.lineTo(x0+330,y0);c.lineTo(x0+330,y0+260);c.lineTo(x0+300,y0+260);c.stroke();
@@ -614,14 +617,17 @@ const pHead=makeHead(pSkin,'#e0ac69',cm('#7d7d7d'),hairShortGeo,pHairM);pHead.po
 const pArmL=makeArm(-1,pShirt,pSkin),pArmR=makeArm(1,pShirt,pSkin);pBody.add(pArmL,pArmR);
 add(B(0.03,0.02,0.1),M.black,0,-0.3,-0.02,{parent:pArmR.userData.elbow});
 prof.traverse(o=>{if(o.isMesh)o.castShadow=true;});prof.position.set(LECT.x,0,LECT.z-0.6);
-function styleProf(){pShirt.color.set(L.shirt);pHairM.color.set(L.hair);pPants.color.set(L.pants);}
+function styleProf(){pShirt.color.set(L.shirt);pHairM.color.set(L.hair);pPants.color.set(L.pants);
+  // Hairstyle follows the professor's voice: longer hair with the feminine voice (Prof. B and feminine-voiced sections).
+  const feminine=L.voiceGender?L.voiceGender==='f':secKey==='B';
+  const hair=pHead.children.find(m=>m.material===pHairM);if(hair)hair.geometry=feminine?hairLongGeo:hairShortGeo;}
 
 // ---------- state ----------
 // Opened from a webReg badge: ?course=CSCI%20103&section=29901&name=...&profile=3,2,4,3,2,1,3
 const linked=(()=>{const q=new URLSearchParams(location.search);const course=q.get('course')||'',section=q.get('section')||'';
   if(!/^[A-Z]{2,5} \d{3}[A-Z]{0,2}$/.test(course)||!/^\d{5}[A-Z]?$/.test(section))return null;
   const p=(q.get('profile')||'').split(',').map(Number);const profile=p.length===7&&p.every(v=>v>=1&&v<=5)?Object.fromEntries(FIELDS.map(([k],i)=>[k,p[i]])):null;
-  return {course,section,name:(q.get('name')||'').slice(0,80),when:(q.get('when')||'').slice(0,40),profile,synthetic:q.get('synthetic')==='1'};})();
+  return {course,section,name:(q.get('name')||'').slice(0,80),when:(q.get('when')||'').slice(0,40),profile,synthetic:q.get('synthetic')==='1',voice:['f','m'].includes(q.get('voice'))?q.get('voice'):null};})();
 // ?synthetic=1 builds a custom class for this section from synthetic data (synthetic.js).
 const synthetic=linked?.synthetic?(await import('./synthetic.js')).synthesizeSection(linked,LESSONS):null;
 if(synthetic)LESSONS.S=synthetic.lesson;
@@ -693,7 +699,10 @@ let speaking=false,studentSpeaking=false;
 let currentAudio=null;
 // A synthetic lesson borrows steps from both recorded lessons; each step remembers its source in `src`.
 // Professor lines play in the section's voice (cross-voice clips are named <voice>-from-<lesson>-...).
-function clipFor(step,part,n){const src=L.steps[step]?.src??{lesson:secKey,step};const voice=L.voice??src.lesson;
+function clipFor(step,part,n){const src=L.steps[step]?.src??{lesson:secKey,step};
+  // Course lessons (courses.json): professor lines in the section's voice, student questions in the course's student voice.
+  if(src.course)return part==='ask'?`audio/courses/${src.course}/student-${src.role}-ask-${n}.mp3`:`audio/courses/${src.course}/${L.voiceGender}-${src.role}-${part}-${n}.mp3`;
+  const voice=L.voice??src.lesson;
   const same=voice===src.lesson||part==='ask';
   return same?`audio/voice/${src.lesson}-${src.step}-${part}-${n}.mp3`:`audio/voice/${voice}-from-${src.lesson}-${src.step}-${part}-${n}.mp3`;}
 function stopAudio(){if(currentAudio){currentAudio.onended=currentAudio.onerror=null;currentAudio.pause();currentAudio=null;}}
@@ -892,7 +901,7 @@ function showSyntheticData(){if(!synthetic)return;const d=synthetic.data;
   const panel=document.createElement('details');panel.open=true;
   const sum=document.createElement('summary');sum.textContent='Synthetic data for this class';panel.append(sum);
   const body=document.createElement('div');body.className='details-body';
-  const intro=document.createElement('p');intro.className='muted';intro.textContent=`${d.profileSource}. Everything below is simulated from it, not observed in a real class.`;body.append(intro);
+  const intro=document.createElement('p');intro.className='muted';intro.textContent=`Lesson: ${d.lessonTopic}. ${d.profileSource}. Everything below is simulated from it, not observed in a real class.`;body.append(intro);
   const kv=document.createElement('div');kv.className='kv';
   for(const [k,v] of Object.entries(d.behavior)){const label=document.createElement('span');label.textContent=BEHAVIOR_LABELS[k]??k;label.title=v.rule;
     const val=document.createElement('b');val.textContent=(BEHAVIOR_FORMAT[k]??(x=>String(x)))(v.value);val.title=v.rule;kv.append(label,val);}

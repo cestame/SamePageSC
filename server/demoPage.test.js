@@ -18,7 +18,8 @@ test('the demo page uses the markup the extension reads, and escapes names', () 
 
 test('each section links to a synthetic Try this class simulation with its profile', () => {
   const profile = Object.fromEntries(['pace', 'format', 'structure', 'assessment', 'participation', 'guidance', 'workload'].map((k, i) => [k, { value: (i % 5) + 1 }]));
-  const href = simulationHref({ section: '29901', schedule: 'MW 10:00-11:50', name: 'Dr. Maya Reyes', profile }, 'CSCI 103');
+  const href = simulationHref({ section: '29901', schedule: 'MW 10:00-11:50', name: 'Dr. Maya Reyes', voice: 'f', profile }, 'CSCI 103');
+  assert.equal(new URL(href, 'https://example.test').searchParams.get('voice'), 'f');
   const url = new URL(href, 'https://example.test');
   assert.equal(url.pathname, '/try-this-class/');
   assert.equal(url.searchParams.get('course'), 'CSCI 103');

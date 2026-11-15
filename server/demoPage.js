@@ -35,6 +35,7 @@ export function simulationHref(s, code) {
   const params = new URLSearchParams({ course: code, section: s.section, name: s.name ?? '', when: s.schedule ?? '', synthetic: '1' });
   const values = FIELD_KEYS.map((k) => Number(s.profile?.[k]?.value));
   if (values.every((v) => v >= 1 && v <= 5)) params.set('profile', values.map((v) => Math.round(v * 10) / 10).join(','));
+  if (s.voice === 'f' || s.voice === 'm') params.set('voice', s.voice);
   return `/try-this-class/?${params}`;
 }
 

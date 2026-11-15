@@ -1,7 +1,8 @@
 // Synthetic class data for one webReg section. Everything here is SIMULATED: it turns the section's
-// 1-5 teaching profile and meeting time into classroom behavior and a lesson built from recorded steps.
-// Each rule says what it is based on. The same section always produces the same data (seeded by
-// course and section), so a student sees a stable class, not a new random one on every visit.
+// 1-5 teaching profile and meeting time into classroom behavior, and builds a lesson on the course's
+// real subject matter (courses.json) in the order the profile suggests. Each behavior rule says what it
+// is based on. The same section always produces the same class (seeded by course and section).
+import COURSES from './courses.json' with { type: 'json' };
 
 const FIELDS = ['pace', 'format', 'structure', 'assessment', 'participation', 'guidance', 'workload'];
 
@@ -47,28 +48,48 @@ function behavior(p, start, rnd) {
   };
 }
 
-const copy = (lessons, key, i) => ({ ...structuredClone(lessons[key].steps[i]), src: { lesson: key, step: i } });
+// What each role in courses.json does in the simulation.
+const ROLE_SHAPE = {
+  recap: { move: 'recap' }, open: { move: 'explain' }, warmup: { move: 'question' }, define: { move: 'explain' },
+  studentqFull: { move: 'studentq' }, studentqBrief: { move: 'studentq' }, pair: { move: 'pair' }, pairDebrief: { move: 'explain' },
+  concept: { move: 'explain' }, question: { move: 'question' }, workedBoard1: { move: 'worked' }, workedBoard2: { move: 'worked' },
+  workedDoc: { move: 'worked', tool: 'doccam' }, poll: { move: 'question', tool: 'poll' },
+  closeExit: { move: 'recap', exitTicket: true }, closeLogistics: { move: 'logistics', packUp: true },
+};
 
-/** Builds the lesson from recorded steps of both sample lessons, chosen by the profile. */
-function composeSteps(p, b, lessons, rnd) {
-  const pick = (key, i) => copy(lessons, key, i);
-  const steps = [];
-  steps.push(p.structure >= 4 ? pick('B', 0) : pick('A', 0));
-  if (p.participation >= 3) steps.push(pick('B', 1), pick('B', 2));
-  else steps.push(pick('A', 1));
-  steps.push(p.participation >= 3 ? pick('B', 3) : pick('A', 2));
-  if (p.format >= 4 || (p.format === 3 && rnd() < 0.5)) steps.push(pick('B', 4), pick('B', 5));
-  steps.push(pick('A', 3));
-  steps.push(pick('A', 4)); // even the quietest section asks once; participation sets the wait and the hands
-  if (p.guidance <= 2) steps.push(pick('A', 5), pick('A', 6));
-  else steps.push(pick('B', 6));
-  if (p.participation >= 4) steps.push(pick('B', 7));
-  steps.push(p.structure >= 4 ? pick('B', 8) : pick('A', 7));
+/** Which roles a section's class uses, in order. Each rule reads one profile score. */
+function chooseRoles(p, rnd) {
+  const roles = [p.structure >= 4 ? 'recap' : 'open'];
+  roles.push(...(p.participation >= 3 ? ['warmup', 'define'] : ['define']));
+  roles.push(p.participation >= 3 ? 'studentqFull' : 'studentqBrief');
+  if (p.format >= 4 || (p.format === 3 && rnd() < 0.5)) roles.push('pair', 'pairDebrief');
+  roles.push('concept', 'question');
+  roles.push(...(p.guidance <= 2 ? ['workedBoard1', 'workedBoard2'] : ['workedDoc']));
+  if (p.participation >= 4) roles.push('poll');
+  roles.push(p.structure >= 4 ? 'closeExit' : 'closeLogistics');
+  return roles;
+}
 
+// Without course content, fall back to the two recorded eigenvalue lessons, picked by the same rules.
+const FALLBACK_STEPS = {
+  recap: ['B', 0], open: ['A', 0], warmup: ['B', 1], define: ['B', 2], studentqFull: ['B', 3], studentqBrief: ['A', 2], pair: ['B', 4],
+  pairDebrief: ['B', 5], concept: ['A', 3], question: ['A', 4], workedBoard1: ['A', 5], workedBoard2: ['A', 6], workedDoc: ['B', 6],
+  poll: ['B', 7], closeExit: ['B', 8], closeLogistics: ['A', 7],
+};
+
+function stepFor(role, courseId, lessons) {
+  const content = COURSES[courseId]?.roles[role];
+  if (content) return { ...structuredClone(content), ...ROLE_SHAPE[role], src: { course: courseId, role } };
+  const [key, i] = FALLBACK_STEPS[role];
+  return { ...structuredClone(lessons[key].steps[i]), src: { lesson: key, step: i } };
+}
+
+function composeSteps(p, b, lessons, rnd, courseId) {
+  const steps = chooseRoles(p, rnd).map((role) => stepFor(role, courseId, lessons));
   for (const s of steps) {
     delete s.scene;
-    if (s.wait) { s.wait = b.waitSeconds.value; s.hands = s.tool === 'poll' ? 0.03 : b.handsPerQuestion.value; }
-    if (s.pair) s.pair = b.pairSeconds.value;
+    if (s.move === 'question') { s.wait = b.waitSeconds.value; s.hands = s.tool === 'poll' ? 0.03 : b.handsPerQuestion.value; }
+    if (s.move === 'pair') s.pair = b.pairSeconds.value;
     if (s.packUp) s.packUp = b.packUpShare.value;
   }
   const first = (test) => steps.find(test);
@@ -94,8 +115,8 @@ function describeStyle(p, steps) {
 }
 
 /**
- * section: { course, section, name, when, profile } where profile is { pace: 1-5, ... } or null.
- * lessons: the two recorded sample lessons (A and B) from index.html.
+ * section: { course, section, name, when, voice: 'f' | 'm' | null, profile } where profile is { pace: 1-5, ... } or null.
+ * lessons: the two recorded sample lessons (A and B) from index.html, used when a course has no content yet.
  * Returns { lesson, data } where lesson plugs into the simulation and data is the readable record.
  */
 export function synthesizeSection(section, lessons) {
@@ -104,8 +125,12 @@ export function synthesizeSection(section, lessons) {
   const p = Object.fromEntries(FIELDS.map((k) => [k, Math.round(section.profile?.[k] ?? 1 + Math.floor(rnd() * 5))]));
   const start = startMinutes(section.when);
   const b = behavior(p, start, rnd);
-  const steps = composeSteps(p, b, lessons, rnd);
-  const voice = rnd() < 0.5 ? 'A' : 'B';
+  const courseId = String(section.course).toLowerCase().replace(/\s+/g, '-');
+  const course = COURSES[courseId] ?? null;
+  const steps = composeSteps(p, b, lessons, rnd, courseId);
+  // The professor's voice comes from the data (each fictional sample professor has one); otherwise it is seeded.
+  const voiceGender = section.voice === 'f' || section.voice === 'm' ? section.voice : rnd() < 0.5 ? 'f' : 'm';
+  const voice = voiceGender === 'f' ? 'B' : 'A'; // in the recorded sample lessons, A is the masculine voice and B the feminine one
   const tools = ['Laser projector and slides', 'Clicker', 'Wireless mic'];
   if (steps.some((s) => s.board)) tools.push('Whiteboard wall');
   if (steps.some((s) => s.tool === 'doccam')) tools.push('Document camera');
@@ -115,6 +140,8 @@ export function synthesizeSection(section, lessons) {
     name: section.name || 'The professor',
     when: section.when || 'Meeting time not listed',
     voice,
+    voiceGender,
+    topic: course?.topic ?? null,
     rate: lessons[voice].rate,
     pitch: lessons[voice].pitch,
     playback: b.pace.value,
@@ -135,10 +162,11 @@ export function synthesizeSection(section, lessons) {
     synthetic: true,
     course: section.course,
     section: section.section,
+    lessonTopic: course ? `${course.title}: ${course.topic}` : 'No course content yet, so this uses the sample eigenvalues lesson',
     profileSource: profileFromNotes ? 'Teaching profile from student notes (sample data)' : 'No profile yet, so the profile itself is synthetic',
     profile: p,
-    behavior: Object.fromEntries(Object.entries(b).map(([k, v]) => [k, v])),
-    lessonOutline: steps.map((s) => `${s.move}${s.tool ? ` (${s.tool})` : ''} from sample lesson ${s.src.lesson}`),
+    behavior: b,
+    lessonOutline: steps.map((s) => `${s.move}${s.tool ? ` (${s.tool})` : ''}`),
     note: 'Simulated classroom behavior for a demo. Not observed data about any real class or professor.',
   };
   return { lesson, data };

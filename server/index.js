@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { closeDb, initDb, query } from './db.js';
-import { seedSamples } from './seed.js';
+import { SAMPLE_VOICES, seedSamples } from './seed.js';
 import { PRODUCT_NAME } from '../shared/content.js';
 import { scoreProfile, mergeContributions, validateAnswers } from './scoring.js';
 import { scrubText } from './privacy.js';
@@ -251,7 +251,7 @@ app.get('/demo/webreg', asyncRoute(async (req, res) => {
   const courses = await query('SELECT id, code, title FROM courses ORDER BY code');
   const samples = await loadProfessors('p.is_sample = TRUE', []);
   const listed = courses
-    .map((c) => ({ ...c, sections: samples.filter((p) => p.course_id === c.id && p.section) }))
+    .map((c) => ({ ...c, sections: samples.filter((p) => p.course_id === c.id && p.section).map((p) => ({ ...p, voice: SAMPLE_VOICES[p.name] })) }))
     .filter((c) => c.sections.length > 0);
   res.type('html').send(renderDemoPage(listed));
 }));

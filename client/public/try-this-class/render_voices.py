@@ -77,5 +77,37 @@ def render_cross_voices(kokoro, out):
                         print(f"{voice_key} voice, lesson {key} step {i} {part} {n}")
 
 
+COURSE_VOICES = {"f": ("af_heart", 0.98), "m": ("am_michael", 1.06)}
+
+
+def render_courses(kokoro, only=None):
+    """Course lessons from courses.json: every professor line in both voices, student questions in one voice.
+
+    Files: audio/courses/<course>/<f|m>-<role>-<say|then>-<n>.mp3 and .../student-<role>-ask-<n>.mp3
+    Clips that already exist are skipped, so several processes can each take one course.
+    """
+    courses = json.loads((HERE / "courses.json").read_text(encoding="utf-8"))
+    for course_id, course in courses.items():
+        if only and course_id != only:
+            continue
+        out = HERE / "audio" / "courses" / course_id
+        out.mkdir(parents=True, exist_ok=True)
+        for role, step in course["roles"].items():
+            for part in ("say", "then"):
+                for n, sentence in enumerate(sentences(step.get(part, ""))):
+                    for gender, (voice, speed) in COURSE_VOICES.items():
+                        samples, rate = kokoro.create(sentence, voice=voice, speed=speed, lang="en-us")
+                        sf.write(out / f"{gender}-{role}-{part}-{n}.mp3", samples, rate, format="MP3")
+            for n, sentence in enumerate(sentences(step.get("ask", ""))):
+                samples, rate = kokoro.create(sentence, voice=course["studentVoice"], speed=1.05, lang="en-us")
+                sf.write(out / f"student-{role}-ask-{n}.mp3", samples, rate, format="MP3")
+        print(f"{course_id}: done")
+
+
 if __name__ == "__main__":
-    main(sys.argv[1])
+    model_dir = Path(sys.argv[1])
+    if len(sys.argv) > 2 and sys.argv[2] == "courses":
+        only = sys.argv[3] if len(sys.argv) > 3 else None
+        render_courses(Kokoro(str(model_dir / "kokoro-v1.0.onnx"), str(model_dir / "voices-v1.0.bin")), only)
+    else:
+        main(sys.argv[1])

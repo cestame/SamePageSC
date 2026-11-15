@@ -16,7 +16,7 @@ const p = (value, evidence) => ({ value, evidence });
 
 const PROFESSORS = [
   {
-    course: 'csci-103', name: 'Dr. Maya Reyes', section: '29901', schedule: 'MW 10:00-11:50',
+    course: 'csci-103', name: 'Dr. Maya Reyes', voice: 'f', section: '29901', schedule: 'MW 10:00-11:50',
     summary: 'Class opens with a short recap quiz, then live-coding where every step is narrated and students type along. The last 15 minutes are a guided practice problem with TAs walking the room.',
     profile: {
       pace: p(2, '"She re-did the recursion example three times until people got it."'),
@@ -29,7 +29,7 @@ const PROFESSORS = [
     },
   },
   {
-    course: 'csci-103', name: 'Prof. Daniel Okafor', section: '29903', schedule: 'TTh 14:00-15:50',
+    course: 'csci-103', name: 'Prof. Daniel Okafor', voice: 'm', section: '29903', schedule: 'TTh 14:00-15:50',
     summary: 'Short lecture on a concept, then students are dropped into an open-ended problem and asked to design a solution in groups. Ends with groups presenting their approach and the professor critiquing it.',
     profile: {
       pace: p(4, '"We covered pointers and dynamic memory in the same week."'),
@@ -42,7 +42,7 @@ const PROFESSORS = [
     },
   },
   {
-    course: 'csci-103', name: 'Dr. Priya Natarajan', section: '29905', schedule: 'MWF 09:00-09:50',
+    course: 'csci-103', name: 'Dr. Priya Natarajan', voice: 'f', section: '29905', schedule: 'MWF 09:00-09:50',
     summary: 'Fast, dense slide lectures that cover a lot of ground with occasional worked examples. Most practice happens outside class in problem sets, and the exams are the main event.',
     profile: {
       pace: p(5, '"Slides move fast; the recordings are essential."'),
@@ -55,7 +55,7 @@ const PROFESSORS = [
     },
   },
   {
-    course: 'econ-203', name: 'Prof. James Whitfield', section: '26301', schedule: 'TTh 14:00-15:20',
+    course: 'econ-203', name: 'Prof. James Whitfield', voice: 'm', section: '26301', schedule: 'TTh 14:00-15:20',
     summary: 'Classic lecture with graphs built step by step on the board, followed by a few practice multiple-choice questions. Very predictable rhythm from week to week.',
     profile: {
       pace: p(3, 'One chapter per week, matching the textbook.'),
@@ -68,7 +68,7 @@ const PROFESSORS = [
     },
   },
   {
-    course: 'econ-203', name: 'Dr. Sofia Marchetti', section: '26303', schedule: 'MW 12:00-13:20',
+    course: 'econ-203', name: 'Dr. Sofia Marchetti', voice: 'f', section: '26303', schedule: 'MW 12:00-13:20',
     summary: 'Each class starts from a real-world news story and the class works out the economics together through discussion. Theory is introduced in response to questions students raise.',
     profile: {
       pace: p(3, 'Moderate; slows down when discussion gets going.'),
@@ -81,7 +81,7 @@ const PROFESSORS = [
     },
   },
   {
-    course: 'econ-203', name: 'Prof. Kevin Tran', section: '26305', schedule: 'MWF 10:00-10:50',
+    course: 'econ-203', name: 'Prof. Kevin Tran', voice: 'm', section: '26305', schedule: 'MWF 10:00-10:50',
     summary: 'A mix of lecture and in-class worksheets done in pairs, with the professor solving each worksheet on the board afterwards. Lots of practice, tightly organized.',
     profile: {
       pace: p(4, 'Covers more chapters than other sections; extra topics on game theory.'),
@@ -96,7 +96,7 @@ const PROFESSORS = [
 
   // WRIT 150
   {
-    course: 'writ-150', name: 'Dr. Hannah Brooks', section: '64101', schedule: 'TTh 09:30-10:50',
+    course: 'writ-150', name: 'Dr. Hannah Brooks', voice: 'f', section: '64101', schedule: 'TTh 09:30-10:50',
     summary: 'Each class is a writing workshop: a short model paragraph on the screen, then students draft and trade pages with a partner. The professor ends by walking through one anonymous draft line by line.',
     profile: {
       pace: p(2, 'One essay per five weeks, with every draft stage scheduled.'),
@@ -109,7 +109,7 @@ const PROFESSORS = [
     },
   },
   {
-    course: 'writ-150', name: 'Prof. Marcus Bell', section: '64103', schedule: 'MW 14:00-15:20',
+    course: 'writ-150', name: 'Prof. Marcus Bell', voice: 'm', section: '64103', schedule: 'MW 14:00-15:20',
     summary: "Class is a seminar around the week's reading, with the professor asking open questions and letting the room argue it out. Essay topics are chosen by students, so drafts look very different from each other.",
     profile: {
       pace: p(3, 'A new reading most weeks, discussed in depth.'),
@@ -122,7 +122,7 @@ const PROFESSORS = [
     },
   },
   {
-    course: 'writ-150', name: 'Dr. Lena Okoye', section: '64105', schedule: 'TTh 12:30-13:50',
+    course: 'writ-150', name: 'Dr. Lena Okoye', voice: 'f', section: '64105', schedule: 'TTh 12:30-13:50',
     summary: 'The first half is a mini-lesson on one writing skill with examples, and the second half is quiet writing time with one-on-one check-ins. Rubrics are shared before every assignment.',
     profile: {
       pace: p(3, 'One skill per class, building toward each essay.'),
@@ -137,7 +137,7 @@ const PROFESSORS = [
 
   // MATH 125
   {
-    course: 'math-125', name: 'Dr. Ethan Park', section: '39401', schedule: 'MWF 08:00-08:50',
+    course: 'math-125', name: 'Dr. Ethan Park', voice: 'm', section: '39401', schedule: 'MWF 08:00-08:50',
     summary: 'A fast chalkboard lecture that covers a full textbook section each class, with a couple of examples at the end. Practice happens in online homework and the discussion section.',
     profile: {
       pace: p(5, '"We finished derivatives a week earlier than the other sections."'),
@@ -150,7 +150,7 @@ const PROFESSORS = [
     },
   },
   {
-    course: 'math-125', name: 'Prof. Rosa Delgado', section: '39403', schedule: 'MWF 11:00-11:50',
+    course: 'math-125', name: 'Prof. Rosa Delgado', voice: 'f', section: '39403', schedule: 'MWF 11:00-11:50',
     summary: "Every new rule comes with two or three fully worked examples before students try one on their own. Fridays start with a short quiz on the week's material.",
     profile: {
       pace: p(2, '"She slows down whenever the room looks lost."'),
@@ -163,7 +163,7 @@ const PROFESSORS = [
     },
   },
   {
-    course: 'math-125', name: 'Dr. Samuel Kim', section: '39405', schedule: 'TTh 11:00-12:20',
+    course: 'math-125', name: 'Dr. Samuel Kim', voice: 'm', section: '39405', schedule: 'TTh 11:00-12:20',
     summary: 'Students watch a short video before class, then spend class solving problems in groups at the whiteboards while the professor moves between tables. Groups present one solution at the end.',
     profile: {
       pace: p(3, 'One topic per class, with the video beforehand.'),
@@ -178,7 +178,7 @@ const PROFESSORS = [
 
   // CSCI 102
   {
-    course: 'csci-102', name: 'Prof. Nora Fitzgerald', section: '29911', schedule: 'MW 13:00-13:50',
+    course: 'csci-102', name: 'Prof. Nora Fitzgerald', voice: 'f', section: '29911', schedule: 'MW 13:00-13:50',
     summary: 'A short lecture introduces one programming idea, then everyone writes a tiny program together with the professor typing along. Weekly labs repeat the same idea with a twist.',
     profile: {
       pace: p(2, `"Perfect if you've never coded before."`),
@@ -191,7 +191,7 @@ const PROFESSORS = [
     },
   },
   {
-    course: 'csci-102', name: 'Dr. Omar Haddad', section: '29913', schedule: 'TTh 16:00-16:50',
+    course: 'csci-102', name: 'Dr. Omar Haddad', voice: 'm', section: '29913', schedule: 'TTh 16:00-16:50',
     summary: 'Class opens with a puzzle that students try to solve in pairs before the professor shows the idea behind it. Assignments are small open-ended programs with a creative twist.',
     profile: {
       pace: p(3, 'One concept per class.'),
@@ -204,7 +204,7 @@ const PROFESSORS = [
     },
   },
   {
-    course: 'csci-102', name: 'Dr. Julia Weiss', section: '29915', schedule: 'F 10:00-11:50',
+    course: 'csci-102', name: 'Dr. Julia Weiss', voice: 'f', section: '29915', schedule: 'F 10:00-11:50',
     summary: 'One long Friday session with a lecture block, a break, and a hands-on lab. Two exams make up most of the grade.',
     profile: {
       pace: p(4, 'Covers two topics in each Friday session.'),
@@ -219,7 +219,7 @@ const PROFESSORS = [
 
   // CSCI 104
   {
-    course: 'csci-104', name: 'Dr. Aisha Rahman', section: '29921', schedule: 'TTh 12:30-13:50',
+    course: 'csci-104', name: 'Dr. Aisha Rahman', voice: 'f', section: '29921', schedule: 'TTh 12:30-13:50',
     summary: 'Lectures build each data structure from scratch on the screen, then point straight to the matching homework. The programming assignments are long and are most of the grade.',
     profile: {
       pace: p(4, '"Heaps, hash tables and trees all in about four weeks."'),
@@ -232,7 +232,7 @@ const PROFESSORS = [
     },
   },
   {
-    course: 'csci-104', name: 'Prof. Leo Martins', section: '29923', schedule: 'MW 16:00-17:20',
+    course: 'csci-104', name: 'Prof. Leo Martins', voice: 'm', section: '29923', schedule: 'MW 16:00-17:20',
     summary: 'A whiteboard lecture that traces each algorithm step by step on small examples. Exams ask you to trace and analyze code by hand.',
     profile: {
       pace: p(3, 'One structure per week.'),
@@ -245,7 +245,7 @@ const PROFESSORS = [
     },
   },
   {
-    course: 'csci-104', name: 'Dr. Grace Liu', section: '29925', schedule: 'MWF 12:00-12:50',
+    course: 'csci-104', name: 'Dr. Grace Liu', voice: 'f', section: '29925', schedule: 'MWF 12:00-12:50',
     summary: "Short lectures alternate with in-class exercises where you complete a half-written function. Office hours are tied to each assignment's checkpoints.",
     profile: {
       pace: p(3, 'Steady, with checkpoints inside each assignment.'),
@@ -260,7 +260,7 @@ const PROFESSORS = [
 
   // ACAD 176
   {
-    course: 'acad-176', name: 'Prof. Theo Grant', section: '21001', schedule: 'MW 09:00-10:50',
+    course: 'acad-176', name: 'Prof. Theo Grant', voice: 'm', section: '21001', schedule: 'MW 09:00-10:50',
     summary: 'A hands-on studio: a quick demo of a sketching technique, then most of the session drawing while the professor gives feedback at each desk. Every week ends with a pin-up critique.',
     profile: {
       pace: p(4, 'A new technique every class.'),
@@ -273,7 +273,7 @@ const PROFESSORS = [
     },
   },
   {
-    course: 'acad-176', name: 'Dr. Mia Castellanos', section: '21003', schedule: 'TTh 15:30-17:20',
+    course: 'acad-176', name: 'Dr. Mia Castellanos', voice: 'f', section: '21003', schedule: 'TTh 15:30-17:20',
     summary: 'Each session opens with a slideshow of product sketches from industry, then students redraw them step by step. Critiques are in small groups rather than in front of the whole class.',
     profile: {
       pace: p(2, '"She lets you redo a sketch until it clicks."'),
@@ -286,7 +286,7 @@ const PROFESSORS = [
     },
   },
   {
-    course: 'acad-176', name: 'Prof. Ben Avery', section: '21005', schedule: 'F 13:00-15:50',
+    course: 'acad-176', name: 'Prof. Ben Avery', voice: 'm', section: '21005', schedule: 'F 13:00-15:50',
     summary: 'One long Friday studio built around a client-style brief that changes each week. Students pitch their sketches to the class at the end of the session.',
     profile: {
       pace: p(4, 'A new brief every week.'),
@@ -305,6 +305,9 @@ const SAMPLE_RESPONSES = {
 };
 
 /** Adds any sample courses and sections that aren't in the database yet. Safe to run on every start. */
+/** Voice for each fictional sample professor in the Try this class simulation: 'f' (feminine) or 'm' (masculine). */
+export const SAMPLE_VOICES = Object.fromEntries(PROFESSORS.map((p) => [p.name, p.voice]));
+
 export async function seedSamples() {
   let added = 0;
   for (const c of COURSES) {
