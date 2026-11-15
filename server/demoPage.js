@@ -1,7 +1,6 @@
 // A demo class list for trying the Chrome extension without a USC login. It uses the same markup
 // structure as USC Web Registration's course list (the element ids and classes the extension reads),
-// laid out like a registration class list (columns, collapsible courses, course bin) but titled as a
-// demo, in Same Page colors, with no USC name or logo, and a "not a USC site" notice. Every section on it
+// with screenshot-matched registration styling and a visible demo notice. Every section on it
 // is a fictional sample professor from the seed data.
 
 import { PRODUCT_NAME } from '../shared/content.js';
@@ -37,8 +36,8 @@ function sectionRow(s) {
             <span class="section_row col-1"><span class="table-headers-xsmall">Section: </span><b>${escapeHtml(s.section)} R</b></span>
             ${cell('Session', ['001'])}
             ${cell('Type', [s.type || 'Lecture'])}
-            ${cell('Units', s.units ? [s.units] : [])}
-            ${cell('Registered', s.registered ? [s.registered] : [])}
+            ${cell('Units', [s.units ?? '—'])}
+            ${cell('Registered', [s.registered ?? '—'])}
             ${cell('Time', [time], 2)}
             ${cell('Days', days ? [days] : [])}
             ${cell('Instructor', [s.name], 2)}
@@ -73,17 +72,17 @@ export function renderDemoPage(courses) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Registration demo | ${escapeHtml(PRODUCT_NAME)}</title>
+<title>Web Registration | Same Page Demo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap">
 <style>
-:root { --cardinal:#922e2e; --navy:#151e3f; --navy-deep:#0d1430; --cream:#fff0b6; --paper:#fff; --text:#252525; --line:#e8e7e7; --stripe:#f2f0f0; --muted:#6b6b6b; }
+:root { --cardinal:#990000; --gold:#ffcc00; --paper:#fff; --text:#252525; --line:#e8e7e7; --stripe:#f2f0f0; --muted:#6b6b6b; }
 * { box-sizing:border-box; } body { margin:0; background:#e7e6e1; color:var(--text); font:16px/1.6 Lato,Arial,sans-serif; }
-button,input { font:inherit; } button,a { -webkit-tap-highlight-color:transparent; } button { cursor:pointer; } a { color:var(--cardinal); } button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid var(--cardinal); outline-offset:3px; } .masthead :focus-visible { outline-color:var(--cream); }
-.masthead { background:var(--navy); color:white; border-top:7px solid var(--navy-deep); }
+button,input { font:inherit; } button,a { -webkit-tap-highlight-color:transparent; } button { cursor:pointer; } a { color:var(--cardinal); } button:focus-visible,a:focus-visible,input:focus-visible { outline:3px solid var(--gold); outline-offset:3px; }
+.masthead { background:var(--cardinal); color:white; border-top:7px solid #800000; }
 .brand-row { padding:12px 2.5% 20px; display:flex; justify-content:space-between; align-items:center; }
-.brand { font:700 28px/1.4 Lato,Arial,sans-serif; } .demo-label { font-size:15px; color:var(--cream); }
-nav { display:flex; align-items:stretch; padding:0 2%; flex-wrap:wrap; } nav a,nav summary { display:block; padding:13px 16px; color:white; text-decoration:none; cursor:pointer; } nav details { position:relative; } nav summary { list-style:none; background:var(--navy-deep); color:var(--cream); } nav summary::after { content:' ▾'; } .term-menu { position:absolute; background:#efeeea; min-width:220px; z-index:5; box-shadow:0 3px 6px #0002; } .term-menu button { display:block; width:100%; text-align:left; border:0; background:none; padding:16px; color:var(--cardinal); } .nav-end { margin-left:auto; }
+.brand { font:40px/1.6 Georgia,serif; } .demo-label { font-size:14px; }
+nav { display:flex; align-items:stretch; padding:0 2%; flex-wrap:wrap; } nav a,nav summary { display:block; padding:13px 16px; color:white; text-decoration:none; cursor:pointer; } nav details { position:relative; } nav summary { list-style:none; background:#850000; color:var(--gold); } nav summary::after { content:' ▾'; } .term-menu { position:absolute; background:#efeeea; min-width:220px; z-index:5; box-shadow:0 3px 6px #0002; } .term-menu button { display:block; width:100%; text-align:left; border:0; background:none; padding:16px; color:var(--cardinal); } .nav-end { margin-left:auto; }
 main { margin:0 2%; padding:22px 2% 40px; background:var(--paper); min-height:70vh; box-shadow:0 3px 12px #0003; }
 h1 { margin:0 0 10px; font-size:36px; line-height:1.5; } .notice { margin:0 0 20px; font-size:13px; color:var(--muted); } .search { display:flex; align-items:stretch; margin:12px 0 24px; max-width:480px; } .search input { min-width:0; flex:1; padding:10px; border:1px solid #ccc; box-shadow:inset 0 1px 3px #0001; } .search input::placeholder { font-style:italic; } .search button { border:0; padding:8px 20px; background:#e0e0e0; }
 .list-heading { display:flex; gap:20px; align-items:center; justify-content:space-between; border-bottom:2px solid var(--line); margin-bottom:24px; padding-bottom:12px; } .list-heading h2 { margin:0; font-size:24px; } .expand-controls { display:flex; flex-shrink:0; } .expand-controls button { color:var(--muted); background:white; border:1px solid var(--cardinal); padding:2px 6px; font-size:12px; } .expand-controls button+button { border-left:0; }
@@ -99,10 +98,10 @@ h1 { margin:0 0 10px; font-size:36px; line-height:1.5; } .notice { margin:0 0 20
 </head>
 <body>
 <header class="masthead">
-  <div class="brand-row"><span class="brand">Registration demo</span><span class="demo-label">A ${escapeHtml(PRODUCT_NAME)} extension demo. Not a USC site.</span></div>
+  <div class="brand-row"><span class="brand">Web Registration</span></div>
   <nav aria-label="Registration navigation">
     <details><summary>Spring 2027 Classes</summary><div class="term-menu"><button type="button">Spring 2027 Classes</button><p style="padding:0 16px;font-size:13px;color:#555">Demo contains Spring 2027 sample sections only.</p></div></details>
-    <a class="nav-end" href="/#/home">Open ${escapeHtml(PRODUCT_NAME)}</a>
+    <a href="/#/home">myInfo</a><a href="/#/home">myCourseBin</a><a href="/#/home">myCalendar</a><a class="nav-end" href="/#/home">Open ${escapeHtml(PRODUCT_NAME)}</a>
   </nav>
 </header>
 <main>
