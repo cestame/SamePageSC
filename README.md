@@ -27,7 +27,7 @@ We deliberately do **not** ask about "visual / auditory / kinesthetic" learning 
 - Profiles describe the class, not the person. Evidence that comments on appearance, accent, identity, etc. is dropped.
 - No Brightspace crawling, no USC login, no dependency on USC systems.
 - Contributions require confirming the notes are your own or shared with the professor's agreement.
-- The 6 seeded professors (CSCI 103, ECON 203) are **fictional sample data** and are labeled as such. No student feedback is seeded.
+- The 21 seeded professors (3 sections each of CSCI 102, CSCI 103, CSCI 104, ECON 203, MATH 125, WRIT 150 and ACAD 176) are **fictional sample data** and are labeled as such. No student feedback is seeded.
 
 ## Stack
 
@@ -79,7 +79,7 @@ shared/
 server/
   index.js      Express API + static hosting of the built site
   db.js         Postgres / PGlite connection and schema
-  seed.js       6 fictional sample professors across 2 courses
+  seed.js       21 fictional sample professors across 7 courses (added on start if missing)
   scoring.js    deterministic matching + profile merging
   planner.js    picks one section per class: best total fit, inside your hours, no overlaps
   ai.js         Claude calls: profile extraction, match explanations

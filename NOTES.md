@@ -34,3 +34,8 @@ What's built and what's next, for whoever picks this up in the next session.
 1. Import into Replit, add the database and secret, deploy, and test the AI paths with a real syllabus.
 2. Check animations frame by frame on a real phone (diagram draw-in, score count-up, quiz taps) and with reduced motion on.
 3. Stretch: Chrome extension mockup for the pitch (fit scores on the registration page).
+
+## Built (2026-11-15)
+
+- 15 more fictional sample sections: WRIT 150, MATH 125, CSCI 102, CSCI 104 and ACAD 176 (3 each). ECON 205 was skipped because the pasted catalogue text gives no title for it.
+- Seeding now adds any missing sample courses and sections on every start, so existing databases pick them up without a reset.

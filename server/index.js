@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { initDb, query } from './db.js';
-import { seedIfEmpty } from './seed.js';
+import { seedSamples } from './seed.js';
 import { FIELD_KEYS, PRODUCT_NAME } from '../shared/content.js';
 import { scoreProfile, mergeContributions, validateAnswers } from './scoring.js';
 import { scrubText, isAboutThePerson } from './privacy.js';
@@ -374,7 +374,8 @@ const port = Number(process.env.PORT) || 3000;
 const kind = await initDb();
 await migrateAuth();
 await migrateUsc();
-if (await seedIfEmpty()) console.log('Seeded sample data.');
+const seeded = await seedSamples();
+if (seeded) console.log(`Added ${seeded} sample sections.`);
 app.listen(port, '0.0.0.0', () => {
   console.log(`${PRODUCT_NAME} running on http://localhost:${port} (db: ${kind}, ai: ${aiConfigured() ? 'on' : 'OFF - set ANTHROPIC_API_KEY'})`);
 });
