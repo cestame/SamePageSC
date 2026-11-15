@@ -1,4 +1,4 @@
-// The extension's background worker. It opens the side panel and asks the Same Page server how the
+// The extension's background worker. It opens the side panel and asks the Same Page SC server how the
 // sections on a webReg page fit the student. webReg pages never talk to our server directly.
 
 const configReady = fetch(chrome.runtime.getURL('config.json')).then((res) => res.json());
@@ -6,7 +6,7 @@ const configReady = fetch(chrome.runtime.getURL('config.json')).then((res) => re
 // Clicking the toolbar icon opens the side panel. Set on every worker start, not only on install,
 // so it also holds after Chrome restarts the worker or the extension is reloaded.
 function openPanelOnIconClick() {
-  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch((err) => console.error('Same Page: could not set the side panel to open on click.', err));
+  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch((err) => console.error('Same Page SC: could not set the side panel to open on click.', err));
 }
 openPanelOnIconClick();
 chrome.runtime.onInstalled.addListener(openPanelOnIconClick);
@@ -22,7 +22,7 @@ async function lookupSections(sections, includeSamples) {
     body: JSON.stringify({ sections, includeSamples, general: answers?.general ?? {}, perCourse: answers?.perCourse ?? {} }),
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `Same Page answered with an error (${res.status}).`);
+  if (!res.ok) throw new Error(data.error || `Same Page SC answered with an error (${res.status}).`);
   return { results: data };
 }
 
@@ -30,7 +30,7 @@ const COURSE_CODE = /^[A-Z]{2,5} \d{3}[A-Z]{0,2}$/;
 const SECTION_KEY = /^\d{5}[A-Z]?$/;
 
 /**
- * Opens the 3D simulation, served by the Same Page server at /try-this-class/, for one webReg section.
+ * Opens the 3D simulation, served by the Same Page SC server at /try-this-class/, for one webReg section.
  * Everything in the URL is checked first, because the message comes from a content script on webReg.
  */
 async function openSimulation({ code, section, name, profile }) {

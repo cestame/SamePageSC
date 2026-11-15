@@ -40,7 +40,7 @@ function Thumbnail({ slide, step }: { slide: SamePageSlide; step: number }) {
   );
 }
 
-function Beat({ slide, step, slideNumber }: { slide: SamePageSlide; step: number; slideNumber: number }) {
+function Beat({ slide, step }: { slide: SamePageSlide; step: number }) {
   const paragraph = slide.notes[step] ?? "";
   return (
     <div className="flex flex-col gap-5 md:flex-row md:items-start">
@@ -48,7 +48,7 @@ function Beat({ slide, step, slideNumber }: { slide: SamePageSlide; step: number
       <div className="flex flex-col gap-2">
         {slide.steps > 1 && (
           <p className="text-sm font-bold text-ink-muted">
-            Slide {slideNumber}, beat {step + 1}
+            Part {step + 1} of {slide.steps}
           </p>
         )}
         <p className="max-w-[68ch] text-lg leading-relaxed">{paragraph}</p>
@@ -70,7 +70,7 @@ function SlideScript({ slide, slideNumber }: { slide: SamePageSlide; slideNumber
         <p className="shrink-0 text-sm text-ink-muted figures-tabular">about {duration(seconds(slideWords(slide)))}</p>
       </div>
       {Array.from({ length: slide.steps }, (_, step) => (
-        <Beat key={step} slide={slide} step={step} slideNumber={slideNumber} />
+        <Beat key={step} slide={slide} step={step} />
       ))}
     </section>
   );

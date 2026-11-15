@@ -42,18 +42,18 @@ const STEPS = [
   },
   {
     title: 'Click Load unpacked.',
-    body: 'Choose the unzipped same-page-extension folder. Same Page now appears in your list of extensions.',
+    body: 'Choose the unzipped same-page-extension folder. Same Page SC now appears in your list of extensions.',
   },
   {
     title: 'Pin it to your toolbar.',
-    body: 'Click the puzzle piece next to the address bar and pin Same Page, so its side panel is one click away.',
+    body: 'Click the puzzle piece next to the address bar and pin Same Page SC, so its side panel is one click away.',
   },
 ];
 
 export function GetExtension() {
   return (
     <>
-      <h1 className="text-display">Get the Same Page extension</h1>
+      <h1 className="text-display">Get the Same Page SC extension</h1>
       <p className="text-body">
         The extension puts a fit badge under every section in USC Web Registration. Installing it takes about a minute in Chrome.
       </p>

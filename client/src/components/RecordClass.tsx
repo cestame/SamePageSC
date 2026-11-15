@@ -100,7 +100,7 @@ export function RecordClass({ choice, disabled, onDone }: Props) {
         <Badge>Prototype</Badge>
       </div>
       <p className="text-small text-muted">
-        Same Page listens to the lecture, keeps only the professor's words, and counts student turns without transcribing them.
+        Same Page SC listens to the lecture, keeps only the professor's words, and counts student turns without transcribing them.
       </p>
       <label className="check">
         <input type="checkbox" id="record-consent" checked={consent} disabled={recording} onChange={(e) => setConsent(e.target.checked)} />
