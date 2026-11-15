@@ -499,7 +499,7 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
 
 /* ---------- opening animation ---------- */
 
-.intro { position: relative; height: 170svh; background: var(--brand-navy); }
+.intro { position: relative; height: 260svh; background: var(--brand-navy); }
 .intro__sticky { position: sticky; top: 0; height: 100svh; min-height: 560px; overflow: hidden; background: var(--brand-navy); }
 
 .intro__reveal {

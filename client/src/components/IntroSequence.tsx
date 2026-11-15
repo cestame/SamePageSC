@@ -41,16 +41,17 @@ type Frame = {
 };
 
 /**
- * Where everything sits for a scroll progress from 0 to 1. The horse gallops across in the first 40%,
- * the bird flies in and lands on its back, then the cover slides up to show the wordmark.
+ * Where everything sits for a scroll progress from 0 to 1. The horse gallops across over the first 62%
+ * (about one full screen of scrolling, so it reads as a walk-by, not a blur), the bird flies in and lands
+ * on its back, then the cover slides up to show the wordmark.
  * Horizontal values are in vw, vertical bird values in svh, the reveal offset in px.
  */
 function introFrame(progress: number): Frame {
-  const horseProgress = clamp((progress - 0.04) / 0.38);
-  const horseX = -55 + horseProgress * 180;
-  const flight = clamp((progress - 0.04) / 0.24);
+  const horseProgress = clamp((progress - 0.04) / 0.58);
+  const horseX = -50 + horseProgress * 155;
+  const flight = clamp((progress - 0.04) / 0.3);
   const birdLanded = flight >= 1;
-  const reveal = clamp((progress - 0.36) / 0.34);
+  const reveal = clamp((progress - 0.58) / 0.3);
   const revealEase = reveal * (2 - reveal);
   return {
     horseX,
@@ -58,7 +59,7 @@ function introFrame(progress: number): Frame {
     birdX: birdLanded ? horseX + 20 : 108 + flight * (horseX - 88),
     birdY: birdLanded ? 48 : 20 + flight * 28 - Math.sin(flight * Math.PI) * 27,
     birdLanded,
-    coverY: -smoothstep(clamp((progress - 0.42) / 0.45)) * 102,
+    coverY: -smoothstep(clamp((progress - 0.62) / 0.33)) * 102,
     revealOpacity: revealEase,
     revealY: (1 - revealEase) * 48,
   };
