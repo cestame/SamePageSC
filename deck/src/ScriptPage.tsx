@@ -61,15 +61,53 @@ function SlideScript({ slide, slideNumber }: { slide: SamePageSlide; slideNumber
   return (
     <section className="flex flex-col gap-6 border-t border-rule pt-8 break-inside-avoid" aria-labelledby={`slide-${slide.id}`}>
       <div className="flex items-baseline justify-between gap-4">
-        <h2 id={`slide-${slide.id}`} className="font-display text-2xl font-bold">
-          {slideNumber}. {slide.name}
-        </h2>
+        <div className="flex flex-col gap-1">
+          <h2 id={`slide-${slide.id}`} className="font-display text-2xl font-bold">
+            {slideNumber}. {slide.name}
+          </h2>
+          {slide.speaker && <p className="text-base font-bold text-accent">{slide.speaker}</p>}
+        </div>
         <p className="shrink-0 text-sm text-ink-muted figures-tabular">about {duration(seconds(slideWords(slide)))}</p>
       </div>
       {Array.from({ length: slide.steps }, (_, step) => (
         <Beat key={step} slide={slide} step={step} slideNumber={slideNumber} />
       ))}
     </section>
+  );
+}
+
+/** Each speaker's part in presenting order, with its slides and spoken time. */
+function speakerParts(slides: SamePageSlide[]) {
+  const parts: { speaker: string; slideNumbers: number[]; seconds: number }[] = [];
+  slides.forEach((slide, index) => {
+    const speaker = slide.speaker ?? "Unassigned";
+    const last = parts[parts.length - 1];
+    const part = last?.speaker === speaker ? last : { speaker, slideNumbers: [], seconds: 0 };
+    if (part !== last) parts.push(part);
+    part.slideNumbers.push(index + 1);
+    part.seconds += seconds(slideWords(slide));
+  });
+  return parts;
+}
+
+function slideRange(numbers: number[]) {
+  const first = numbers[0];
+  const last = numbers[numbers.length - 1];
+  return first === last ? `Slide ${first}` : `Slides ${first} to ${last}`;
+}
+
+/** Who speaks when, so each presenter can find their part and see how long it runs. */
+function SpeakerPlan({ slides }: { slides: SamePageSlide[] }) {
+  return (
+    <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {speakerParts(slides).map((part) => (
+        <li key={part.speaker} className="flex flex-col gap-1 rounded-xl bg-paper-raised p-5 shadow-card">
+          <p className="text-lg font-bold">{part.speaker}</p>
+          <p className="text-sm text-ink-muted">{slideRange(part.slideNumbers)}</p>
+          <p className="font-display text-2xl font-bold figures-tabular">about {duration(part.seconds)}</p>
+        </li>
+      ))}
+    </ol>
   );
 }
 
@@ -85,9 +123,10 @@ export function ScriptPage() {
         <Wordmark className="w-48" />
         <h1 className="font-display text-4xl font-bold md:text-5xl">Pitch script</h1>
         <p className="max-w-[68ch] text-lg text-ink-soft">
-          About {duration(totalSeconds)} spoken at {WORDS_PER_MINUTE} words a minute. Each paragraph goes with the slide beside it, and the
-          same words show in the deck when you press N.
+          About {duration(totalSeconds)} spoken at {WORDS_PER_MINUTE} words a minute, inside the 3-minute limit. Each paragraph goes with the
+          slide beside it, and the same words show in the deck when you press N.
         </p>
+        <SpeakerPlan slides={spoken} />
         <nav className="flex flex-wrap gap-3 print:hidden">
           <a className={linkClass} href={asset("/index.html")}>
             <ArrowSquareOut size={20} aria-hidden />
