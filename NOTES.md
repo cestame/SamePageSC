@@ -75,7 +75,7 @@ Submission is due **Sunday, November 15, 2026 at 11:00 AM PT** (AI@USC, HackSC x
 - The side panel shares only answers and course ids with the background worker (`chrome.storage.local`, key `answers`), never name or email.
 - Demo plan: teammates add real notes for classes they took that appear in webReg, so those sections show real fit scores.
 - The extension never calls webReg's internal endpoints (the calendar loads from `/api/Calendar`); it only reads what is rendered.
-- **Blocked on:** a saved webReg page that lists sections with instructors (the Courses page for a department with a course expanded). `readSections()` in `webreg.js` returns nothing until then. The person's saved Calendar and Departments pages had no section rows. Saved pages may contain the person's name; strip it before reading (it appears in "Welcome, ..." and the Datadog `setUser` block).
+- webReg course list markup (from `/Courses?Program=ACAD`): sections inside `#courseBin_ACAD-176`, each `div#section_<number>.section > .section_crsbin`, cells are `.section_row` with a `.table-headers-xsmall` label then one <span> per value. The badge goes on its own full-width line before the trailing <a>, where webReg shows its own notes. Tested against a copy of that markup (linkedom, in a scratchpad, not a project dependency). Pages the person saves contain their name and USC email ("Welcome, ..." and the Datadog `setUser` block); strip them before reading.
 - Not yet checked: that SameSite=Lax session cookies reach the server from the side panel (needed for logged-in accounts; guests work without cookies), and the server running on localhost:3000 is an old process without the new endpoint until it is restarted.
 ## Open audit items (current UI vs CLAUDE.md)
 

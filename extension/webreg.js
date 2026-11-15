@@ -6,18 +6,53 @@
   const BADGE_ATTR = 'data-same-page-key';
   const FIELD_ORDER = ['pace', 'format', 'structure', 'assessment', 'participation', 'guidance', 'workload'];
 
-  /**
-   * The sections on the current page: { key, code, instructors, anchor }, where `anchor` is the element
-   * the badge goes after. Filled in once we have a saved webReg page that lists sections.
+  /*
+   * webReg's course list: each course's sections sit inside `#courseBin_ACAD-176`, each section is
+   * `div#section_10201.section`, and every cell starts with a small label ("Instructor: ") followed by one
+   * <span> per value. The badge goes on its own full-width line at the end of the section row, where
+   * webReg puts its own notes ("This class is restricted to majors only.").
    */
+  const COURSE_PREFIX = 'courseBin_';
+
+  function cellValues(row, label) {
+    const cell = [...row.querySelectorAll('.section_row')].find((el) =>
+      el.querySelector('.table-headers-xsmall')?.textContent.trim().toLowerCase().startsWith(label));
+    if (!cell) return [];
+    return [...cell.children]
+      .filter((el) => el.tagName === 'SPAN' && !el.classList.contains('table-headers-xsmall'))
+      .map((el) => el.textContent.trim())
+      .filter((text) => text && text.toUpperCase() !== 'TBA');
+  }
+
+  /** The sections on the current page: { key, code, instructors, anchor }. */
   function readSections() {
-    return [];
+    return [...document.querySelectorAll('.section[id^="section_"]')].flatMap((section) => {
+      const course = section.closest(`[id^="${COURSE_PREFIX}"]`);
+      const row = section.querySelector('.section_crsbin');
+      if (!course || !row) return [];
+      return [{
+        key: section.id.slice('section_'.length),
+        code: course.id.slice(COURSE_PREFIX.length).replace('-', ' '),
+        instructors: cellValues(row, 'instructor'),
+        anchor: row,
+      }];
+    });
+  }
+
+  /** A full-width line using webReg's own grid classes, so it clears the floated cells above it. */
+  function place(anchor, badgeEl) {
+    const line = document.createElement('div');
+    line.className = 'col-xs-12 col-sm-12 col-md-12 col-lg-12';
+    line.append(badgeEl);
+    const trailingLink = anchor.lastElementChild?.tagName === 'A' ? anchor.lastElementChild : null;
+    anchor.insertBefore(line, trailingLink);
+    return line;
   }
 
   // ---------- badge ----------
 
   const BADGE_STYLE = `
-    :host { all: initial; display: inline-block; vertical-align: middle; margin-left: 8px; }
+    :host { all: initial; display: block; padding: 0 0 4px; }
     button {
       display: inline-flex; align-items: center; min-height: 44px; padding: 0; border: 0;
       background: transparent; cursor: pointer; font: 600 13px/1.2 Lato, "Segoe UI", system-ui, sans-serif;
@@ -61,7 +96,7 @@
     const course = encodeURIComponent(result.courseId ?? '');
     const lookup = {
       scored: {
-        text: [['score', `${result.score}%`], ['muted', 'teaching fit']],
+        text: [['score', `${result.score}%`], ['muted', `teaching fit with ${result.name}, based on pace, structure, grading and 4 more`]],
         label: `${result.score}% teaching fit with ${result.name}, based on pace, structure, grading and four more. Open the match in Same Page.`,
         route: `#/matches?course=${course}`,
       },
@@ -77,7 +112,7 @@
       },
       'no-notes': {
         text: [['muted', 'No notes yet']],
-        label: `No one has added notes for this ${code} section yet. Took it? Add your notes in Same Page.`,
+        label: `No one has added notes for this ${code} section yet. If you took it, you can add your notes in Same Page.`,
         route: '#/contribute',
       },
     };
@@ -123,17 +158,20 @@
     try {
       const sections = readSections().filter((s) => !document.querySelector(`[${BADGE_ATTR}="${CSS.escape(s.key)}"]`));
       if (!sections.length) return;
-      const response = await chrome.runtime.sendMessage({
-        type: 'lookup-sections',
-        sections: sections.map(({ key, code, instructors }) => ({ key, code, instructors })),
-      });
-      if (!response || response.error) return;
-      for (const result of response.results) {
+      const results = [];
+      // The server takes up to 100 sections per request.
+      for (let i = 0; i < sections.length; i += 100) {
+        const response = await chrome.runtime.sendMessage({
+          type: 'lookup-sections',
+          sections: sections.slice(i, i + 100).map(({ key, code, instructors }) => ({ key, code, instructors })),
+        });
+        if (!response || response.error) return;
+        results.push(...response.results);
+      }
+      for (const result of results) {
         const section = sections.find((s) => s.key === result.key);
         if (!section?.anchor?.isConnected) continue;
-        const el = badge(result, section.code);
-        el.setAttribute(BADGE_ATTR, section.key);
-        section.anchor.after(el);
+        place(section.anchor, badge(result, section.code)).setAttribute(BADGE_ATTR, section.key);
       }
     } finally {
       scanning = false;
