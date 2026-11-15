@@ -8,7 +8,7 @@ import { ProfileLine } from '../components/ProfileLine';
 
 type Mode = 'signup' | 'login' | 'guest';
 
-export const ACCOUNT_PANEL_ID = 'account';
+const ACCOUNT_PANEL_ID = 'account';
 
 const HEADINGS: Record<Mode, { title: string; hint: string }> = {
   signup: { title: 'Build a schedule that fits', hint: 'Answer a few questions, then compare the sections of every class you need.' },

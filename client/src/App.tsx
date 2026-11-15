@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { MotionConfig, useReducedMotion } from 'motion/react';
 import { NOT_OFFICIAL, PRODUCT_NAME, TAGLINE } from '../../shared/content.js';
 import { useHashRoute } from './lib/hooks';
-import { ACCOUNT_PANEL_ID, AuthPage } from './screens/AuthPage';
+import { AuthPage } from './screens/AuthPage';
 import { Setup } from './screens/Setup';
 import { Home } from './screens/Home';
 import { currentUser, loadProfile, restoreSession, setupComplete, signOut, type StudentProfile } from './lib/storage';
@@ -61,8 +61,8 @@ export function App() {
   const { parts, params } = useHashRoute();
   const current = sectionOf(parts[0]);
   const [ready, setReady] = useState(false);
-  // Decided once per page load, so the intro doesn't vanish mid-scroll when it marks itself as seen.
-  const [introPending] = useState(() => !introSeen());
+  // Decided once per page load; the intro closes itself when it finishes or is skipped.
+  const [introPending, setIntroPending] = useState(() => !introSeen());
   const reduceMotion = useReducedMotion();
   useEffect(() => { restoreSession().finally(() => setReady(true)); }, []);
   const user = currentUser();
@@ -74,7 +74,7 @@ export function App() {
   }
   return (
     <MotionConfig reducedMotion="user">
-      {showIntro && <IntroSequence targetId={ACCOUNT_PANEL_ID} />}
+      {showIntro && <IntroSequence onDone={() => setIntroPending(false)} />}
       <header className="topbar">
         <div className="topbar__inner">
           <a className="brand" href="#/" aria-label={`${PRODUCT_NAME} home`}>

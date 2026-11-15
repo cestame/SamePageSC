@@ -499,42 +499,40 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
 
 /* ---------- opening animation ---------- */
 
-.intro { position: relative; height: 260svh; background: var(--brand-navy); }
-.intro__sticky { position: sticky; top: 0; height: 100svh; min-height: 560px; overflow: hidden; background: var(--brand-navy); }
-
-.intro__reveal {
-  position: absolute;
+/*
+ * A full-screen stack of two pages over the sign-up form. Each page hinges on its left edge and turns
+ * toward the viewer like a book page, showing its paper back as it passes upright.
+ * The horse image is about 82.6 tiles wide; the bird is 13 tiles wide, so sizing it from the horse keeps
+ * the tiles equal.
+ */
+.intro {
+  --horse-width: 76vw;
+  position: fixed;
   inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-5);
-  padding-inline: var(--space-4);
-  opacity: 0;
-  color: var(--brand-paper);
-  background-image:
-    linear-gradient(rgb(255 255 255 / 0.016) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(255 255 255 / 0.016) 1px, transparent 1px);
-  background-size: 28px 28px;
-  will-change: opacity, transform;
-}
-.intro__logo { width: min(78vw, 540px); height: auto; display: block; }
-.intro__line { max-width: 34rem; color: rgb(255 254 250 / 0.78); font-size: 1.25rem; text-align: center; }
-.intro__enter { background: var(--brand-cream); color: var(--brand-ink); min-height: var(--input-height); }
-.intro__enter:hover { background: var(--brand-paper); }
-
-.intro__cover {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
+  z-index: 100;
   overflow: hidden;
-  background: var(--brand-cream);
-  color: var(--brand-ink);
-  box-shadow: 0 24px 60px rgb(3 0 39 / 0.32);
-  will-change: transform;
+  perspective: 220vw;
 }
-.intro__cover::before {
+@media (min-width: 680px) {
+  .intro { --horse-width: clamp(330px, 44vw, 690px); }
+}
+
+.intro__page { position: absolute; inset: 0; transform-origin: left center; transform-style: preserve-3d; will-change: transform; }
+.intro__face { position: absolute; inset: 0; overflow: hidden; backface-visibility: hidden; }
+.intro__face--back { transform: rotateY(180deg); }
+/* Lighting while a page turns: darker toward the free edge, strongest when the page stands upright. */
+.intro__face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgb(3 0 39 / 0), rgb(3 0 39 / 0.4));
+  opacity: calc(var(--shade, 0) * 0.9);
+}
+
+.intro__page--cover .intro__face--front { background: var(--brand-cream); color: var(--brand-ink); }
+.intro__page--cover .intro__face--back { background: var(--brand-cream-back); }
+.intro__page--cover .intro__face--front::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -542,10 +540,36 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
   opacity: 0.18;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
 }
+
+.intro__page--logo .intro__face--front {
+  display: grid;
+  place-items: center;
+  padding-inline: var(--space-4);
+  background-color: var(--brand-navy);
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.016) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.016) 1px, transparent 1px);
+  background-size: 28px 28px;
+  color: var(--brand-paper);
+}
+.intro__page--logo .intro__face--back { background: var(--brand-navy-back); }
+/* The shadow the turning horse page casts on the wordmark page beneath it. */
+.intro__page--logo .intro__face--front::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgb(0 0 0 / 0.55), rgb(0 0 0 / 0) 75%);
+  opacity: var(--cast, 0);
+}
+.intro__logo-block { display: grid; justify-items: center; gap: var(--space-5); opacity: 0; will-change: opacity, transform; }
+.intro__logo { width: min(78vw, 540px); height: auto; display: block; }
+.intro__line { max-width: 34rem; color: rgb(255 254 250 / 0.78); font-size: 1.25rem; text-align: center; }
+
 .intro__title {
   position: absolute;
   z-index: 2;
-  top: clamp(64px, 9svh, 96px);
+  top: clamp(72px, 10svh, 104px);
   left: max(var(--space-4), calc((100vw - var(--wide-width)) / 2));
   max-width: min(650px, 86vw);
 }
@@ -566,14 +590,13 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
   padding: 0 var(--space-4);
   border: 0;
   border-radius: var(--radius-pill);
-  background: transparent;
-  color: var(--brand-navy);
+  background: rgb(255 254 250 / 0.88);
+  color: var(--brand-ink);
   font-weight: 700;
   cursor: pointer;
 }
-.intro__skip:hover { background: rgb(3 0 39 / 0.06); }
-.intro__skip:focus-visible, .intro__enter:focus-visible { outline-color: var(--brand-cardinal); }
-.intro__enter:focus-visible { outline-color: var(--brand-cream); }
+.intro__skip:hover { background: var(--brand-paper); }
+.intro__skip:focus-visible { outline-color: var(--brand-cardinal); }
 .intro__ground {
   position: absolute;
   z-index: 1;
@@ -593,48 +616,36 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
   background-size: 13px 9px;
   opacity: 0.5;
 }
-.intro__cue {
-  position: absolute;
-  z-index: 5;
-  right: max(var(--space-4), calc((100vw - var(--wide-width)) / 2));
-  bottom: var(--space-5);
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--brand-navy);
-  font-size: 0.9375rem;
-  font-weight: 600;
-}
-.intro__cue svg { animation: cue-bob 1.4s var(--ease-out) infinite; }
 
-/* The horse image is about 82.6 tiles wide. The bird is 13 tiles wide, so sizing it from the horse keeps the tiles equal. */
-.intro__sticky { --horse-width: 76vw; }
 .intro-horse { position: absolute; z-index: 3; top: 48svh; left: 0; width: var(--horse-width); pointer-events: none; will-change: transform; }
+/* The gallop bob sits on this wrapper so a seated bird rises and falls with the horse. */
+.intro-horse__body { position: relative; animation: horse-gallop 460ms steps(2, jump-none) infinite; }
 /* The source image faces left; flip it so the horse faces the way it runs. */
-.intro-horse img { width: 100%; height: auto; display: block; transform: scaleX(-1); }
-.intro-horse--running img { animation: horse-gallop 460ms steps(2, jump-none) infinite; }
+.intro-horse__body img { width: 100%; height: auto; display: block; transform: scaleX(-1); }
+/*
+ * The seat: the flat stretch of the back is 34% down the image and 51-60% across (after the flip).
+ * The bird's feet are centred across its width and end 88% of the way down, so this places them on the back.
+ */
+.intro-horse__seat { position: absolute; left: 47.6%; top: 20.5%; width: calc(100% * 13 / 82.6); visibility: hidden; }
+.intro-horse--carrying .intro-horse__seat { visibility: visible; }
+
 .intro-bird { position: absolute; z-index: 4; top: 0; left: 0; width: calc(var(--horse-width) * 13 / 82.6); pointer-events: none; will-change: transform; }
-/* In flight the bird heads left toward the horse; once landed it faces forward with the horse. */
+/* In flight the bird heads left toward the horse; seated it faces forward with the horse. */
 .pixel-bird { width: 100%; height: auto; display: block; overflow: visible; shape-rendering: crispEdges; fill: var(--brand-gold); transform: scaleX(-1); }
-.intro-bird--landed .pixel-bird { transform: none; }
+.pixel-bird--seated { transform: none; }
 .pixel-bird__beak, .pixel-bird__feet { fill: var(--brand-cardinal); }
 .pixel-bird__wing-folded { fill: var(--brand-gold-deep); }
 .pixel-bird__wing--up { animation: wing-up 240ms step-end infinite; }
 .pixel-bird__wing--down { animation: wing-down 240ms step-end infinite; }
-.pixel-bird__wing-folded, .pixel-bird__feet { display: none; }
-.intro-bird--landed .pixel-bird__wing { display: none; }
-.intro-bird--landed .pixel-bird__wing-folded, .intro-bird--landed .pixel-bird__feet { display: inline; }
 
 @media (min-width: 680px) {
-  .intro__sticky { --horse-width: clamp(330px, 44vw, 690px); }
   .intro-horse { top: 43svh; }
   .intro__ground { bottom: 9svh; }
 }
 
-/* scaleX(-1) is repeated here because the animation replaces the image's resting transform. */
 @keyframes horse-gallop {
-  0%, 100% { transform: scaleX(-1) translateY(0) rotate(-0.4deg); }
-  50% { transform: scaleX(-1) translateY(-7px) rotate(0.5deg); }
+  0%, 100% { transform: translateY(0) rotate(-0.4deg); }
+  50% { transform: translateY(-7px) rotate(0.5deg); }
 }
 @keyframes wing-up {
   0% { opacity: 1; }
@@ -643,8 +654,4 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
 @keyframes wing-down {
   0% { opacity: 0; }
   50% { opacity: 1; }
-}
-@keyframes cue-bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(4px); }
 }
