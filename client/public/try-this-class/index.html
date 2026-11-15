@@ -633,9 +633,13 @@ function speak(text,cb,who,part='say'){const my=token;const parts=(text.match(/[
     const n=i;const sent=parts[i++];setCaption(label,sent);speaking=!isStudent;studentSpeaking=isStudent;let done=false,fb=null;
     const fin=()=>{if(done||my!==token)return;done=true;if(fb)fb.dead=true;currentAudio=null;next();};const words=sent.split(/\s+/).length;
     if($('voiceSel').value==='neural'){
+      // One voice at a time: stop anything still playing before a new line starts.
+      stopAudio();if(synthOK)speechSynthesis.cancel();
       const a=new Audio(`audio/voice/${secKey}-${step}-${part}-${n}.mp3`);a.muted=muted;currentAudio=a;
-      a.onended=fin;a.onerror=()=>{currentAudio=null;fb=after(words/2.6*1000/L.rate+250,fin);};
-      a.play().catch(()=>{if(!done&&!fb)fb=after(words/2.6*1000/L.rate+250,fin);});return;}
+      const fallback=()=>{if(done||fb)return;if(currentAudio===a){a.pause();currentAudio=null;}fb=after(words/2.6*1000/L.rate+250,fin);};
+      a.onended=fin;a.onerror=fallback;
+      // A pause right after play() rejects with AbortError; that is not a failure, so keep waiting for 'ended'.
+      a.play().catch((e)=>{if(e?.name!=='AbortError')fallback();});return;}
     if(muted||!synthOK||!voices.length){fb=after(words/2.6*1000/L.rate+250,fin);return;}
     const u=new SpeechSynthesisUtterance(sent);u.voice=isStudent?studentVoice():(voices[+$('voiceSel').value]||null);u.rate=isStudent?1.05:L.rate;u.pitch=isStudent?1.2:L.pitch;
     u.onend=fin;u.onerror=fin;speechSynthesis.speak(u);fb=after((words*0.8+4)*1000,fin);};
@@ -682,6 +686,11 @@ function changeSection(k){secKey=k;L=LESSONS[k];styleProf();pickVoice();buildSec
   if(activeScene){const i=L.steps.findIndex(s=>s.scene===activeScene);playFrom(Math.max(0,i),activeScene);}else if(running||phase==='done'||phase==='held')playFrom(0,null);}
 
 $('startBtn').onclick=()=>playFrom(0,null);
+// Only the visible tab plays, so two open copies of this page never talk over each other.
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!paused)togglePause();});
+const channel='BroadcastChannel' in window?new BroadcastChannel('same-page-try-this-class'):null;
+channel?.addEventListener('message',()=>{if(running&&!paused)togglePause();});
+$('playBtn').addEventListener('click',()=>channel?.postMessage('playing'));$('startBtn').addEventListener('click',()=>channel?.postMessage('playing'));
 $('playBtn').onclick=()=>{if(phase==='idle'||phase==='done')playFrom(0,null);else if(phase==='held')$('continueBtn').click();else togglePause();};
 $('continueBtn').onclick=()=>{if(phase!=='held')return;stopAt=null;activeScene=null;buildMoments();$('continueBtn').hidden=true;nextStep();setPlayIcon();};
 $('muteBtn').onclick=()=>{muted=!muted;$('muteBtn').textContent=muted?'Unmute':'Mute';if(currentAudio)currentAudio.muted=muted;if(room)room.gain.value=muted?0:0.02;if(muted&&synthOK)speechSynthesis.cancel();};
