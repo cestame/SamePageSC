@@ -118,16 +118,21 @@ app.get('/api/usc/courses', asyncRoute(async (req, res) => {
   res.json(q.trim().length < 2 ? [] : await searchCourses(q));
 }));
 
-const COURSE_CODE = /^[A-Z]{2,5} \d{3}[A-Z]{0,2}$/;
+const COURSE_CODE = /^([A-Z]{2,5})[\s-]*(\d{3}[A-Z]{0,2})$/;
 const courseIdFor = (code) => code.toLowerCase().replace(/\s+/g, '-');
 
+/** "writ150", "WRIT-150" and "Writ 150" all become "WRIT 150". Returns null when it isn't a course code. */
+function normalizeCourseCode(raw) {
+  const match = COURSE_CODE.exec(String(raw || '').toUpperCase().trim());
+  return match ? `${match[1]} ${match[2]}` : null;
+}
+
 // Adds a class to the course list so a student can plan it, even before anyone has added notes for it.
-// "CSCI 103L" maps onto an existing "CSCI 103" when there is one.
+// The title is optional. "CSCI 103L" maps onto an existing "CSCI 103" when there is one.
 app.post('/api/courses', rateLimit({ windowMs: 60_000, max: 30 }), asyncRoute(async (req, res) => {
-  const code = String(req.body?.code || '').toUpperCase().replace(/\s+/g, ' ').trim();
+  const code = normalizeCourseCode(req.body?.code);
   const title = String(req.body?.title || '').trim().slice(0, 120);
-  if (!COURSE_CODE.test(code)) return res.status(400).json({ error: 'Use a course code like CSCI 103 or WRIT 150.' });
-  if (title.length < 3) return res.status(400).json({ error: 'Add the course title.' });
+  if (!code) return res.status(400).json({ error: 'Use a course code like CSCI 103 or WRIT 150.' });
   const baseId = courseIdFor(code.replace(/[A-Z]+$/, '').trim());
   const [existing] = await query('SELECT id, code, title FROM courses WHERE id = $1 OR id = $2', [courseIdFor(code), baseId]);
   if (existing) return res.json(existing);

@@ -111,7 +111,7 @@ function NoProfilesYet({ course }: { course: Course }) {
     <Card>
       <div className="stack-1">
         <h2 className="text-title">{course.code}</h2>
-        <p className="text-small text-muted">{course.title}</p>
+        {course.title && <p className="text-small text-muted">{course.title}</p>}
       </div>
       <p className="text-small">
         No one has added notes for any {course.code} section yet, so we can't rank its sections or place it on your week.

@@ -135,6 +135,12 @@ export function ClassesStep({ profile, update, onNext }: { profile: StudentProfi
   );
 }
 
+/** "writ150" -> "WRIT 150"; null when the text isn't a course code. */
+const asCourseCode = (text: string) => {
+  const m = /^([A-Za-z]{2,5})[\s-]*(\d{3}[A-Za-z]{0,2})$/.exec(text.trim());
+  return m ? `${m[1].toUpperCase()} ${m[2].toUpperCase()}` : null;
+};
+
 const normalize = (code: string) => code.toUpperCase().replace(/\s+/g, ' ').replace(/[A-Z]+$/, '').trim();
 const sameCourse = (a: string, b: string) => normalize(a) === normalize(b);
 
@@ -208,12 +214,13 @@ function CourseSearch({ isPicked, adding, onAdd }: { isPicked: (code: string) =>
   const [text, setText] = useState('');
   const q = useDebounced(text.trim(), SEARCH_DELAY_MS);
   const [results] = useAsync(() => (q.length >= 2 ? api.searchCourses(q) : Promise.resolve([] as CatalogueCourse[])), [q]);
+  const typedCode = asCourseCode(q);
   const [code, setCode] = useState('');
   const [title, setTitle] = useState('');
 
   function addOwn(e: FormEvent) {
     e.preventDefault();
-    onAdd({ code: code.trim(), title: title.trim() });
+    onAdd({ code: asCourseCode(code) ?? code.trim(), title: title.trim() });
     setCode('');
     setTitle('');
   }
@@ -229,13 +236,21 @@ function CourseSearch({ isPicked, adding, onAdd }: { isPicked: (code: string) =>
         </span>
       </label>
       {results.status === 'success' && results.data.length > 0 && <CourseList courses={results.data} known={[]} isPicked={isPicked} adding={adding} onAdd={onAdd} />}
-      {results.status === 'success' && q.length >= 2 && results.data.length === 0 && (
-        <p className="text-small text-muted">We haven't seen "{q}" yet. Add it with its course code below.</p>
+      {typedCode && results.status === 'success' && !results.data.some((c) => sameCourse(c.code, typedCode)) && !isPicked(typedCode) && (
+        <div className="course-list__row">
+          <span className="text-small">We haven't seen <span className="text-strong">{typedCode}</span> yet.</span>
+          <Button variant="secondary" icon={<Plus size={16} aria-hidden />} disabled={adding === typedCode} onClick={() => { onAdd({ code: typedCode, title: '' }); setText(''); }}>
+            {adding === typedCode ? 'Adding' : `Add ${typedCode}`}
+          </Button>
+        </div>
+      )}
+      {!typedCode && results.status === 'success' && q.length >= 2 && results.data.length === 0 && (
+        <p className="text-small text-muted">Nothing matches "{q}" yet. Type the course code, like WRIT 150, to add it.</p>
       )}
       <form className="add-course" onSubmit={addOwn}>
         <input className="input" id="own-code" aria-label="Course code" placeholder="Code, like THTR 101" value={code} onChange={(e) => setCode(e.target.value)} />
-        <input className="input" id="own-title" aria-label="Course title" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
-        <Button type="submit" variant="secondary" icon={<Plus size={18} aria-hidden />} disabled={!code.trim() || !title.trim()}>Add class</Button>
+        <input className="input" id="own-title" aria-label="Course title (optional)" placeholder="Title (optional)" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <Button type="submit" variant="secondary" icon={<Plus size={18} aria-hidden />} disabled={!asCourseCode(code)}>Add class</Button>
       </form>
     </section>
   );
