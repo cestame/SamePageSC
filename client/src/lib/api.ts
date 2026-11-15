@@ -86,7 +86,15 @@ export type Session = { user: User | null; profile: unknown };
 
 export type UscProgram = { poid: number; name: string; degree: string; school: string };
 export type CatalogueCourse = { code: string; title: string };
-export type Requirements = { status: 'ready' | 'queued' | 'unavailable'; courses: CatalogueCourse[]; etaSeconds?: number };
+export type RequirementGroup = { label: string; rule: string; courses: CatalogueCourse[] };
+export type Requirements = {
+  status: 'ready' | 'queued' | 'unavailable';
+  courses: CatalogueCourse[];
+  groups?: RequirementGroup[];
+  notes?: string[];
+  source?: string;
+  etaSeconds?: number;
+};
 
 export class ApiError extends Error {}
 

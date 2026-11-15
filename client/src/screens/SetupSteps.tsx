@@ -201,10 +201,21 @@ function Required({ poid, major, known, isPicked, adding, onAdd }: {
         <EmptyState title={`We don't have the ${major} requirements yet`} body="Search for your classes below, or add them by course code from your degree progress report." />
       )}
       {req.status === 'success' && req.data.status === 'ready' && (
-        <>
-          <p className="text-small text-muted">From the USC Catalogue 2026-2027. Check with your advisor for electives and choices between options.</p>
-          <CourseList courses={req.data.courses} known={known} isPicked={isPicked} adding={adding} onAdd={onAdd} />
-        </>
+        <div className="stack-4">
+          <p className="text-small text-muted">
+            From the <a href={req.data.source} target="_blank" rel="noreferrer">USC Catalogue 2026-2027</a>. Add the ones you're taking this semester, and check with your advisor on choices between options.
+          </p>
+          {req.data.groups
+            ? req.data.groups.map((g) => (
+              <div key={g.label} className="stack-1">
+                <p className="text-strong">{g.label}</p>
+                <p className="text-small text-muted">{g.rule}</p>
+                <CourseList courses={g.courses} known={known} isPicked={isPicked} adding={adding} onAdd={onAdd} />
+              </div>
+            ))
+            : <CourseList courses={req.data.courses} known={known} isPicked={isPicked} adding={adding} onAdd={onAdd} />}
+          {req.data.notes?.map((n) => <p key={n} className="text-small text-muted">{n}</p>)}
+        </div>
       )}
     </section>
   );
@@ -268,7 +279,7 @@ function CourseList({ courses, known, isPicked, adding, onAdd }: {
         return (
           <li key={c.code} className="course-list__row">
             <span className="stack-1 min-0">
-              <span><span className="text-strong">{c.code}</span> {c.title}</span>
+              <span><span className="text-strong">{c.code}</span>{c.title ? ` ${c.title}` : ''}</span>
               {profiled && <span className="text-small text-muted">{profiled.sections.length} sections with profiles</span>}
             </span>
             {picked

@@ -355,6 +355,7 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
   .split__aside { grid-column: 1; }
   .setup { max-width: 1040px; width: 100%; margin: 0 auto; display: grid; gap: var(--space-5); }
   .setup .quiz { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: var(--space-7); align-items: start; }
+  .setup .quiz > :first-child { position: sticky; top: 76px; }
 }
 .setup { display: grid; gap: var(--space-5); }
 
