@@ -70,6 +70,7 @@ export const profileSizes = {
   hero: { width: 560, rowGap: 104, pointRadius: 14 },
   large: { width: 440, rowGap: 74, pointRadius: 11 },
   card: { width: 320, rowGap: 62, pointRadius: 10 },
+  mini: { width: 260, rowGap: 30, pointRadius: 7 },
 } satisfies Record<string, ProfileSize>;
 
 type ProfileLineProps = {

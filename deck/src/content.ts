@@ -7,6 +7,7 @@ export const links = {
   site: "https://samepage.replit.app",
   siteLabel: "samepage.replit.app",
   webregDemo: "https://samepage.replit.app/demo/webreg",
+  tryClass: "https://samepage.replit.app/try-this-class/",
 };
 
 export type SourceStatus = "survey" | "study" | "prototype" | "sample" | "policy";
@@ -117,7 +118,11 @@ export const profileFields = [
 /** Seven scores from 1 to 5, in the order of `profileFields`. */
 export type Profile = readonly [number, number, number, number, number, number, number];
 
-export type SampleSection = { number: string; instructor: string; shortName: string; days: string; time: string; profile: Profile };
+/**
+ * `fit` is server/scoring.js's score for the landing page's sample student: new to coding (prior 1), pace 2,
+ * format 3, structure 4, assessment 3, participation 2, workload 3, goal "foundation".
+ */
+export type SampleSection = { number: string; instructor: string; shortName: string; days: string; time: string; profile: Profile; fit: number };
 
 /** The brand kit asks for this label wherever a sample professor appears. */
 export const sampleLabel = "Sample professor, fictional";
@@ -126,194 +131,157 @@ export const sampleCourse = {
   code: "CSCI 103",
   name: "Object Oriented Programming",
   sections: [
-    { number: "29901", instructor: "Dr. Maya Reyes", shortName: "Reyes", days: "MW", time: "10:00 to 11:50 am", profile: [2, 2, 5, 3, 2, 1, 3] },
-    { number: "29903", instructor: "Prof. Daniel Okafor", shortName: "Okafor", days: "TTh", time: "2:00 to 3:50 pm", profile: [4, 4, 3, 5, 4, 4, 4] },
-    { number: "29905", instructor: "Dr. Priya Natarajan", shortName: "Natarajan", days: "MWF", time: "9:00 to 9:50 am", profile: [5, 1, 4, 1, 1, 3, 3] },
+    { number: "29901", instructor: "Dr. Maya Reyes", shortName: "Reyes", days: "MW", time: "10:00 to 11:50 am", profile: [2, 2, 5, 3, 2, 1, 3], fit: 93 },
+    { number: "29903", instructor: "Prof. Daniel Okafor", shortName: "Okafor", days: "TTh", time: "2:00 to 3:50 pm", profile: [4, 4, 3, 5, 4, 4, 4], fit: 51 },
+    { number: "29905", instructor: "Dr. Priya Natarajan", shortName: "Natarajan", days: "MWF", time: "9:00 to 9:50 am", profile: [5, 1, 4, 1, 1, 3, 3], fit: 65 },
   ] satisfies SampleSection[],
 };
+
+/*
+ * Slide words are kept to what the audience needs to read at a glance. Everything the presenter says lives in
+ * each slide's `script`, one paragraph per beat, which feeds both the presenter notes and the script page.
+ */
 
 export const title = {
   wordmarkAlt: "Same Page SC",
   pitch: ["Pick the section", "that fits how", "you learn."],
   tagline: "Your next chapter begins with the right class.",
   byline: "Built by Trojans, for Trojans. AI@USC hackathon, November 2026.",
-  notes: [
-    "Hi, we're Same Page SC. Same Page helps USC students choose a section by how the class is actually taught, and it works right inside Web Registration as a Chrome extension. The line drawing in on the right is a teaching profile. You'll see it on every slide, because it's the whole product in one picture.",
+  script: [
+    "Hi, we're Same Page SC. Every semester, Trojans pick sections with almost nothing to go on. Same Page shows how each section is actually taught and how well it fits the way you learn, right inside Web Registration.",
   ],
 };
 
 export const survey = {
-  heading: ["Most students we asked choose", "a section by its star rating."],
+  heading: ["29 USC students told us", "how they pick a class."],
   respondents: 29,
   rows: [
-    { count: 19, percent: 66, line: "use Rate My Professors to choose a class" },
-    { count: 22, percent: 76, line: "say a professor's rating matters when they pick" },
-    { count: 13, percent: 45, line: "said their class matched its ratings only somewhat or worse" },
+    { count: 19, percent: 66, line: "use Rate My Professors" },
+    { count: 22, percent: 76, line: "say the rating matters" },
+    { count: 13, percent: 45, line: "found the ratings only somewhat accurate, or worse" },
   ],
-  legend: "Each dot is one of the 29 USC students we surveyed this weekend. Mattering and accuracy were rated from 1 to 5: 4 or 5 counts as mattering, 3 or lower as somewhat or worse.",
-  notes: [
-    "This weekend we surveyed 29 USC students, from freshmen to grad students in more than 20 majors. Each dot is one of them. 19 of the 29 use Rate My Professors to choose a class, and 22 say the rating matters when they pick. But 13 of them said the class they got matched the ratings only somewhat or worse. The average accuracy score was 3.4 out of 5. So students lean on a number that often doesn't describe the class they end up in.",
+  script: [
+    "This weekend we surveyed 29 USC students, from freshmen to grad students in more than 20 majors. Each dot is one of them. 19 of the 29 use Rate My Professors to choose a class, and 22 say a professor's rating matters when they pick. But 13 told us the class they got matched the ratings only somewhat or worse. Their average accuracy score was 3.4 out of 5.",
   ],
 };
 
 export const ratings = {
   learning: {
-    heading: ["Star ratings track how easy a class is", "and not how much students learn."],
-    cards: [
-      { figure: "r = 0.61", name: "Easy classes get higher ratings", detail: "Correlation between easiness and “quality” across 3,190 professors on Rate My Professors", source: "felton" },
-      { figure: "Grades up", name: "Ratings rise with the grade you expect", detail: "In a randomized study, ratings went up with current grades and down with performance in later courses", source: "carrellWest" },
-      { figure: "No link", name: "Ratings don't predict learning", detail: "A meta-analysis of multisection studies found no significant correlation between evaluations and learning", source: "uttl" },
-    ],
+    heading: ["Star ratings track easy grades", "and not learning."],
+    easiness: { value: 0.61, label: "Easiness and rating move together" },
+    grades: { up: "Grade you expect", down: "How you do next course", label: "Ratings follow grades" },
+    learning: { label: "No link to learning" },
   },
   bias: {
     heading: ["The same teaching gets a lower score", "depending on who teaches it."],
-    cards: [
-      { figure: "0.6 to 0.8", name: "Lower clarity scores for Asian-named math instructors", detail: "On a 5-point scale, with frequent comments about accents", source: "subtirelu" },
-      { figure: "Lower", name: "Black and Asian faculty", detail: "Rated lower on quality, helpfulness and clarity", source: "reid" },
-      { figure: "Can't be adjusted away", name: "Bias against women", detail: "Shown in evaluation data from France and the United States", source: "boring" },
-    ],
-    uscNote: "USC stopped using student evaluations in tenure decisions in 2018.",
+    instructors: ["Instructor with a US name", "Instructor with an Asian name"],
+    gap: "0.6 to 0.8 lower on clarity",
+    scaleNote: "Bars illustrative. The gap is to scale on a 1 to 5 rating.",
+    more: ["Black and Asian faculty rated lower", "Bias against women can't be adjusted away"],
   },
-  followNote: "Students still follow the ratings: sections taught by higher-rated professors fill faster.",
-  notes: [
-    "The deeper problem is what the number measures. Across 3,190 professors, easiness and “quality” correlate at 0.61. In a randomized study at the Air Force Academy, ratings rose with the grades students expected and fell with how well they did in the next course. A meta-analysis found no significant link between ratings and learning.",
-    "And the ratings are biased. Asian-named math instructors scored 0.6 to 0.8 points lower on clarity, with comments about their accents. Black and Asian faculty were rated lower on quality, helpfulness and clarity, and the bias against women can't be adjusted away statistically. USC itself stopped using student evaluations in tenure decisions in 2018. Students still follow the ratings anyway, and sections with higher-rated professors fill faster. That's unfair to professors, and it sends students to the wrong class.",
+  script: [
+    "The deeper problem is what a star rating measures. Across 3,190 professors on Rate My Professors, easiness and the quality score correlate at 0.61. In a randomized study, ratings went up with the grades students expected and down with how well they did in the next course. A meta-analysis of multisection studies found no significant link between ratings and learning. Students follow the ratings anyway: sections with higher-rated professors fill faster.",
+    "The ratings are also unfair to professors. These two instructors teach the same way, and in one study the Asian-named math instructors still scored 0.6 to 0.8 points lower on clarity, often with comments about their accents. Black and Asian faculty are rated lower on quality, helpfulness and clarity, and the bias against women can't be adjusted away. USC itself stopped using student evaluations in tenure decisions in 2018.",
   ],
 };
 
 export const shapes = {
-  heading: ["Same Page draws every section", "as a seven-point teaching profile."],
-  explainer: "Three sample sections of CSCI 103. Each point is a 1 to 5 rating built from notes and syllabi that students shared from that exact section.",
-  notes: [
-    "Here's what we show instead. These are three sections of the same course, CSCI 103, and each one is drawn as a teaching profile: seven ratings from pace down to workload, connected into one line. Students who took the section share typed notes and the syllabus, and AI turns them into these ratings. Every point links back to the notes behind it. You can see right away that these are three different classes. Reyes is slow and highly organized with step-by-step examples. Natarajan moves fast and is mostly exams. Okafor is discussion-heavy and project-based. None of them is the best professor. Each one is the best fit for somebody.",
+  heading: ["Every section gets a shape."],
+  script: [
+    "So instead of a star, Same Page draws every section as a teaching profile. Students who took the section share typed notes and the syllabus, and Claude turns them into seven ratings, from pace down to workload, each tied to the notes behind it. These are three sections of the same course, CSCI 103. Reyes is slow and highly organized and walks you through every example. Natarajan moves fast and grades on exams. Okafor runs discussions and grades on projects. None of them is the best professor, and each one is the best fit for somebody. All three are fictional samples.",
   ],
 };
 
 export const fit = {
-  heading: ["Your answers turn a profile into a fit score", "with one honest downside."],
-  score: 93,
-  scoreCounts: "fit out of 100, from pace, structure, grading and 4 more",
+  heading: ["Your answers turn the shape", "into a fit score."],
+  scoreCounts: "fit, from pace, structure, grading and 4 more",
   student: [1.5, 3, 4, 3, 2, 1, 3] as Profile,
   whyTitle: "Why it fits",
-  why: "You're new to coding and want step-by-step guidance. Reyes works through every example live before you try one, at a pace that leaves room for questions.",
+  why: "Step-by-step examples, with room for questions",
   downsideTitle: "Watch out for",
-  downside: "Her syllabus is strict and every deadline is fixed, which is a bit more structure than you asked for. Class is mostly lecture, with little discussion.",
+  downside: "Stricter deadlines and less discussion than you asked for",
   legend: { student: "You", section: "Dr. Reyes", gap: "Where you differ" },
-  notes: [
-    "A student answers eight quick questions about how they learn best: pace, structure, how they like to be graded. There's no “visual learner” quiz, because the research doesn't support learning styles. Their answers become the dashed line, drawn over each section's profile, and the shaded area is where they differ. A fixed scoring function turns that into a fit score, and the score always says what it counts. Then Claude explains the match in plain language and always names one honest downside. Here that's a stricter syllabus and less discussion than this student asked for.",
+  script: [
+    "Then you answer eight quick questions about how you learn best. There's no visual-learner quiz, because the research doesn't support learning styles. Your answers become the dashed line, and the shaded area is where you and the class differ. Our scoring function turns that into a fit score, and the score always says what it counts. Then Claude explains the match in plain words and always names one honest downside. For this new coder, Reyes is a 93 percent fit, and the catch is stricter deadlines and less discussion than they asked for.",
   ],
 };
 
 export const webreg = {
-  heading: ["Same Page shows up where students", "already register."],
+  heading: ["A fit badge on every section", "in Web Registration."],
   page: "Web Registration",
-  term: "Spring 2027 Classes",
-  badge: (score: number, name: string) => `${score}% teaching fit with ${name}`,
-  needsQuiz: "Answer 8 questions to see your fit",
-  panelTitle: "In Chrome's side panel",
-  panelLines: ["The full match and its downside", "The section's profile next to yours", "The notes behind every point"],
-  demoNote: "Demo class list with fictional sample professors, at samepage.replit.app/demo/webreg",
-  notes: [
-    "Students don't have to change how they register. The Chrome extension reads the course codes and instructor names already on the Web Registration page and puts a small badge under each section, with the profile line and the fit score. Clicking it opens the full match in Chrome's side panel. The extension never asks for a USC login and never sends requests to Web Registration itself. You can try it on our demo class list today.",
+  badge: (score: number, name: string) => `${score}% fit with ${name}`,
+  panelTitle: "Chrome side panel",
+  demoNote: "Try it: samepage.replit.app/demo/webreg",
+  script: [
+    "You don't have to change how you register. Our Chrome extension reads the sections already on the Web Registration page and puts a badge under each one. For the same new coder, Reyes's section is a 93, Natarajan's is a 65 and Okafor's is a 51. Click a badge and the full match opens in Chrome's side panel. The extension never asks for your USC login, and you can try it today on our demo class list.",
   ],
 };
 
 export const tryClass = {
-  heading: ["Students can sit in on a simulated class", "before they register."],
-  hall: "A 144-seat hall modeled on USC's published specs for GFS 106",
-  moments: ["How class opens", "A question to the class", "A student's question", "Engagement", "A worked example", "How class ends"],
-  momentsTitle: "Jump to a moment",
-  seatNote: "Pick any seat",
-  status: "Built in 3D with Three.js and neural voices. Professors A and B are fictional, and every number in the simulation is simulated.",
-  notes: [
-    "Some things a profile can't tell you, like what it feels like to sit in that room. So we built Try this class, a 3D lecture hall modeled on GFS 106. A student picks a seat and jumps to moments like how class opens, a student's question or a worked example, and hears the lesson in a neural voice. From Web Registration, the button under each section opens the simulation in the style closest to that section's profile. The professors are fictional characters, and we never imitate a real professor. This part is built on a branch and isn't on the live site yet.",
+  heading: ["Sit in on the class", "before you register."],
+  moments: ["How class opens", "A question to the class", "A student's question", "A worked example", "How class ends"],
+  status: "Fictional professors, synthetic voices",
+  script: [
+    "Some things a profile can't capture, like what it feels like to sit in that room. So we built Try this class: a 3D model of GFS 106 with all 144 seats. You pick a seat, choose a teaching style, jump to moments like a student's question or a worked example, and hear the lesson out loud. The professors are fictional characters, and the hall is live on our site right now.",
   ],
 };
 
 export const ai = {
   pipeline: {
-    heading: ["Claude reads the notes and explains the match.", "A fixed formula does the ranking."],
-    steps: [
-      { name: "Students share notes", detail: "Typed notes and syllabi. Names are removed before anything is saved." },
-      { name: "Claude builds the profile", detail: "Seven 1 to 5 ratings, each with an evidence note" },
-      { name: "A fixed formula ranks sections", detail: "Deterministic scoring. The AI never changes the order." },
-      { name: "Claude explains the fit", detail: "Plain words and exactly one downside, with structured outputs" },
-    ],
-    safeguards: ["The API key stays on our server", "A written fallback if the model is unavailable", "Comments about personality or looks are dropped"],
+    heading: ["Claude explains the match.", "A fixed formula ranks it."],
+    stages: ["Student notes", "Claude builds the profile", "Formula ranks sections", "Claude explains the fit"],
+    explanation: ["Why it fits", "One honest downside"],
+    safeguard: "The API key never leaves our server",
   },
   model: {
-    heading: ["Our prototype predicts a range for each section", "instead of one number."],
-    aucTitle: "Knowledge tracing on real student answers",
-    aucLine: "130,000 answers from 3,239 students in the public ASSISTments data set",
+    heading: ["Our prototype predicts a range", "instead of one number."],
+    aucTitle: "Knowledge tracing on 130,000 real student answers",
     auc: [
       { label: "Our model", value: 0.74 },
       { label: "Skill difficulty only", value: 0.58 },
     ],
-    aucScale: "Area under the curve for held-out students' next answers. 0.5 is a coin flip and 1.0 is perfect.",
     rangeTitle: "Predicted fit for one synthetic student",
     ranges: [
       { label: "Section A", low: 56, high: 79 },
       { label: "Section B", low: 63, high: 82 },
     ],
-    rangeNote: "Synthetic student and sections. Effects are modest, so we show ranges.",
   },
-  notes: [
-    "Here's how the AI fits together, and where we deliberately don't let it decide. Claude reads the notes students share and turns them into the seven ratings, each with an evidence note. Then a fixed scoring formula ranks the sections, so the ranking is repeatable and explainable, and the AI never changes the order. Claude comes back at the end to explain the fit in plain words with exactly one downside, using structured outputs, with a fallback on the server if the model is down. The API key never leaves our server.",
-    "We're also prototyping a learning model. Knowledge tracing on the public ASSISTments data, 130,000 real answers from 3,239 students, predicts held-out students' next answers with an AUC of 0.74, against 0.58 for a baseline that only knows how hard each skill is. For a student choosing between sections, it gives a range, not a promise: here 56 to 79 percent in Section A and 63 to 82 in Section B, for a synthetic student. The effects of teaching style are real but modest, so we always show ranges.",
+  script: [
+    "Here's how the AI fits together. Claude reads the notes and builds the profile, with evidence for every point. Then a fixed scoring formula ranks the sections, not the AI, so every ranking is repeatable and explainable. Claude comes back at the end to write the explanation and the downside, using structured outputs with a fallback if the model is down. The API key never leaves our server.",
+    "We're also prototyping a learning model. Knowledge tracing on the public ASSISTments data, 130,000 answers from 3,239 students, predicts held-out students' next answers with an AUC of 0.74, against 0.58 for a baseline that only knows how hard each skill is. For a section choice it gives a range instead of a promise, because the effect of teaching style is real but modest. These ranges are for a synthetic student.",
   ],
 };
 
 export const fairness = {
   heading: ["Profiles describe the class", "and never the person."],
-  rules: [
-    { name: "Text notes only", detail: "We never record classes. Students share typed notes and syllabi." },
-    { name: "Names come out first", detail: "Student names and personal details are removed before anything is saved." },
-    { name: "No star ratings", detail: "Comments about a professor's personality, looks or accent are dropped." },
-    { name: "No learning-style quiz", detail: "We match on how you learn best, not “visual” or “auditory” labels." },
-    { name: "Professors get a say", detail: "Professors can see how students describe their class and add a response." },
-  ],
-  notes: [
-    "Because this touches professors' reputations, fairness is built into the rules, not added later. We only take typed notes and syllabi, never recordings. Names come out before anything is saved. Comments about personality, looks or accent are dropped, so a profile can only describe how the class runs. We don't sort students into learning styles, because the research doesn't back it. And professors can see how students describe their class and respond. It's a mirror of the teaching, not a ranking of the teacher.",
+  rules: ["Typed notes only, no recordings", "Names removed first", "No comments on looks or accent", "No learning-style labels", "Professors can respond"],
+  script: [
+    "Fairness is built into the rules. We only take typed notes and syllabi, never recordings. Names come out before anything is saved. Comments about a professor's personality, looks or accent get dropped, so a profile can only describe how the class runs. We don't sort students into learning styles, and professors can see how students describe their class and respond. It's a mirror of the teaching, not a ranking of the teacher.",
   ],
 };
 
 export const rollout = {
-  heading: ["Student Government can pilot Same Page", "next semester."],
+  heading: ["Student Government can pilot it", "next semester."],
   phases: [
-    {
-      when: "Built this weekend",
-      name: "Live and usable now",
-      items: ["Web app with guest access", "Chrome extension for Web Registration", "Try this class simulation"],
-    },
-    {
-      when: "Spring 2027 pilot",
-      name: "Run with Student Government",
-      items: ["Collect notes for high-enrollment courses", "Invite professors to review and respond", "Measure drops and switches against the fit score"],
-    },
-    {
-      when: "After review",
-      name: "Professors choose what to share",
-      items: ["Syllabus and slides", "Audio processed on the device", "Existing Zoom transcripts"],
-    },
+    { when: "Today", name: "Live at samepage.replit.app" },
+    { when: "Spring 2027", name: "Pilot with Student Government" },
+    { when: "After review", name: "Professors choose what to share" },
   ],
-  needsNothing: "The pilot needs no USC login and no access to USC systems. The extension only reads the page a student already has open.",
-  gate: "Any recording waits for the professor's permission, review by USC's Office of the General Counsel and IRB approval.",
-  notes: [
-    "This is something Student Government can actually run. It's live today, and the pilot needs nothing from USC IT: no USC login, no data feed, because the extension only reads the page a student already has open. In a spring pilot, Student Government would gather notes for a set of high-enrollment courses, invite those professors to review and respond, and check whether students who follow the fit score drop or switch less. Later, if professors want richer profiles, each one chooses what to share: syllabus and slides, audio processed on their own device, or Zoom transcripts they already make. We won't add any recording until the professor has given permission and USC's general counsel and IRB have signed off.",
+  needsNothing: "No USC login and no IT integration needed",
+  script: [
+    "Student Government can run this next semester. It's live today, and a pilot needs nothing from USC IT: no USC login and no data feed, because the extension only reads the page a student already has open. In a spring pilot, USG gathers notes for high-enrollment courses, invites those professors to review and respond, and checks whether students who follow the fit score drop or switch less. Later, professors who want richer profiles can choose to share slides, audio processed on their own device, or Zoom transcripts, but only after review by USC's general counsel and the IRB.",
   ],
 };
 
 export const closing = {
   heading: ["Your next chapter begins", "with the right class."],
-  goals: ["Fewer drops and switches", "Fairer treatment of professors", "Credits well spent", "Better learning"],
-  goalsTitle: "What we're aiming for",
-  cta: "Try it now",
-  notes: [
-    "When Monday's registration opens, we want every Trojan to know how each section is taught and why it fits them, with an honest downside. Our goals are fewer drops and switches, fairer treatment of professors, credits well spent and better learning. Same Page is live at samepage.replit.app. Thank you.",
+  cta: "Scan to try it",
+  script: [
+    "Our goals are fewer drops and switches, fairer treatment of professors, credits well spent and better learning. Scan the code to try Same Page yourself. Your next chapter begins with the right class. Thank you.",
   ],
 };
 
 export const appendix = {
   heading: "Sources",
-  notes: ["Every figure in the deck and where it comes from. Survey results are ours. Profiles and fit scores are fictional samples."],
+  script: ["Every figure in the deck and where it comes from. Survey results are ours. Profiles and fit scores are fictional samples."],
 };

@@ -1,5 +1,5 @@
-import { motion, type Variants } from "motion/react";
-import type { ReactNode } from "react";
+import { animate, motion, useMotionValue, useTransform, type Variants } from "motion/react";
+import { useEffect, type ReactNode } from "react";
 import { easeDrawn, exitTransition } from "./motion";
 
 export function lineReveal(delay: number): Variants {
@@ -36,5 +36,28 @@ export function StepView({ children, className = "" }: { children: ReactNode; cl
     <motion.div initial="enter" animate="present" exit="exit" variants={stepViewFrame} className={`stage-gutter absolute inset-0 ${className}`}>
       {children}
     </motion.div>
+  );
+}
+
+/** A 0 to 1 motion value that runs once from mount, for counters and other drawn-in figures. */
+export function useProgress(duration: number, delay: number) {
+  const progress = useMotionValue(0);
+  useEffect(() => {
+    const controls = animate(progress, 1, { duration, delay, ease: [...easeDrawn] });
+    return () => controls.stop();
+  }, [progress, duration, delay]);
+  return progress;
+}
+
+/** Counts a figure up from zero. Screen readers get the final value only. */
+export function CountUp({ total, format, duration = 1.4, delay = 0 }: { total: number; format: (value: number) => string; duration?: number; delay?: number }) {
+  const progress = useProgress(duration, delay);
+  const text = useTransform(progress, (value) => format(value * total));
+  return (
+    <span className="inline-grid">
+      <span aria-hidden className="invisible col-start-1 row-start-1">{format(total)}</span>
+      <motion.span aria-hidden className="col-start-1 row-start-1">{text}</motion.span>
+      <span className="sr-only">{format(total)}</span>
+    </span>
   );
 }
