@@ -11,6 +11,6 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: { alias: { "@": fromHere("./src") } },
   build: {
-    rollupOptions: { input: { deck: fromHere("./index.html"), print: fromHere("./print.html"), script: fromHere("./script.html"), class: fromHere("./class.html"), classPrint: fromHere("./class-print.html"), classScript: fromHere("./class-script.html") } },
+    rollupOptions: { input: { deck: fromHere("./index.html"), print: fromHere("./print.html"), script: fromHere("./script.html"), class: fromHere("./class.html"), classPrint: fromHere("./class-print.html"), classScript: fromHere("./class-script.html"), story: fromHere("./story.html") } },
   },
 });
