@@ -1,11 +1,11 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { ArrowDown, ArrowRight, ChalkboardTeacher, EyeSlash, FileText, PuzzlePiece, WarningCircle } from '@phosphor-icons/react';
+import { Armchair, ArrowDown, ArrowRight, ChalkboardTeacher, EyeSlash, FileText, PuzzlePiece, WarningCircle } from '@phosphor-icons/react';
 import { PRODUCT_NAME } from '../../../shared/content.js';
 import { Button, FitScore } from '../components/ui';
 import { ProfileLine } from '../components/ProfileLine';
 import { PixelHorse } from '../components/PixelHorse';
 import { PixelBird } from '../components/PixelBird';
-import { asset } from '../lib/target';
+import { API_ORIGIN, asset } from '../lib/target';
 
 // All copy and figures here come from the team's content brief and survey of 29 USC students
 // (November 14 and 15, 2026). The preview uses the fictional sample professor Dr. Maya Reyes and the
@@ -27,6 +27,7 @@ const SECTIONS: { id: string; tone: Tone }[] = [
   { id: 'voices', tone: 'ink' },
   { id: 'how', tone: 'sunk' },
   { id: 'preview', tone: 'paper' },
+  { id: 'try-class', tone: 'ink' },
   { id: EXTENSION_SECTION_ID, tone: 'cream' },
   { id: 'both-sides', tone: 'sunk' },
 ];
@@ -79,6 +80,7 @@ export function Landing({ focusSection }: { focusSection?: string | null }) {
       {band('voices', 'quotes-title', <Quotes />)}
       {band('how', 'how-title', <HowItWorks />)}
       {band('preview', 'preview-title', <Preview />)}
+      {band('try-class', 'try-class-title', <TryThisClass />)}
       {band(EXTENSION_SECTION_ID, 'extension-title', <ExtensionSection />)}
       {band('both-sides', 'sides-title', <BothSides />)}
     </div>
@@ -257,6 +259,41 @@ function Preview() {
           </div>
         </div>
       </article>
+    </div>
+  );
+}
+
+/** The 3D lecture hall served from client/public/try-this-class. The extension opens it from each webReg section too. */
+const TRY_CLASS_URL = `${API_ORIGIN}/try-this-class/`;
+const REYES_PROFILE_PARAM = Object.values(REYES).join(',');
+const TRY_REYES_URL = `${TRY_CLASS_URL}?course=CSCI%20103&section=29901&name=Dr.%20Maya%20Reyes&profile=${REYES_PROFILE_PARAM}`;
+
+function TryThisClass() {
+  return (
+    <div className="landing-try">
+      <div className="stack-4">
+        <h2 id="try-class-title" className="text-display">Sit in on a class before you register.</h2>
+        <p className="text-body band__muted landing-measure">
+          Pick any seat in a 3D lecture hall modeled on GFS 106 and watch a short sample lesson. You can switch between two
+          teaching styles, jump to moments like a student's question or a worked example, and hear the professor out loud.
+        </p>
+        <div className="landing-hero__actions">
+          <Button className="button--large" href={TRY_CLASS_URL} icon={<Armchair size={22} aria-hidden />}>Sit in on a sample class</Button>
+          <Button variant="quiet" href={TRY_REYES_URL} iconAfter={<ArrowRight size={19} aria-hidden />}>Try it as Dr. Reyes's CSCI 103 section</Button>
+        </div>
+      </div>
+      <figure className="try-preview">
+        <a href={TRY_CLASS_URL} className="try-preview__link">
+          <img
+            src={asset('try-this-class/preview.jpg')}
+            alt="The simulated lecture hall from the back: rows of students facing a professor beside a slide on eigenvalues, with a caption of what the professor is saying."
+            width={1220}
+            height={936}
+            loading="lazy"
+          />
+        </a>
+        <figcaption className="text-small band__muted">Prof. A and Prof. B are fictional, the voices are synthetic and every number in the room is simulated.</figcaption>
+      </figure>
     </div>
   );
 }

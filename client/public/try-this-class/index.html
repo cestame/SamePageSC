@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Try this class, Same Page</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Atkinson+Hyperlegible+Next:wght@400..700&display=swap">
@@ -98,6 +99,18 @@
   select{font:inherit;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:var(--radius-sm);padding:6px 8px;max-width:100%}
   a{color:var(--accent)}
   @media (max-width:900px){.layout{grid-template-columns:1fr;grid-template-rows:60vh auto}html,body{overflow:auto}aside{border-left:0}}
+  /* Phones: the disclaimer gets its own line instead of squeezing the title, and the room gets most of the screen. */
+  @media (max-width:600px){
+    .topbar{height:auto;flex-wrap:wrap;gap:4px 12px;padding:10px 16px}
+    .topbar .wordmark{height:26px}
+    .topbar h1{font-size:18px;white-space:nowrap}
+    .topbar .fine{margin-left:0;flex-basis:100%;font-size:12px}
+    .layout{height:auto;grid-template-rows:72vh auto}
+    .views{left:8px;right:8px;top:8px;justify-content:space-between}
+    .views button{padding:6px 8px;font-size:13px}
+    .start-card{padding:20px}
+    .start-card h2{font-size:22px}
+  }
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
 </head>

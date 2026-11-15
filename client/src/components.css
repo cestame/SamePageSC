@@ -801,6 +801,11 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
 .legend__swatch--gap { display: inline-block; background: var(--accent-soft); border-radius: 2px; }
 
 .landing-extension { display: grid; gap: var(--space-6); }
+.landing-try { display: grid; gap: var(--space-6); }
+.try-preview { margin: 0; display: grid; gap: var(--space-2); }
+.try-preview__link { display: block; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-card); }
+.try-preview__link img { display: block; width: 100%; height: auto; transition: transform var(--duration-quick) var(--ease-out); }
+.try-preview__link:hover img { transform: scale(1.01); }
 .badge-demo { margin: 0; display: grid; gap: var(--space-2); padding: var(--space-4); background: var(--surface); color: var(--text); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); align-content: start; }
 .badge-demo__row { display: grid; grid-template-columns: repeat(5, auto); justify-content: space-between; gap: var(--space-3); padding: var(--space-3) 0; box-shadow: 0 1px 0 var(--line), 0 -1px 0 var(--line); font-size: 0.9375rem; overflow-x: auto; }
 .badge-demo__badge {
@@ -833,6 +838,7 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
   .preview__body { grid-template-columns: auto minmax(0, 1fr); }
   .steps-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .landing-extension { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; }
+  .landing-try { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); align-items: center; }
 }
 
 /* ---------- top bar extension button ---------- */

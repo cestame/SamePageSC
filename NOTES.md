@@ -95,6 +95,13 @@ Submission is due **Sunday, November 15, 2026 at 11:00 AM PT** (AI@USC, HackSC x
 - Survey slide shows counts beside percentages, which the landing page deliberately leaves out. Check with the person before presenting.
 - Not yet checked against the papers: Reid 2010, Boring et al. 2016, Carrell and West 2010, Uttl et al. 2017, Brown and Kosovich 2015. Felton 2004 (r = 0.61), Subtirelu 2015 (0.6 to 0.8) and USC's 2018 tenure change were checked.
 
+## Try this class on the site (2026-11-15)
+
+- The 3D lecture hall from `webreg-try-this-class` (commit 0832b93) is on `main` at `/try-this-class/`, with its voice audio and the webReg "Try this class" button. The next commit on that branch (class capture with microphone and cameras) was left out, because CLAUDE.md says no recordings until the team decides otherwise.
+- The landing page has a navy "Sit in on a class before you register" band after the Reyes preview, with a picture of the hall (`client/public/try-this-class/preview.jpg`, taken from the simulation), a link to the hall and a link that opens it as Dr. Reyes's CSCI 103 section.
+- The hall page got phone styles (wrapping top bar, taller room) and a favicon.
+- `client/public/same-page-extension.zip` was rebuilt with the button, leaving `panel/try-this-class` out of the zip because the button opens the hall from the server.
+
 ## Open audit items (current UI vs CLAUDE.md)
 
 Fix these during the redesign:
