@@ -160,11 +160,6 @@ export const TIME_QUESTIONS = [
   },
 ];
 
-export const MAJOR_SUGGESTIONS = [
-  'Business Administration', 'Computer Science', 'Economics', 'Communication', 'Biological Sciences',
-  'Psychology', 'Political Science', 'Cinematic Arts', 'Mechanical Engineering', 'Undeclared',
-];
-
 export const LEARNING_STYLES_NOTE =
   'We don\'t ask whether you are a visual or auditory learner, because research doesn\'t support learning styles.';
 
