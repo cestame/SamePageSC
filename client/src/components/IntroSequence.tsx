@@ -1,22 +1,24 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { ArrowRight } from '@phosphor-icons/react';
 import { PRODUCT_LINE, PRODUCT_NAME } from '../../../shared/content.js';
 import { PixelHorse } from './PixelHorse';
 import { PixelBird } from './PixelBird';
 import { asset } from '../lib/target';
 
-/** The timeline in milliseconds. Pages turn like a book: the horse page, then the wordmark page. */
+/** The timeline in milliseconds: the horse page plays, turns like a book page, and the wordmark page waits. */
 const T = {
   horseStart: 300,
   horseEnd: 4300,
   flightStart: 700,
   flightEnd: 2700,
-  firstTurnStart: 3900,
-  firstTurnEnd: 5100,
+  turnStart: 3900,
+  turnEnd: 5100,
   logoStart: 4700,
   logoEnd: 5400,
-  secondTurnStart: 6500,
-  secondTurnEnd: 7600,
 } as const;
+
+/** How long the overlay takes to fade away once the student enters. */
+const CLOSE_MS = 320;
 
 function clamp(value: number, min = 0, max = 1) {
   return Math.min(max, Math.max(min, value));
@@ -34,13 +36,12 @@ type Frame = {
   horseX: number;
   flight: number;
   landed: boolean;
-  firstTurn: number;
-  secondTurn: number;
+  turn: number;
   logo: number;
-  done: boolean;
+  settled: boolean;
 };
 
-/** Where everything is at `t` ms. Horse position is in vw; turns and flight run from 0 to 1. */
+/** Where everything is at `t` ms. Horse position is in vw; the turn and flight run from 0 to 1. */
 function introFrame(t: number): Frame {
   const flight = between(t, T.flightStart, T.flightEnd);
   const logo = between(t, T.logoStart, T.logoEnd);
@@ -48,10 +49,9 @@ function introFrame(t: number): Frame {
     horseX: -50 + between(t, T.horseStart, T.horseEnd) * 160,
     flight,
     landed: flight >= 1,
-    firstTurn: easeInOut(between(t, T.firstTurnStart, T.firstTurnEnd)),
-    secondTurn: easeInOut(between(t, T.secondTurnStart, T.secondTurnEnd)),
+    turn: easeInOut(between(t, T.turnStart, T.turnEnd)),
     logo: logo * (2 - logo),
-    done: t >= T.secondTurnEnd,
+    settled: t >= Math.max(T.turnEnd, T.logoEnd),
   };
 }
 
@@ -91,17 +91,18 @@ function paint(refs: Refs, f: Frame) {
     const { x, y } = birdPosition(f.flight, refs.cover.getBoundingClientRect(), refs.seat.getBoundingClientRect());
     refs.bird.style.transform = `translate3d(${x}px, ${y}px, 0)`;
   }
-  turnPage(refs.cover, f.firstTurn);
-  turnPage(refs.logoPage, f.secondTurn);
-  refs.logoPage.style.setProperty('--cast', String(Math.sin(f.firstTurn * Math.PI)));
+  turnPage(refs.cover, f.turn);
+  refs.logoPage.style.setProperty('--cast', String(Math.sin(f.turn * Math.PI)));
   refs.logo.style.opacity = String(f.logo);
   refs.logo.style.transform = `translate3d(0, ${(1 - f.logo) * 32}px, 0)`;
+  // Hidden (and out of the tab order) until it has started to appear.
+  refs.logo.style.visibility = f.logo > 0 ? 'visible' : 'hidden';
 }
 
 /**
- * The opening on the sign-up page. It plays by itself (about 7.6 seconds): a pixel horse gallops across,
- * a bird lands on its back, then the page turns to the wordmark and that page turns to the sign-up form.
- * "Skip" or Escape jumps to the last page turn. The caller leaves it out when reduced motion is on.
+ * The opening of the landing page. A pixel horse gallops across, a bird lands on its back, then the page
+ * turns like a book page to the wordmark, which waits with a button that brings the student into the site.
+ * "Skip intro" or Escape goes straight in. The caller leaves it out when reduced motion is on.
  */
 export function IntroSequence({ onDone }: { onDone: () => void }) {
   const coverRef = useRef<HTMLDivElement>(null);
@@ -110,8 +111,9 @@ export function IntroSequence({ onDone }: { onDone: () => void }) {
   const horseRef = useRef<HTMLDivElement>(null);
   const birdRef = useRef<HTMLDivElement>(null);
   const seatRef = useRef<HTMLDivElement>(null);
-  const skipRef = useRef<() => void>(() => {});
+  const enterRef = useRef<HTMLButtonElement>(null);
   const doneRef = useRef(onDone);
+  const [closing, setClosing] = useState(false);
   useEffect(() => { doneRef.current = onDone; }, [onDone]);
 
   useEffect(() => {
@@ -122,40 +124,51 @@ export function IntroSequence({ onDone }: { onDone: () => void }) {
     const previousOverflow = root.style.overflow;
     root.style.overflow = 'hidden';
 
-    let start = performance.now();
+    const start = performance.now();
     let frame = 0;
     const tick = (now: number) => {
       const f = introFrame(now - start);
       paint(refs, f);
-      if (f.done) {
-        doneRef.current();
+      if (f.settled) {
+        enterRef.current?.focus({ preventScroll: true });
         return;
       }
       frame = requestAnimationFrame(tick);
     };
-    skipRef.current = () => {
-      const elapsed = performance.now() - start;
-      if (elapsed < T.secondTurnStart) start = performance.now() - T.secondTurnStart;
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') skipRef.current();
-    };
     frame = requestAnimationFrame(tick);
-    window.addEventListener('keydown', onKey);
     return () => {
       cancelAnimationFrame(frame);
-      window.removeEventListener('keydown', onKey);
       root.style.overflow = previousOverflow;
     };
   }, []);
 
+  useEffect(() => {
+    if (!closing) return;
+    const timer = window.setTimeout(() => doneRef.current(), CLOSE_MS);
+    return () => window.clearTimeout(timer);
+  }, [closing]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setClosing(true);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  const enter = () => setClosing(true);
+
   return (
-    <div className="intro" aria-label={`${PRODUCT_NAME} opening animation`} role="region">
+    <div className={closing ? 'intro intro--closing' : 'intro'} aria-label={`${PRODUCT_NAME} opening animation`} role="region">
       <div className="intro__page intro__page--logo" ref={logoPageRef}>
         <div className="intro__face intro__face--front">
           <div className="intro__logo-block" ref={logoRef}>
             <img className="intro__logo" src={asset('same-page-logo.png')} alt={PRODUCT_NAME} width={573} height={173} />
             <p className="intro__line">{PRODUCT_LINE}</p>
+            <button type="button" className="button intro__enter" ref={enterRef} onClick={enter}>
+              <span>Enter {PRODUCT_NAME}</span>
+              <ArrowRight size={19} aria-hidden />
+            </button>
           </div>
         </div>
         <div className="intro__face intro__face--back" />
@@ -183,9 +196,9 @@ export function IntroSequence({ onDone }: { onDone: () => void }) {
         <div className="intro__face intro__face--back" />
       </div>
 
-      <button type="button" className="intro__skip" onClick={() => skipRef.current()}>Skip to sign up</button>
+      <button type="button" className="intro__skip" onClick={enter}>Skip intro</button>
       <p className="visually-hidden">
-        A cardinal pixel horse gallops across while a yellow bird lands on its back. The page turns to the {PRODUCT_NAME} wordmark, then turns again to the sign-up form.
+        A cardinal pixel horse gallops across while a yellow bird lands on its back. The page turns to the {PRODUCT_NAME} wordmark, with a button to enter the site.
       </p>
     </div>
   );

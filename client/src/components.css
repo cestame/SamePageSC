@@ -565,6 +565,12 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
 .intro__logo-block { display: grid; justify-items: center; gap: var(--space-5); opacity: 0; will-change: opacity, transform; }
 .intro__logo { width: min(78vw, 540px); height: auto; display: block; }
 .intro__line { max-width: 34rem; color: rgb(255 254 250 / 0.78); font-size: 1.25rem; text-align: center; }
+.intro__enter { min-height: var(--input-height); background: var(--brand-cream); color: var(--brand-ink); font-size: 1.125rem; }
+.intro__enter:hover { background: var(--brand-paper); }
+.intro__enter:focus-visible { outline: 3px solid var(--brand-cream); outline-offset: 3px; }
+/* Entering the site: the overlay fades away instead of turning another page. */
+.intro { transition: opacity 320ms var(--ease-out); }
+.intro--closing { opacity: 0; pointer-events: none; }
 
 .intro__title {
   position: absolute;
@@ -672,11 +678,10 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
 
 /* ---------- landing page ---------- */
 
-.landing { display: grid; gap: var(--space-8); padding-bottom: var(--space-6); }
-.landing-section { display: grid; gap: var(--space-5); align-content: start; scroll-margin-top: calc(var(--topbar-height) + var(--space-4)); }
+.landing { display: grid; }
 .landing-measure { max-width: 62ch; }
 
-.landing-hero { display: grid; gap: var(--space-6); align-items: center; padding-top: var(--space-4); }
+.landing-hero { display: grid; gap: var(--space-6); align-items: center; padding-block: var(--space-4) var(--space-8); }
 .landing-hero__words { display: grid; gap: var(--space-5); justify-items: start; }
 .landing-hero__logo { width: min(100%, 420px); height: auto; display: block; }
 .landing-hero__title {
@@ -689,10 +694,83 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
   text-wrap: balance;
 }
 .landing-hero__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+.landing-hero__next {
+  display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--tap); padding: 0;
+  border: 0; background: none; color: var(--text-muted); font: inherit; font-size: 0.9375rem; cursor: pointer;
+}
+.landing-hero__next:hover { color: var(--text); }
 .landing-hero__horse { width: min(100%, 520px); justify-self: center; }
 .landing-hero__seat { visibility: visible; }
 
-/* Survey figures: the punchline is the largest number and the only one in ink at full weight. */
+/* The extension is the main way to use Same Page SC, so its buttons are the largest on the page. */
+.button--large { min-height: 56px; padding-inline: var(--space-6); font-size: 1.125rem; }
+
+/* ---------- landing bands ---------- */
+
+/*
+ * Each section is a full-width band. The background bleeds to the window edges with a spread shadow
+ * clipped to the band's height, so nothing scrolls sideways. Bands set their own text colors and,
+ * where the ground changes a lot (ink, cream), the control colors used inside them.
+ */
+.band {
+  --band-bg: var(--bg);
+  --rail: var(--accent);
+  position: relative;
+  padding-block: var(--space-7);
+  background: var(--band-bg);
+  box-shadow: 0 0 0 100vmax var(--band-bg);
+  clip-path: inset(0 -100vmax);
+  color: var(--text);
+  scroll-margin-top: var(--topbar-height);
+}
+.band__inner { min-width: 0; }
+.band__muted { color: var(--text-muted); }
+.band--sunk { --band-bg: var(--surface-sunk); }
+.band--ink { --band-bg: var(--inverse); --rail: var(--brand-cream); --focus: var(--brand-cream); color: var(--on-inverse); }
+.band--ink .band__muted { color: var(--on-inverse-muted); }
+.band--cream {
+  --band-bg: var(--brand-cream);
+  --rail: var(--brand-cardinal);
+  --control: var(--brand-ink);
+  --control-hover: var(--brand-navy);
+  --on-control: var(--brand-paper);
+  --focus: var(--brand-cardinal);
+  color: var(--brand-ink);
+}
+.band--cream .band__muted { color: var(--brand-ink-muted); }
+.band--cream .button--quiet { color: var(--brand-ink); }
+.band--cream .step__number { background: var(--brand-paper); color: var(--brand-ink); }
+
+/* The guide: a dotted line down the left edge, a tile per section, the bird on the one being read. */
+.guide-node { display: none; }
+@media (min-width: 960px) {
+  .band { padding-left: 80px; }
+  .band::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 27px;
+    width: 2px;
+    background-image: linear-gradient(var(--rail) 50%, transparent 0);
+    background-size: 2px 10px;
+    opacity: 0.7;
+  }
+  .guide-node { display: block; position: absolute; left: 16px; top: calc(var(--space-7) + 10px); width: 24px; height: 24px; }
+  .guide-node__tile { display: block; width: 20px; height: 20px; margin: 2px; background: var(--rail); }
+  .guide-node__bird { position: absolute; left: -8px; bottom: calc(100% - 2px); width: 40px; animation: bird-hop 360ms steps(3, jump-none) both; }
+}
+@keyframes bird-hop {
+  0% { transform: translateY(-24px); opacity: 0; }
+  50% { transform: translateY(-10px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* ---------- landing sections ---------- */
+
+.landing-problem { display: grid; gap: var(--space-5); }
+
+/* Survey figures: the punchline is the largest number and the only one in cardinal. */
 .stats { margin: 0; display: grid; gap: var(--space-4); }
 .stat { display: grid; grid-template-columns: auto 1fr; gap: var(--space-4); align-items: baseline; padding-top: var(--space-3); box-shadow: 0 -1px 0 var(--line); }
 .stat__value { font-family: var(--font-display); font-weight: 700; font-size: 2.5rem; line-height: 1; color: var(--text-soft); font-variant-numeric: tabular-nums; min-width: 3.2ch; }
@@ -702,17 +780,18 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
 .stat--punchline .stat__text { color: var(--text); font-weight: 700; }
 
 .quotes { display: grid; gap: var(--space-4); }
-.quote { display: grid; gap: var(--space-2); padding: var(--space-4) var(--space-5); background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-raised); }
+.quote { display: grid; gap: var(--space-2); padding: var(--space-4) var(--space-5); background: var(--surface); color: var(--text); border-radius: var(--radius-lg); }
 .quote__text { margin: 0; font-size: 1rem; line-height: 1.5; }
-.quote--emphasis { background: var(--inverse); box-shadow: none; }
-.quote--emphasis .quote__text { color: var(--on-inverse); font-family: var(--font-display); font-size: 1.375rem; line-height: 1.25; font-weight: 650; }
-.quote--emphasis .quote__who { color: var(--on-inverse-muted); }
+.quote__who { margin: 0; color: var(--text-muted); }
+.quote--emphasis { background: var(--brand-cream); color: var(--brand-ink); }
+.quote--emphasis .quote__text { font-family: var(--font-display); font-size: 1.375rem; line-height: 1.25; font-weight: 650; }
+.quote--emphasis .quote__who { color: var(--brand-ink-muted); }
 
 .steps-list, .install { display: grid; gap: var(--space-4); }
 .step, .install__step { display: grid; grid-template-columns: auto 1fr; gap: var(--space-3); align-items: start; }
 .step__number {
   display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: var(--radius-pill);
-  background: var(--surface-sunk); color: var(--text); font-family: var(--font-display); font-weight: 700;
+  background: var(--surface); color: var(--text); font-family: var(--font-display); font-weight: 700;
 }
 
 .preview { gap: var(--space-5); }
@@ -721,8 +800,8 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
 .preview .profile-line { width: min(100%, 340px); }
 .legend__swatch--gap { display: inline-block; background: var(--accent-soft); border-radius: 2px; }
 
-.landing-extension { gap: var(--space-6); }
-.badge-demo { margin: 0; display: grid; gap: var(--space-2); padding: var(--space-4); background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); align-content: start; }
+.landing-extension { display: grid; gap: var(--space-6); }
+.badge-demo { margin: 0; display: grid; gap: var(--space-2); padding: var(--space-4); background: var(--surface); color: var(--text); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); align-content: start; }
 .badge-demo__row { display: grid; grid-template-columns: repeat(5, auto); justify-content: space-between; gap: var(--space-3); padding: var(--space-3) 0; box-shadow: 0 1px 0 var(--line), 0 -1px 0 var(--line); font-size: 0.9375rem; overflow-x: auto; }
 .badge-demo__badge {
   justify-self: start; display: inline-flex; align-items: center; gap: var(--space-2);
@@ -732,15 +811,19 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
 .badge-demo__badge .profile-line { width: 16px; }
 
 .sides { display: grid; gap: var(--space-6); }
+/* The bird stands for students and the horse for professors, on one tile grid: 13 tiles of bird at 40px means 83 tiles of horse at 255px. */
+.sides__mascot { display: block; }
+.sides__mascot--bird { width: 40px; }
+.sides__mascot--horse { width: 255px; max-width: 100%; }
+.sides__mascot--horse .pixel-horse { width: 100%; }
 .privacy-points { display: grid; gap: var(--space-4); padding-top: var(--space-5); box-shadow: 0 -1px 0 var(--line); }
 
 @media (min-width: 720px) {
   .landing-hero__title { font-size: 2.5rem; }
-  .sides, .privacy-points { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sides { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; }
   .privacy-points { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (min-width: 960px) {
-  .landing { gap: 112px; }
   .landing-hero { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); padding-top: var(--space-7); }
   .landing-problem { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-7); align-items: start; }
   /* Three columns, the emphasized quote taking a 2 by 2 block, so six quotes fill three full rows. */
@@ -749,13 +832,27 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
   .quote--emphasis .quote__text { font-size: 2rem; }
   .preview__body { grid-template-columns: auto minmax(0, 1fr); }
   .steps-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .landing-extension { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  .landing-extension { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; }
 }
 
-/* With reduced motion the horse holds its first pose and the bird stays put. */
+/* ---------- top bar extension button ---------- */
+
+.nav__cta {
+  display: inline-flex; align-items: center; gap: 6px; min-height: var(--tap); margin-left: var(--space-2); padding: 0 var(--space-4);
+  border: 0; border-radius: var(--radius-pill); background: var(--control); color: var(--on-control);
+  font: inherit; font-size: 0.9375rem; font-weight: 700; white-space: nowrap; cursor: pointer;
+}
+.nav__cta:hover { background: var(--control-hover); }
+@media (max-width: 560px) {
+  .nav__cta { padding: 0 var(--space-3); }
+  .nav__cta span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+
+/* With reduced motion the horse holds its first pose and the birds stay put. */
 @media (prefers-reduced-motion: reduce) {
   .intro-horse__body { animation: none; }
   .pixel-horse__frame { animation: none; opacity: 0; }
   .pixel-horse__frame--0 { opacity: 1; }
   .pixel-bird__wing--down { display: none; }
+  .guide-node__bird { animation: none; }
 }

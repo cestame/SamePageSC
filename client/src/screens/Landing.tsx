@@ -1,3 +1,4 @@
+import { useEffect, useState, type ReactNode } from 'react';
 import { ArrowDown, ArrowRight, ChalkboardTeacher, EyeSlash, FileText, PuzzlePiece, WarningCircle } from '@phosphor-icons/react';
 import { PRODUCT_NAME } from '../../../shared/content.js';
 import { Button, FitScore } from '../components/ui';
@@ -10,20 +11,86 @@ import { asset } from '../lib/target';
 // (November 14 and 15, 2026). The preview uses the fictional sample professor Dr. Maya Reyes and the
 // real scoring function's result for the sample student (93).
 
-const EXTENSION_SECTION_ID = 'extension';
+export const EXTENSION_SECTION_ID = 'extension';
 
-const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+const scrollToId = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-export function Landing() {
+/**
+ * Each section is a full-width band with its own ground, so the parts of the story read as separate.
+ * `paper` is the page, `ink` the dark navy band, `sunk` a light gray, `cream` the brand cream used only
+ * for the extension, the part of the project the page leads to.
+ */
+type Tone = 'paper' | 'ink' | 'sunk' | 'cream';
+
+const SECTIONS: { id: string; tone: Tone }[] = [
+  { id: 'problem', tone: 'paper' },
+  { id: 'voices', tone: 'ink' },
+  { id: 'how', tone: 'sunk' },
+  { id: 'preview', tone: 'paper' },
+  { id: EXTENSION_SECTION_ID, tone: 'cream' },
+  { id: 'both-sides', tone: 'sunk' },
+];
+
+/**
+ * Which section is in the middle of the screen, so the guide bird can sit beside it. A section counts
+ * once it crosses a thin band 40% of the way down the viewport.
+ */
+function useActiveSection(ids: string[]) {
+  const [active, setActive] = useState(ids[0]);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const hit = entries.find((e) => e.isIntersecting);
+        if (hit) setActive(hit.target.id);
+      },
+      { rootMargin: '-40% 0px -55% 0px' },
+    );
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [ids]);
+  return active;
+}
+
+const SECTION_IDS = SECTIONS.map((s) => s.id);
+
+export function Landing({ focusSection }: { focusSection?: string | null }) {
+  const active = useActiveSection(SECTION_IDS);
+  useEffect(() => {
+    if (focusSection) scrollToId(focusSection);
+  }, [focusSection]);
+
+  const band = (id: string, labelledBy: string, children: ReactNode) => {
+    const tone = SECTIONS.find((s) => s.id === id)?.tone ?? 'paper';
+    return (
+      <section id={id} className={`band band--${tone}`} aria-labelledby={labelledBy}>
+        <GuideNode active={active === id} />
+        <div className="band__inner">{children}</div>
+      </section>
+    );
+  };
+
   return (
     <div className="landing">
       <Hero />
-      <Problem />
-      <Quotes />
-      <HowItWorks />
-      <Preview />
-      <ExtensionSection />
-      <BothSides />
+      {band('problem', 'problem-title', <Problem />)}
+      {band('voices', 'quotes-title', <Quotes />)}
+      {band('how', 'how-title', <HowItWorks />)}
+      {band('preview', 'preview-title', <Preview />)}
+      {band(EXTENSION_SECTION_ID, 'extension-title', <ExtensionSection />)}
+      {band('both-sides', 'sides-title', <BothSides />)}
+    </div>
+  );
+}
+
+/** A tile on the dotted guide line; the bird hops onto the tile of the section being read. */
+function GuideNode({ active }: { active: boolean }) {
+  return (
+    <div className={active ? 'guide-node guide-node--active' : 'guide-node'} aria-hidden="true">
+      <span className="guide-node__tile" />
+      {active && <span className="guide-node__bird"><PixelBird seated /></span>}
     </div>
   );
 }
@@ -35,9 +102,15 @@ function Hero() {
         <img className="landing-hero__logo" src={asset('same-page-logo.png')} alt={PRODUCT_NAME} width={573} height={173} />
         <h1 id="landing-title" className="landing-hero__title">Know how a class is really taught before you enroll, from notes taken by the students who sat in it.</h1>
         <div className="landing-hero__actions">
-          <Button href="#/home" iconAfter={<ArrowRight size={19} aria-hidden />}>Find my best sections</Button>
-          <Button variant="quiet" onClick={() => scrollTo(EXTENSION_SECTION_ID)} icon={<PuzzlePiece size={19} aria-hidden />}>Get the Chrome extension</Button>
+          <Button className="button--large" onClick={() => scrollToId(EXTENSION_SECTION_ID)} icon={<PuzzlePiece size={22} aria-hidden />}>
+            Get the Chrome extension
+          </Button>
+          <Button variant="quiet" href="#/home" iconAfter={<ArrowRight size={19} aria-hidden />}>Try it in your browser</Button>
         </div>
+        <button type="button" className="landing-hero__next" onClick={() => scrollToId('problem')}>
+          <ArrowDown size={18} aria-hidden />
+          <span>Why we built it</span>
+        </button>
       </div>
       <div className="landing-hero__horse" aria-hidden="true">
         <div className="intro-horse__body">
@@ -59,10 +132,10 @@ const STATS = [
 
 function Problem() {
   return (
-    <section className="landing-section landing-problem" aria-labelledby="problem-title">
+    <div className="landing-problem">
       <div className="stack-3">
         <h2 id="problem-title" className="text-display">Two sections of the same course can feel like two different classes.</h2>
-        <p className="text-body text-muted landing-measure">
+        <p className="text-body band__muted landing-measure">
           Rate My Professors tells you whether people liked someone. It doesn't tell you how the class runs: how fast it moves,
           how tightly it's organized, or how you get graded.
         </p>
@@ -76,12 +149,12 @@ function Problem() {
             </div>
           ))}
         </dl>
-        <p className="text-small text-muted">
+        <p className="text-small band__muted">
           From our survey of 29 USC students, freshmen through grad students in more than 20 majors, November 14 and 15, 2026.
           Accuracy was rated from 1 to 5. The average was 3.4.
         </p>
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -96,10 +169,10 @@ const QUOTES = [
 
 function Quotes() {
   return (
-    <section className="landing-section" aria-labelledby="quotes-title">
+    <div className="stack-5">
       <div className="stack-3">
         <h2 id="quotes-title" className="text-display">No professor is right for everyone.</h2>
-        <p className="text-body text-muted landing-measure">
+        <p className="text-body band__muted landing-measure">
           We asked students to describe a teaching style that helped or hurt them. Their answers pull in different directions,
           so one star rating can't tell you which class is right for you.
         </p>
@@ -108,12 +181,12 @@ function Quotes() {
         {QUOTES.map((q) => (
           <li key={q.who} className={q.emphasis ? 'quote quote--emphasis' : 'quote'}>
             <blockquote className="quote__text">“{q.text}”</blockquote>
-            <p className="quote__who text-small text-muted">{q.who}</p>
+            <p className="quote__who text-small">{q.who}</p>
           </li>
         ))}
       </ul>
-      <p className="text-small text-muted">Answers from our survey, shortened where marked. Professor names were removed.</p>
-    </section>
+      <p className="text-small band__muted">Answers from our survey, shortened where marked. Professor names were removed.</p>
+    </div>
   );
 }
 
@@ -126,7 +199,7 @@ const STEPS = [
 
 function HowItWorks() {
   return (
-    <section className="landing-section" aria-labelledby="how-title">
+    <div className="stack-5">
       <h2 id="how-title" className="text-display">How it works</h2>
       <ol className="steps-list plain-list">
         {STEPS.map((s, i) => (
@@ -134,12 +207,12 @@ function HowItWorks() {
             <span className="step__number" aria-hidden="true">{i + 1}</span>
             <div className="stack-1">
               <h3 className="text-heading">{s.title}</h3>
-              <p className="text-small text-muted">{s.text}</p>
+              <p className="text-small band__muted">{s.text}</p>
             </div>
           </li>
         ))}
       </ol>
-    </section>
+    </div>
   );
 }
 
@@ -149,7 +222,7 @@ const SAMPLE_STUDENT = { pace: 1.5, format: 3, structure: 4, assessment: 3, part
 
 function Preview() {
   return (
-    <section className="landing-section" aria-labelledby="preview-title">
+    <div className="stack-5">
       <h2 id="preview-title" className="text-display">This is what being on the same page looks like.</h2>
       <article className="card card--emphasis preview">
         <div className="preview__head">
@@ -184,7 +257,7 @@ function Preview() {
           </div>
         </div>
       </article>
-    </section>
+    </div>
   );
 }
 
@@ -197,10 +270,10 @@ const INSTALL_STEPS = [
 
 function ExtensionSection() {
   return (
-    <section className="landing-section landing-extension" id={EXTENSION_SECTION_ID} aria-labelledby="extension-title">
+    <div className="landing-extension">
       <div className="stack-4">
         <h2 id="extension-title" className="text-display">Same Page works where you register.</h2>
-        <p className="text-body text-muted landing-measure">
+        <p className="text-body band__muted landing-measure">
           The Chrome extension reads the class list you already have open in USC Web Registration and puts a fit badge under
           each section. Tap one to see the match and its downside in Chrome's side panel.
         </p>
@@ -210,12 +283,12 @@ function ExtensionSection() {
           ))}
         </ol>
         <div className="landing-hero__actions">
-          <Button href={asset('same-page-extension.zip')} icon={<ArrowDown size={19} aria-hidden />}>Download the extension</Button>
+          <Button className="button--large" href={asset('same-page-extension.zip')} icon={<ArrowDown size={22} aria-hidden />}>Download the extension</Button>
           <Button variant="quiet" href="/demo/webreg" iconAfter={<ArrowRight size={19} aria-hidden />}>Try it on the demo class list</Button>
         </div>
       </div>
       <BadgeIllustration />
-    </section>
+    </div>
   );
 }
 
@@ -237,17 +310,19 @@ function BadgeIllustration() {
 
 function BothSides() {
   return (
-    <section className="landing-section" aria-labelledby="sides-title">
+    <div className="stack-5">
       <h2 id="sides-title" className="text-display">Good for both sides of the room.</h2>
       <div className="sides">
         <div className="stack-2">
+          <span className="sides__mascot sides__mascot--bird" aria-hidden="true"><PixelBird seated /></span>
           <h3 className="text-title">For students</h3>
-          <p className="text-body text-muted">Pick sections that suit how you learn, with reasons you can check against real notes instead of star ratings.</p>
+          <p className="text-body band__muted">Pick sections that suit how you learn, with reasons you can check against real notes instead of star ratings.</p>
           <div><Button variant="quiet" href="#/home" iconAfter={<ArrowRight size={18} aria-hidden />}>Find my best sections</Button></div>
         </div>
         <div className="stack-2">
+          <span className="sides__mascot sides__mascot--horse" aria-hidden="true"><PixelHorse /></span>
           <h3 className="text-title">For professors</h3>
-          <p className="text-body text-muted">See how students describe your class, add your own response, and reach the students your teaching style suits best.</p>
+          <p className="text-body band__muted">See how students describe your class, add your own response, and reach the students your teaching style suits best.</p>
           <div><Button variant="quiet" href="#/contribute" iconAfter={<ArrowRight size={18} aria-hidden />}>Add notes from a class</Button></div>
         </div>
       </div>
@@ -256,6 +331,6 @@ function BothSides() {
         <li className="privacy-list__item"><EyeSlash className="privacy-list__icon" size={22} aria-hidden /><span className="text-small"><b>Names come out first.</b> Student names and personal details are removed before anything is saved.</span></li>
         <li className="privacy-list__item"><ChalkboardTeacher className="privacy-list__icon" size={22} aria-hidden /><span className="text-small"><b>About the class, not the person.</b> Profiles describe how a class runs. Comments about a professor's personality or looks are dropped.</span></li>
       </ul>
-    </section>
+    </div>
   );
 }

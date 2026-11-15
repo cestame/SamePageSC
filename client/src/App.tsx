@@ -14,7 +14,8 @@ import { Matches } from './screens/Matches';
 import { ProfessorPage } from './screens/ProfessorPage';
 import { Contribute } from './screens/Contribute';
 import { Privacy } from './screens/Privacy';
-import { Landing } from './screens/Landing';
+import { EXTENSION_SECTION_ID, Landing } from './screens/Landing';
+import { PuzzlePiece } from '@phosphor-icons/react';
 
 const NAV = [
   { href: '#/home', label: 'My schedule', section: 'home' },
@@ -41,7 +42,7 @@ const isLanding = (first: string | undefined) => !first && !IS_EXTENSION;
 function Screen({ parts, params }: { parts: string[]; params: URLSearchParams }) {
   const [first, second] = parts;
   const profile = loadProfile();
-  if (isLanding(first)) return <Landing />;
+  if (isLanding(first)) return <Landing focusSection={params.get('section')} />;
   if (AUTH_ROUTES.has(first)) return <AuthPage mode={first as 'signup' | 'login' | 'guest'} />;
   if (!first || ENTRY_ROUTES.has(first)) {
     if (!profile) return <AuthPage mode="signup" />;
@@ -64,7 +65,8 @@ export function App() {
   const current = sectionOf(parts[0]);
   const [ready, setReady] = useState(false);
   // The intro plays on every load of the landing page and closes itself when it finishes or is skipped.
-  const [introPending, setIntroPending] = useState(true);
+  // Only a visit that starts on the landing page plays the intro; moving around the site never replays it.
+  const [introPending, setIntroPending] = useState(() => isLanding(parts[0]));
   const reduceMotion = useReducedMotion();
   useEffect(() => { restoreSession().finally(() => setReady(true)); }, []);
   useEffect(() => followExtensionRoutes(navigate), []);
@@ -91,6 +93,7 @@ export function App() {
               </a>
             ))}
             {user && <button type="button" className="nav__link nav__button" onClick={logOut}>Log out</button>}
+            {!IS_EXTENSION && <GetExtensionLink onLanding={isLanding(parts[0])} />}
           </nav>
         </div>
       </header>
@@ -105,5 +108,19 @@ export function App() {
         </div>
       </footer>
     </MotionConfig>
+  );
+}
+
+/** The extension is the main way to use Same Page SC, so the top bar always links to how to get it. */
+function GetExtensionLink({ onLanding }: { onLanding: boolean }) {
+  function go() {
+    if (onLanding) document.getElementById(EXTENSION_SECTION_ID)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    else navigate(`#/?section=${EXTENSION_SECTION_ID}`);
+  }
+  return (
+    <button type="button" className="nav__cta" onClick={go}>
+      <PuzzlePiece size={18} aria-hidden />
+      <span>Get the extension</span>
+    </button>
   );
 }
