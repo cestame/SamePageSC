@@ -18,7 +18,7 @@ export function Matches({ courseId }: { courseId: string | null }) {
   const answers = profile && courseId ? answersFor(profile, courseId) : null;
 
   useEffect(() => {
-    if (!answers) navigate('#/');
+    if (!answers) navigate('#/home');
   }, [answers]);
 
   if (!profile || !answers || !courseId) return null;
@@ -27,17 +27,17 @@ export function Matches({ courseId }: { courseId: string | null }) {
 
   const course = courses.data.find((c) => c.id === courseId);
   if (!course) {
-    return <EmptyState title="We don't know that class" body="Go back to your schedule and pick one of your classes." action={<Button href="#/">Back to my schedule</Button>} />;
+    return <EmptyState title="We don't know that class" body="Go back to your schedule and pick one of your classes." action={<Button href="#/home">Back to my schedule</Button>} />;
   }
   const myCourses = courses.data.filter((c) => profile.courseIds.includes(c.id) && answersFor(profile, c.id));
   const useSection = (sectionId: number) => {
     update((p) => ({ ...p, locked: { ...p.locked, [course.id]: sectionId } }));
-    navigate('#/');
+    navigate('#/home');
   };
 
   return (
     <>
-      <div><Button variant="quiet" href="#/" icon={<ArrowLeft size={18} aria-hidden />}>Back to my schedule</Button></div>
+      <div><Button variant="quiet" href="#/home" icon={<ArrowLeft size={18} aria-hidden />}>Back to my schedule</Button></div>
       <h1 className="text-display">{course.code} sections ranked for you</h1>
       {myCourses.length > 1 && (
         <div className="segmented" role="tablist" aria-label="Your classes">

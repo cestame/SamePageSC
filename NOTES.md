@@ -80,6 +80,14 @@ Submission is due **Sunday, November 15, 2026 at 11:00 AM PT** (AI@USC, HackSC x
 - The extension never calls webReg's internal endpoints (the calendar loads from `/api/Calendar`); it only reads what is rendered.
 - webReg course list markup (from `/Courses?Program=ACAD`): sections inside `#courseBin_ACAD-176`, each `div#section_<number>.section > .section_crsbin`, cells are `.section_row` with a `.table-headers-xsmall` label then one <span> per value. The badge goes on its own full-width line before the trailing <a>, where webReg shows its own notes. Tested against a copy of that markup (linkedom, in a scratchpad, not a project dependency). Pages the person saves contain their name and USC email ("Welcome, ..." and the Datadog `setUser` block); strip them before reading.
 - Not yet checked: that SameSite=Lax session cookies reach the server from the side panel (needed for logged-in accounts; guests work without cookies), and the server running on localhost:3000 is an old process without the new endpoint until it is restarted.
+
+## Website and extension split (2026-11-15)
+
+- The person decided the website explains and the extension does the analysis (Grammarly model). CLAUDE.md was updated to match.
+- Landing page (`client/src/screens/Landing.tsx`) is the website's root `#/`: horse intro first, then hero (wordmark, tagline, tile horse with the bird), the problem with survey figures (66%, 76%, 45% punchline; source line names the 29-student survey; the person asked not to show counts beside the percentages), six survey quotes (fifth emphasized), how it works (4 steps), the Dr. Reyes preview (fit 93 from the real scorer; the brief said 94 and "6 students' notes", both dropped as not real), the extension section with install steps, and both sides plus privacy points. Copy is from the team's content brief (`same-page-content-brief.md`, kept by the person, not in the repo).
+- The app moved to `#/home`; the extension panel's root is still the app. Product name is now "Same Page SC".
+- The brief also describes a new matches screen and quiz; not started. The person asked to see the landing page first.
+- **Open:** the "Download the extension" button links to `same-page-extension.zip`, which does not exist yet. It needs the deployed Replit URL in `extension/config.json`, then `npm run build:extension` and a zip of `extension/` in `client/public/`.
 ## Open audit items (current UI vs CLAUDE.md)
 
 Fix these during the redesign:

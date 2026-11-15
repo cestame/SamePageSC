@@ -669,3 +669,93 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
   0% { opacity: 0; }
   50% { opacity: 1; }
 }
+
+/* ---------- landing page ---------- */
+
+.landing { display: grid; gap: var(--space-8); padding-bottom: var(--space-6); }
+.landing-section { display: grid; gap: var(--space-5); align-content: start; scroll-margin-top: calc(var(--topbar-height) + var(--space-4)); }
+.landing-measure { max-width: 62ch; }
+
+.landing-hero { display: grid; gap: var(--space-6); align-items: center; padding-top: var(--space-4); }
+.landing-hero__words { display: grid; gap: var(--space-5); justify-items: start; }
+.landing-hero__logo { width: min(100%, 420px); height: auto; display: block; }
+.landing-hero__title {
+  margin: 0;
+  max-width: 24ch;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  line-height: 1.15;
+  font-weight: 650;
+  text-wrap: balance;
+}
+.landing-hero__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+.landing-hero__horse { width: min(100%, 520px); justify-self: center; }
+.landing-hero__seat { visibility: visible; }
+
+/* Survey figures: the punchline is the largest number and the only one in ink at full weight. */
+.stats { margin: 0; display: grid; gap: var(--space-4); }
+.stat { display: grid; grid-template-columns: auto 1fr; gap: var(--space-4); align-items: baseline; padding-top: var(--space-3); box-shadow: 0 -1px 0 var(--line); }
+.stat__value { font-family: var(--font-display); font-weight: 700; font-size: 2.5rem; line-height: 1; color: var(--text-soft); font-variant-numeric: tabular-nums; min-width: 3.2ch; }
+.stat__unit { font-size: 0.55em; }
+.stat__text { margin: 0; color: var(--text-muted); }
+.stat--punchline .stat__value { font-size: 4rem; color: var(--accent); }
+.stat--punchline .stat__text { color: var(--text); font-weight: 700; }
+
+.quotes { display: grid; gap: var(--space-4); }
+.quote { display: grid; gap: var(--space-2); padding: var(--space-4) var(--space-5); background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-raised); }
+.quote__text { margin: 0; font-size: 1rem; line-height: 1.5; }
+.quote--emphasis { background: var(--inverse); box-shadow: none; }
+.quote--emphasis .quote__text { color: var(--on-inverse); font-family: var(--font-display); font-size: 1.375rem; line-height: 1.25; font-weight: 650; }
+.quote--emphasis .quote__who { color: var(--on-inverse-muted); }
+
+.steps-list, .install { display: grid; gap: var(--space-4); }
+.step, .install__step { display: grid; grid-template-columns: auto 1fr; gap: var(--space-3); align-items: start; }
+.step__number {
+  display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: var(--radius-pill);
+  background: var(--surface-sunk); color: var(--text); font-family: var(--font-display); font-weight: 700;
+}
+
+.preview { gap: var(--space-5); }
+.preview__head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-4); align-items: flex-start; }
+.preview__body { display: grid; gap: var(--space-6); align-items: start; }
+.preview .profile-line { width: min(100%, 340px); }
+.legend__swatch--gap { display: inline-block; background: var(--accent-soft); border-radius: 2px; }
+
+.landing-extension { gap: var(--space-6); }
+.badge-demo { margin: 0; display: grid; gap: var(--space-2); padding: var(--space-4); background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); align-content: start; }
+.badge-demo__row { display: grid; grid-template-columns: repeat(5, auto); justify-content: space-between; gap: var(--space-3); padding: var(--space-3) 0; box-shadow: 0 1px 0 var(--line), 0 -1px 0 var(--line); font-size: 0.9375rem; overflow-x: auto; }
+.badge-demo__badge {
+  justify-self: start; display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: 4px 12px 4px 6px; border-radius: var(--radius-pill); background: var(--surface);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 14%, transparent), 0 1px 2px rgb(3 0 39 / 0.08); font-size: 0.9375rem;
+}
+.badge-demo__badge .profile-line { width: 16px; }
+
+.sides { display: grid; gap: var(--space-6); }
+.privacy-points { display: grid; gap: var(--space-4); padding-top: var(--space-5); box-shadow: 0 -1px 0 var(--line); }
+
+@media (min-width: 720px) {
+  .landing-hero__title { font-size: 2.5rem; }
+  .sides, .privacy-points { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .privacy-points { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 960px) {
+  .landing { gap: 112px; }
+  .landing-hero { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); padding-top: var(--space-7); }
+  .landing-problem { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-7); align-items: start; }
+  /* Three columns, the emphasized quote taking a 2 by 2 block, so six quotes fill three full rows. */
+  .quotes { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-flow: dense; }
+  .quote--emphasis { grid-column: span 2; grid-row: span 2; align-content: center; padding: var(--space-6); }
+  .quote--emphasis .quote__text { font-size: 2rem; }
+  .preview__body { grid-template-columns: auto minmax(0, 1fr); }
+  .steps-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .landing-extension { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+}
+
+/* With reduced motion the horse holds its first pose and the bird stays put. */
+@media (prefers-reduced-motion: reduce) {
+  .intro-horse__body { animation: none; }
+  .pixel-horse__frame { animation: none; opacity: 0; }
+  .pixel-horse__frame--0 { opacity: 1; }
+  .pixel-bird__wing--down { display: none; }
+}
