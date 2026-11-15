@@ -7,7 +7,7 @@ import { CountUp } from "@/engine/primitives";
 import { HorseIntro } from "./HorseIntro";
 import { SamePageDeck } from "./SamePageDeck";
 import { SiteQrCode } from "./slides/plan";
-import { TitleSlide } from "./slides/problem";
+import { BiasView, TitleSlide } from "./slides/problem";
 import { ShapesSlide, WebRegSlide } from "./slides/product";
 import { sampleCourse } from "./content";
 import type { DeckConfig, SamePageSlide } from "./slides";
@@ -137,6 +137,15 @@ const slides: SamePageSlide[] = [
     Content: PaperSlide,
   },
   slide("stars", "Five stars", "Lia", "The first time we ever meet our professors is as a number on a five star scale, the same way restaurants or movies are rated. But let me ask you something: have you ever been moved by a movie from just reading the reviews? In our survey, 82% of respondents said Rate My Professors was their main source for choosing between classes. Students are left guessing. Professors are left represented by reviews that may barely reflect how they teach.", StarsSlide),
+  {
+    id: "bias",
+    name: "A deeper issue",
+    steps: 1,
+    sourcesByStep: [["subtirelu", "reid", "boring", "usc2018"]],
+    speaker: "Lia",
+    notes: ["This reveals a deeper issue. In one study, Asian-named math instructors scored 0.6 to 0.8 points lower on clarity for the same teaching. USC itself dropped student evaluations from tenure decisions in 2018."],
+    Content: () => <BiasView heading={["This reveals a deeper issue."]} />,
+  },
   slide("shapes", "One profile, seven teaching traits", "Lia", "Instead of a star, Same Page SC gives every section a shape: seven teaching traits, from pace to workload, built from what happens in class. Here are three sections of the same course. Same course, three very different classes. Reyes and Natarajan are fictional samples, and the middle one is our own Dr. Srinija Chukkapalli, who you will meet in a minute.", () => <ShapesSlide sections={storySections} note="Sample profiles. Reyes and Natarajan are fictional; Dr. Srinija Chukkapalli is our teammate, who plays the professor in today's demo." />),
   slide("question", "How do we get on the same page?", "Lia", "So, how do we get on the Same Page?", QuestionSlide),
   slide("record", "Demo: recording", "Srinija", "Welcome to class. Start the recording. [Clicker starts the recording.] Today's lesson: how does Same Page work? Students, are you ready for registration? [Everyone: Yes!] Awesome. Open USC Web Registration and your Same Page extension. Once you've answered questions based on class preferences, you can see which professors you're the best fit with.", (p) => <VideoSlide {...p} clip="demo-record.mp4" step="1" heading="Recording the class" />),

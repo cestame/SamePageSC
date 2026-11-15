@@ -267,12 +267,13 @@ function SameTeaching({ label, lower, delay }: { label: string; lower: boolean; 
   );
 }
 
-function BiasView() {
+/** `heading` lets another deck retitle this slide. */
+export function BiasView({ heading }: { heading?: string[] } = {}) {
   const { bias } = ratings;
   const tall = useIsPortrait();
   return (
     <StepView className="flex flex-col justify-between">
-      <Heading lines={bias.heading} />
+      <Heading lines={heading ?? bias.heading} />
       <div className={`flex gap-gap ${tall ? "flex-col items-stretch gap-8" : "items-end"}`}>
         <SameTeaching label={bias.instructors[0]} lower={false} delay={0.4} />
         <SameTeaching label={bias.instructors[1]} lower delay={0.6} />
