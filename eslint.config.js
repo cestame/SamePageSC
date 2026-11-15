@@ -16,6 +16,10 @@ export default tseslint.config(
     languageOptions: { globals: { ...globals.browser, chrome: 'readonly' } },
   },
   {
+    files: ['client/public/**/*.js'],
+    languageOptions: { globals: globals.browser, sourceType: 'module' },
+  },
+  {
     files: ['client/**/*.{ts,tsx}', 'vite.config.ts'],
     extends: [...tseslint.configs.recommended],
     plugins: { 'react-hooks': reactHooks },

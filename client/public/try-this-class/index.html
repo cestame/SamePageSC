@@ -621,9 +621,12 @@ function styleProf(){pShirt.color.set(L.shirt);pHairM.color.set(L.hair);pPants.c
 const linked=(()=>{const q=new URLSearchParams(location.search);const course=q.get('course')||'',section=q.get('section')||'';
   if(!/^[A-Z]{2,5} \d{3}[A-Z]{0,2}$/.test(course)||!/^\d{5}[A-Z]?$/.test(section))return null;
   const p=(q.get('profile')||'').split(',').map(Number);const profile=p.length===7&&p.every(v=>v>=1&&v<=5)?Object.fromEntries(FIELDS.map(([k],i)=>[k,p[i]])):null;
-  return {course,section,name:(q.get('name')||'').slice(0,80),profile};})();
-// With a profile, start in the sample style closest to it: discussion and participation point to Section B.
-const startKey=linked?.profile&&linked.profile.format+linked.profile.participation>=6?'B':'A';
+  return {course,section,name:(q.get('name')||'').slice(0,80),when:(q.get('when')||'').slice(0,40),profile,synthetic:q.get('synthetic')==='1'};})();
+// ?synthetic=1 builds a custom class for this section from synthetic data (synthetic.js).
+const synthetic=linked?.synthetic?(await import('./synthetic.js')).synthesizeSection(linked,LESSONS):null;
+if(synthetic)LESSONS.S=synthetic.lesson;
+// Otherwise, with a profile, start in the sample style closest to it: discussion and participation point to Section B.
+const startKey=synthetic?'S':linked?.profile&&linked.profile.format+linked.profile.participation>=6?'B':'A';
 let secKey=startKey,L=LESSONS[startKey],week=1,you=null,muted=false,paused=false,running=false,viewMode='over';
 let stepI=-1,phase='idle',phaseT=0,phaseDur=0,stepT=0,doneT=0,writeT=0,clickT=0,token=0,timers=[],time=0,lessonT=999;
 let stopAt=null,activeScene=null,asker=null;
@@ -650,7 +653,8 @@ function profileGlyph(profile,label){
   return svg;}
 function buildSections(){const box=$('sections');box.textContent='';
   for(const [k,l] of Object.entries(LESSONS)){const b=document.createElement('button');b.className='section-card'+(k===secKey?' on':'');b.setAttribute('aria-pressed',String(k===secKey));
-    const t=document.createElement('strong');t.textContent=`Section ${k}`;const s=document.createElement('span');s.textContent=`${l.name}, ${l.when}`;
+    const t=document.createElement('strong');t.textContent=k==='S'?`${linked.course}, section ${linked.section}`:`Section ${k}`;
+    const s=document.createElement('span');s.textContent=k==='S'?`${l.name}, simulated from synthetic data`:`${l.name}, ${l.when}`;
     b.append(t,s,profileGlyph(l.profile,l.name));b.onclick=()=>changeSection(k);box.append(b);}}
 function buildMoments(){const box=$('moments');box.textContent='';
   for(const [k,label,hint] of SCENES){const b=document.createElement('button');b.className='moment'+(k===activeScene?' on':'');
@@ -687,6 +691,11 @@ let speaking=false,studentSpeaking=false;
 // Lines play from neural recordings in audio/voice (rendered by render_voices.py). Browser
 // text-to-speech is only a fallback when a recording can't load or the user picks it.
 let currentAudio=null;
+// A synthetic lesson borrows steps from both recorded lessons; each step remembers its source in `src`.
+// Professor lines play in the section's voice (cross-voice clips are named <voice>-from-<lesson>-...).
+function clipFor(step,part,n){const src=L.steps[step]?.src??{lesson:secKey,step};const voice=L.voice??src.lesson;
+  const same=voice===src.lesson||part==='ask';
+  return same?`audio/voice/${src.lesson}-${src.step}-${part}-${n}.mp3`:`audio/voice/${voice}-from-${src.lesson}-${src.step}-${part}-${n}.mp3`;}
 function stopAudio(){if(currentAudio){currentAudio.onended=currentAudio.onerror=null;currentAudio.pause();currentAudio=null;}}
 function speak(text,cb,who,part='say'){const my=token;const parts=(text.match(/[^.!?]+[.!?]*/g)||[text]).map(s=>s.trim()).filter(Boolean);let i=0;const isStudent=who==='student';
   const label=isStudent?'A student asks':`${L.name}, ${MOVE_NAMES[curStep().move]}`;const step=stepI;
@@ -696,7 +705,7 @@ function speak(text,cb,who,part='say'){const my=token;const parts=(text.match(/[
     if($('voiceSel').value==='neural'){
       // One voice at a time: stop anything still playing before a new line starts.
       stopAudio();if(synthOK)speechSynthesis.cancel();
-      const a=new Audio(`audio/voice/${secKey}-${step}-${part}-${n}.mp3`);a.muted=muted;currentAudio=a;
+      const a=new Audio(clipFor(step,part,n));a.muted=muted;a.playbackRate=L.playback||1;currentAudio=a;
       const fallback=()=>{if(done||fb)return;if(currentAudio===a){a.pause();currentAudio=null;}fb=after(words/2.6*1000/L.rate+250,fin);};
       a.onended=fin;a.onerror=fallback;
       // A pause right after play() rejects with AbortError; that is not a failure, so keep waiting for 'ended'.
@@ -873,8 +882,30 @@ function keepInsideRoom(v){
   v.y=Math.min(CEIL-ROOM_MARGIN,Math.max(0.3,v.y));
   v.z=Math.min(BACK-ROOM_MARGIN,Math.max(FRONT+ROOM_MARGIN,v.z));}
 
+const BEHAVIOR_LABELS={enrolled:'Students enrolled',attendanceStart:'Attendance in week 1',attendanceDropPerWeek:'Attendance lost per week',lateShare:'Students who arrive late',
+  laptopShare:'Laptops open during lecture',handsPerQuestion:'Hands raised per question',waitSeconds:'Wait after a question (seconds)',pairSeconds:'Pair discussion (seconds)',
+  packUpShare:'Students who pack up early',pace:'Speaking speed'};
+const pct=v=>`${Math.round(v*100)}%`;
+const BEHAVIOR_FORMAT={attendanceStart:pct,attendanceDropPerWeek:v=>`${(v*100).toFixed(1)} points`,lateShare:pct,laptopShare:pct,handsPerQuestion:pct,packUpShare:pct,pace:v=>`${v.toFixed(2)}x`};
+/** The synthetic data behind this class, each number with the rule that produced it. */
+function showSyntheticData(){if(!synthetic)return;const d=synthetic.data;
+  const panel=document.createElement('details');panel.open=true;
+  const sum=document.createElement('summary');sum.textContent='Synthetic data for this class';panel.append(sum);
+  const body=document.createElement('div');body.className='details-body';
+  const intro=document.createElement('p');intro.className='muted';intro.textContent=`${d.profileSource}. Everything below is simulated from it, not observed in a real class.`;body.append(intro);
+  const kv=document.createElement('div');kv.className='kv';
+  for(const [k,v] of Object.entries(d.behavior)){const label=document.createElement('span');label.textContent=BEHAVIOR_LABELS[k]??k;label.title=v.rule;
+    const val=document.createElement('b');val.textContent=(BEHAVIOR_FORMAT[k]??(x=>String(x)))(v.value);val.title=v.rule;kv.append(label,val);}
+  body.append(kv);
+  const rules=document.createElement('details');const rs=document.createElement('summary');rs.textContent='How each number was made';rules.append(rs);
+  const ul=document.createElement('ul');ul.className='muted';for(const [k,v] of Object.entries(d.behavior)){const li=document.createElement('li');li.textContent=`${BEHAVIOR_LABELS[k]??k}: ${v.rule}`;ul.append(li);}
+  rules.append(ul);body.append(rules);
+  const dl=document.createElement('button');dl.className='soft';dl.textContent='Download this synthetic data (JSON)';
+  dl.onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));Object.assign(document.createElement('a'),{href:url,download:`synthetic-${d.course.replace(' ','-')}-${d.section}.json`}).click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+  body.append(dl);panel.append(body);$('moments').closest('aside').insertBefore(panel,document.querySelector('aside details'));}
 function showLinkedSection(){if(!linked)return;
   document.querySelector('.topbar h1').textContent=`Try ${linked.course}, section ${linked.section}`;
+  if(synthetic){document.querySelector('.start-card p').textContent=`This is a simulated class for ${linked.course} section ${linked.section}, built from synthetic data based on its teaching profile. Attendance, questions, wait times and how the lesson runs all follow that profile. No real class was recorded.`;return;}
   const p=document.querySelector('.start-card p');
   p.textContent=linked.profile
     ?`Nobody has recorded ${linked.course} section ${linked.section} yet, so this is a sample lesson taught in the style closest to its teaching profile from student notes. Pick a seat and press start.`
@@ -884,7 +915,7 @@ function showLinkedSection(){if(!linked)return;
   const s=document.createElement('span');s.textContent=linked.name?`From webReg. Teaching profile for ${linked.name}, from student notes.`:'From webReg. No teaching profile yet.';
   box.append(t,s);if(linked.profile)box.append(profileGlyph(linked.profile,linked.name||linked.course));
   $('sections').before(box);}
-styleProf();showLinkedSection();buildSections();buildMoments();buildChips();fingerprint();toolsUI([]);setOcc();lastSlide=L.steps[0].slide;renderScreen();drawBoard();
+styleProf();showLinkedSection();showSyntheticData();buildSections();buildMoments();buildChips();fingerprint();toolsUI([]);setOcc();lastSlide=L.steps[0].slide;renderScreen();drawBoard();
 document.fonts.ready.then(()=>{renderScreen();drawBoard();});
 renderer.shadowMap.needsUpdate=true;tick();
 </script>

@@ -54,6 +54,27 @@ def main(model_dir):
                     full.append(np.zeros(int(rate * 0.35), dtype=samples.dtype))
                     print(f"{key} step {i} {part} {n}: {sentence[:60]}")
         sf.write(HERE / "audio" / f"lesson-{key.lower()}.mp3", np.concatenate(full), rate, format="MP3")
+    render_cross_voices(kokoro, out)
+
+
+def render_cross_voices(kokoro, out):
+    """Each lesson's professor lines in the other professor's voice, named <voice>-from-<lesson>-...
+
+    Synthetic sections build one lesson from steps of both lessons, so every step needs both voices.
+    Student questions keep their original voice.
+    """
+    data = lessons()
+    for key in data:
+        for voice_key in VOICES:
+            if voice_key == key:
+                continue
+            voice, speed = VOICES[voice_key]["prof"]
+            for i, step in enumerate(data[key]["steps"]):
+                for part in ("say", "then"):
+                    for n, sentence in enumerate(sentences(step.get(part, ""))):
+                        samples, rate = kokoro.create(sentence, voice=voice, speed=speed, lang="en-us")
+                        sf.write(out / f"{voice_key}-from-{key}-{i}-{part}-{n}.mp3", samples, rate, format="MP3")
+                        print(f"{voice_key} voice, lesson {key} step {i} {part} {n}")
 
 
 if __name__ == "__main__":

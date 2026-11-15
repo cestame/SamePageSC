@@ -3,7 +3,7 @@
 // with screenshot-matched registration styling and a visible demo notice. Every section on it
 // is a fictional sample professor from the seed data.
 
-import { PRODUCT_NAME } from '../shared/content.js';
+import { FIELD_KEYS, PRODUCT_NAME } from '../shared/content.js';
 
 const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
@@ -27,7 +27,18 @@ function cell(label, values, width = 1) {
   return `<span class="section_row col-${width}"><span class="table-headers-xsmall">${label}: </span>${spans}</span>`;
 }
 
-function sectionRow(s) {
+/**
+ * Link to the 3D Try this class page, built from synthetic data for this section (client/public/try-this-class/synthetic.js).
+ * The section's sample profile rides along so the simulated class follows how this professor teaches.
+ */
+export function simulationHref(s, code) {
+  const params = new URLSearchParams({ course: code, section: s.section, name: s.name ?? '', when: s.schedule ?? '', synthetic: '1' });
+  const values = FIELD_KEYS.map((k) => Number(s.profile?.[k]?.value));
+  if (values.every((v) => v >= 1 && v <= 5)) params.set('profile', values.map((v) => Math.round(v * 10) / 10).join(','));
+  return `/try-this-class/?${params}`;
+}
+
+function sectionRow(s, code) {
   const { days, time } = webregMeeting(s.schedule);
   return `
       <div id="section_${escapeHtml(s.section)}" class="section">
@@ -42,6 +53,7 @@ function sectionRow(s) {
             ${cell('Days', days ? [days] : [])}
             ${cell('Instructor', [s.name], 2)}
             ${cell('Location', [s.location || 'TBA'])}
+            <span class="try-cell"><a class="try-button" href="${escapeHtml(simulationHref(s, code))}" target="_blank" rel="noopener">Try this class</a></span>
             <button class="bin-button" type="button" data-section="${escapeHtml(s.section)}" aria-pressed="false">Add to myCourseBin</button>
             <a></a>
           </div>
@@ -59,7 +71,7 @@ function courseBlock(course) {
         <div class="section-table">
           <div class="section_head">
             <span>Section</span><span>Session</span><span>Type</span><span>Units</span><span>Registered</span><span>Time</span><span>Days</span><span>Instructor</span><span>Location</span><span></span>
-          </div>${course.sections.map(sectionRow).join('')}
+          </div>${course.sections.map((s) => sectionRow(s, course.code)).join('')}
         </div>
       </div>
     </section>`;
@@ -88,7 +100,7 @@ h1 { margin:0 0 10px; font-size:36px; line-height:1.5; } .notice { margin:0 0 20
 .list-heading { display:flex; gap:20px; align-items:center; justify-content:space-between; border-bottom:2px solid var(--line); margin-bottom:24px; padding-bottom:12px; } .list-heading h2 { margin:0; font-size:24px; } .expand-controls { display:flex; flex-shrink:0; } .expand-controls button { color:var(--muted); background:white; border:1px solid var(--cardinal); padding:2px 6px; font-size:12px; } .expand-controls button+button { border-left:0; }
 .course-header { margin:0; font-size:16px; } .course-toggle { display:flex; align-items:baseline; gap:12px; padding:10px 22px; width:100%; border:0; background:transparent; text-align:left; color:inherit; font-weight:700; } .course:nth-child(odd) .course-header { background:var(--stripe); } .crsID { color:var(--cardinal); white-space:nowrap; } .chevron { display:inline-block; border-right:3px solid #111; border-bottom:3px solid #111; width:8px; height:8px; transform:rotate(45deg); align-self:center; margin-right:6px; flex-shrink:0; } [aria-expanded="false"] .chevron { transform:rotate(-45deg); }
 .accordion-content-area { padding:12px 16px; border:1px solid #f0f0f0; } [hidden] { display:none!important; } .description { border:1px solid var(--line); border-left:5px solid #888; margin:0 0 22px; padding:12px; }
-.section_head,.section_crsbin { display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr 2fr 1fr 1fr 1fr 2fr; gap:8px; padding:4px 2px; align-items:start; font-size:14px; } .section_head { font-weight:700; border-bottom:2px solid #ddd; padding-top:12px; } .section:nth-child(even) { background:#f8f8f8; } .section_row { min-width:0; overflow-wrap:anywhere; } .section_row:nth-child(2) { color:var(--cardinal); } .section_row:nth-child(3) { color:#287d24; } .table-headers-xsmall { display:none; } .section_crsbin>div:not(.section_row) { grid-column:1/-1; } .section_crsbin>a { display:none; } .bin-button { background:transparent; color:var(--muted); border:1px solid var(--cardinal); border-radius:4px; line-height:1.3; padding:3px 6px; } .bin-button[aria-pressed="true"] { background:#f8f3df; color:var(--cardinal); }
+.section_head,.section_crsbin { display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr 2fr 1fr 1fr 1fr 2fr; gap:8px; padding:4px 2px; align-items:start; font-size:14px; } .section_head { font-weight:700; border-bottom:2px solid #ddd; padding-top:12px; } .section:nth-child(even) { background:#f8f8f8; } .section_row { min-width:0; overflow-wrap:anywhere; } .section_row:nth-child(2) { color:var(--cardinal); } .section_row:nth-child(3) { color:#287d24; } .table-headers-xsmall { display:none; } .section_crsbin>div:not(.section_row) { grid-column:1/-1; } .section_crsbin>a { display:none; } .bin-button { background:transparent; color:var(--muted); border:1px solid var(--cardinal); border-radius:4px; line-height:1.3; padding:3px 6px; } .bin-button[aria-pressed="true"] { background:#f8f3df; color:var(--cardinal); } .try-cell { grid-column:1/-1; } .try-button { display:inline-block; background:var(--cardinal); color:#fff; border-radius:4px; padding:6px 12px; text-decoration:none; font-weight:700; } .try-button:hover { filter:brightness(1.1); }
 .empty { padding:24px 0; } footer { text-align:center; padding:24px; } footer a { text-decoration:none; } footer p { margin:0; } footer a+a { margin-left:24px; }
 @media(min-width:1600px) { body { font-size:20px; } .brand { font-size:48px; } h1 { font-size:44px; } .course-header { font-size:18px; } .section_head,.section_crsbin { font-size:16px; } }
 @media(max-width:900px) { .nav-end { margin-left:0; } .section_head { display:none; } .section_crsbin { grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; padding:12px 4px; } .table-headers-xsmall { display:block; font-weight:700; color:var(--muted); } .bin-button { grid-column:1/-1; padding:8px; } .list-heading { align-items:flex-start; } }
