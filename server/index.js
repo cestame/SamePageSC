@@ -402,6 +402,54 @@ app.post(
   }),
 );
 
+// Live pitch demo (/live-demo/). Same voice separation as Record a class, but nothing is saved, and the
+// measured numbers always come back even when the talk isn't a lecture Claude can profile.
+function liveProfile(lecture) {
+  const transcript = scrubText(lecture.professorTranscript).slice(0, 30_000);
+  if (transcript.trim().length < 80) throw new Error('There wasn\'t enough speech from the main speaker for a full profile.');
+  return extractProfile({ text: transcript, sourceType: 'live talk transcript (main speaker only)', courseLabel: 'Live demo talk' })
+    .then((extracted) => profileFromExtraction(extracted, transcript));
+}
+
+app.post(
+  '/api/demo/live-analysis',
+  rateLimit({ windowMs: 60 * 60_000, max: 12 }),
+  express.raw({ type: ['audio/*', 'video/webm', 'application/octet-stream'], limit: MAX_RECORDING_BYTES }),
+  asyncRoute(async (req, res) => {
+    if (req.query.consent !== 'yes') return res.status(400).json({ error: 'Please confirm the speaker agreed and the room was told it is being recorded.' });
+    if (!recordingConfigured()) return res.status(503).json({ error: 'Live voice separation isn\'t set up on this server yet (PYANNOTE_API_KEY is missing).', code: 'not-configured' });
+    if (!Buffer.isBuffer(req.body) || req.body.length < 1000) return res.status(400).json({ error: 'The recording was empty. Try recording again.' });
+    let lecture;
+    try {
+      lecture = summarizeLecture(await transcribeLecture(req.body));
+    } catch (e) {
+      return res.status(502).json({ error: e.message });
+    } finally {
+      req.body = null;
+    }
+    const ratings = measuredRatings(lecture);
+    const result = { source: 'live', analysis: publicAnalysis(lecture), ratings, profile: null, summary: null, profileNote: null };
+    if (!aiConfigured()) {
+      result.profileNote = 'Claude isn\'t set up on this server, so only the measured numbers are shown.';
+      return res.json(result);
+    }
+    try {
+      const { profile, summary } = await liveProfile(lecture);
+      result.profile = { ...profile, ...ratings };
+      result.summary = summary;
+    } catch (e) {
+      result.profileNote = e.message;
+    }
+    res.json(result);
+  }),
+);
+
+app.get('/api/demo/live-sample', (req, res) => {
+  const sample = sampleRecordingResult('A sample lecture analyzed ahead of time. Use it only if the live recording fails.');
+  const { profile, summary } = sample.draft;
+  res.json({ source: 'sample', analysis: sample.analysis, ratings: { format: profile.format, participation: profile.participation }, profile, summary, profileNote: sample.notice });
+});
+
 app.post('/api/recordings/submit', rateLimit({ windowMs: 60 * 60_000, max: 15 }), asyncRoute(async (req, res) => {
   const { courseId, professorId, professorName, draft, token, consent } = req.body || {};
   if (!consent) return res.status(400).json({ error: 'Please confirm the professor agreed to the recording and told the class.' });

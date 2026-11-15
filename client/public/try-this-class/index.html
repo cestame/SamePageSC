@@ -615,7 +615,7 @@ for(let r=TR;r<ROWS;r++)TIER_BLOCKS.forEach(([a,b],k)=>heatStrip(a-0.3,b+0.3,row
 
 // ---------- professor (fictional, same sculpted body, standing) ----------
 const prof=new THREE.Group();scene.add(prof);
-const pPants=clothMat('#3b3b40'),pShoe=cm('#2a1d14',{roughness:0.4}),pSkin=cm('#e0ac69',{roughness:0.55,flatShading:false});
+const pPants=clothMat('#3b3b40'),pShoe=cm('#2a1d14',{roughness:0.4}),pSkin=std({color:'#e0ac69',roughness:0.55});
 const pShirt=std({color:'#2f3b52',bumpMap:knitTex,bumpScale:1.2,roughness:0.85,flatShading:true}),pHairM=std({color:'#9a9a9a',map:hairTex,bumpMap:hairTex,bumpScale:2.2,roughness:0.5});
 const pLegGeo=(()=>{const l=caps(0.075,0.72);l.translate(0,-0.44,0);const sh=new RoundedBoxGeometry(0.11,0.08,0.28,2,0.03);sh.translate(0,-0.88,0.05);return mergeG([l,sh],true);})();
 const pLegL=new THREE.Group(),pLegR=new THREE.Group();pLegL.position.set(-0.11,0.92,0);pLegR.position.set(0.11,0.92,0);
@@ -884,7 +884,7 @@ function tick(){const dt=Math.min(0.05,clock.getDelta());
     if(boardReveal<1){boardReveal=Math.min(1,boardReveal+dt/2.6);drawBoard();}
     if(writeT>0)writeT-=dt;if(clickT>0)clickT-=dt;if(screenMode==='doccam')docT+=dt;
     if(screenMode==='poll'){pollT+=dt;pollResp=Math.round(seats.filter(present).length*0.85*Math.min(1,pollT/pollDur));}}
-  const s=(running||phase==='done'||phase==='held')?curStep():null,move=s?s.move:'idle';
+  const s=(running||phase==='done'||phase==='held')?curStep():null,move=LIVE?liveMove(dt):(s?s.move:'idle');
   lightPanelFront.emissiveIntensity=running?0.6:1.6;recLed.material.color.set(running&&Math.floor(time*1.5)%2===0?'#ff2020':'#330000');
   docLight.material.color.set(screenMode==='doccam'&&running?'#fff6c0':'#333');
   animateProfessor(dt,move);const c=animateStudents(dt,s,move);
@@ -937,14 +937,50 @@ function showLinkedSection(){if(!linked)return;
   const s=document.createElement('span');s.textContent=linked.name?`From webReg. Teaching profile for ${linked.name}, from student notes.`:'From webReg. No teaching profile yet.';
   box.append(t,s);if(linked.profile)box.append(profileGlyph(linked.profile,linked.name||linked.course));
   $('sections').before(box);}
-/** Room picker in Settings; switching rooms reloads the page with ?room= and keeps the other parameters. */
-function addRoomPicker(){const body=[...document.querySelectorAll('aside details')].find(d=>d.querySelector('summary')?.textContent==='Settings')?.querySelector('.details-body');if(!body)return;
-  const label=document.createElement('p');label.className='muted';label.style.margin='0 0 4px';label.textContent='Room';
-  const sel=document.createElement('select');for(const [k,r] of Object.entries(ROOMS)){const o=document.createElement('option');o.value=k;o.textContent=r.name;sel.append(o);}sel.value=ROOM_KEY;
-  sel.onchange=()=>{const q=new URLSearchParams(location.search);q.set('room',sel.value);location.search=q.toString();};
-  body.prepend(label,sel);
-  const p=document.querySelector('.start-card p');if(p&&!linked)p.textContent=p.textContent.replace('a 144-seat lecture hall',ROOM.summary);}
-styleProf();addRoomPicker();showLinkedSection();showSyntheticData();buildSections();buildMoments();buildChips();fingerprint();toolsUI([]);setOcc();lastSlide=L.steps[0].slide;renderScreen();drawBoard();
+/** The welcome card names the room. Rooms other than GFS 106 are only reachable from the live demo page. */
+function roomText(){const p=document.querySelector('.start-card p');if(p&&!linked)p.textContent=p.textContent.replace('a 144-seat lecture hall',ROOM.summary);}
+
+// ---------- live demo mode (/live-demo/ only, ?mode=live) ----------
+// Replays the timeline of a recording made in this room: the speaker gestures while she talks, and an audience
+// member raises a hand and speaks during each audience turn. The audio replays from the parent page's memory.
+const LIVE=new URLSearchParams(location.search).get('mode')==='live';
+const live={timeline:[],duration:0,audioUrl:null,audio:null,playing:false,clock:0,seg:null};
+const clockText=(t)=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
+function finishLive(){live.playing=false;speaking=studentSpeaking=false;phase='idle';asker=null;$('liveReplay').hidden=false;
+  setCaption('Replay finished','Everything in this room came from the audio recorded here a minute ago.');}
+function liveMove(dt){
+  if(!live.playing)return 'idle';
+  // With the live audio, replay in real time. Without it (the sample), squeeze the whole timeline into a minute.
+  const t=live.audio?live.audio.currentTime:(live.clock+=dt*Math.max(1,live.duration/60));
+  if(t>=live.duration||live.audio?.ended){finishLive();return 'idle';}
+  const seg=live.timeline.find((s)=>t>=s.start&&t<s.end)??null;
+  if(seg!==live.seg){live.seg=seg;
+    if(seg?.who==='student'){const pool=seats.filter((s)=>present(s)&&s.kind==='tier'&&s.r<TR+6);asker=pool[Math.floor(Math.random()*pool.length)]??null;}
+    if(seg?.who==='professor')setCaption('The speaker',`Talking, ${clockText(t)} into the recording.`);
+    else if(seg?.who==='student')setCaption('Someone in the audience','Timing only. Their words were never transcribed or kept.');
+    else setCaption('A pause',`${clockText(t)} into the recording.`);}
+  speaking=seg?.who==='professor';studentSpeaking=seg?.who==='student';phase=studentSpeaking?'ask':'idle';
+  return studentSpeaking?'studentq':'idle';}
+function setupLive(){
+  if(!LIVE)return;
+  const css=document.createElement('style');
+  css.textContent='body.live aside,body.live .playbar,body.live .start{display:none!important}body.live .layout{grid-template-columns:1fr}.live-replay{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:18px;padding:14px 26px}';
+  document.head.append(css);document.body.classList.add('live');
+  L={...LESSONS.B,name:'The speaker',shirt:'#151e3f',pants:'#2b2f3a',hair:'#141010',voiceGender:'f'};
+  pSkin.color.set('#5b3a26');styleProf();
+  const face=pHead.children.find((m)=>Array.isArray(m.material));if(face)face.material[2]=cm('#3d261a',{roughness:0.45,flatShading:false});
+  week=1;setOcc();
+  const btn=document.createElement('button');btn.id='liveReplay';btn.className='primary live-replay';btn.textContent='Replay it in this room';btn.hidden=true;$('view').append(btn);
+  btn.onclick=()=>{live.audio?.pause();live.clock=0;live.seg=null;live.audio=live.audioUrl?new Audio(live.audioUrl):null;
+    live.audio?.play().catch(()=>{live.audio=null;});live.playing=true;btn.hidden=true;};
+  setCaption('Live demo','Waiting for the recording from this room.');
+  addEventListener('message',(e)=>{
+    if(e.origin!==location.origin||e.data?.type!=='same-page-live')return;
+    const d=e.data;live.timeline=(Array.isArray(d.timeline)?d.timeline:[]).filter((x)=>Number.isFinite(x.start)&&Number.isFinite(x.end)&&(x.who==='professor'||x.who==='student'));
+    live.duration=Math.max(0,Number(d.durationSeconds)||0);live.audioUrl=typeof d.audioUrl==='string'&&d.audioUrl.startsWith('blob:')?d.audioUrl:null;
+    live.playing=false;btn.hidden=false;setCaption('Ready',`Press replay to hear ${clockText(live.duration)} from this room.`);});
+}
+styleProf();roomText();setupLive();showLinkedSection();showSyntheticData();buildSections();buildMoments();buildChips();fingerprint();toolsUI([]);setOcc();lastSlide=L.steps[0].slide;renderScreen();drawBoard();
 document.fonts.ready.then(()=>{renderScreen();drawBoard();});
 renderer.shadowMap.needsUpdate=true;tick();
 </script>
