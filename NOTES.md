@@ -84,3 +84,9 @@ Fix these during the redesign:
 3. Check animations on a real phone and with reduced motion on.
 4. Submission checklist from spec: working link, public repo, 3-minute video, slide deck, project description, screenshot, teammates on Devpost.
 5. Stretch: Chrome extension mockup for the pitch (fit scores on the registration page).
+
+## Try this class prototype (branch try-this-class)
+
+- `prototypes/try-this-class/index.html` is a standalone 3D lecture hall (Three.js) modeled on USC's published specs for GFS 106. Open it directly in a browser; it does not touch the main app or its build.
+- Students can sit in any seat and jump to moments: how class opens, a question to the class, a student question, engagement, a worked example and how class ends. Prof. A and Prof. B are fictional and every number is simulated.
+- `audio/` holds the two lessons rendered with Windows text-to-speech from the same lesson JSON. `master-prompt.md` describes the recording-based concept and is scoped to this folder only.

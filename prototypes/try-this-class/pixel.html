@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Same Page SC: Simulated Lecture Hall (prototype)</title>
+<style>
+  body{margin:0;background:#121212;color:#eee;font-family:system-ui,"Segoe UI",sans-serif}
+  header{background:#990000;padding:12px 20px;border-bottom:4px solid #ffcc00}
+  h1{margin:0;font-size:20px}
+  header p{margin:4px 0 0;font-size:13px;opacity:.92}
+  .wrap{display:flex;gap:16px;padding:16px;flex-wrap:wrap;align-items:flex-start}
+  .stage{display:flex;flex-direction:column;gap:8px}
+  canvas#c{image-rendering:pixelated;image-rendering:crisp-edges;width:960px;height:600px;border:3px solid #333;background:#000;cursor:crosshair}
+  .timeline{position:relative;width:966px;height:26px;display:flex;border:1px solid #333;cursor:pointer}
+  .timeline div.seg{height:100%}
+  .playhead{position:absolute;top:-4px;width:3px;height:34px;background:#fff;pointer-events:none}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;width:966px}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .legend i{display:inline-block;width:12px;height:12px}
+  .panel{width:320px;background:#1d1d1d;border:1px solid #333;padding:14px;font-size:13px;line-height:1.45}
+  .panel h3{margin:12px 0 6px;font-size:14px;color:#ffcc00;border-bottom:1px solid #333;padding-bottom:3px}
+  .panel h3:first-child{margin-top:0}
+  .row{display:flex;justify-content:space-between}
+  .big{font-size:22px;font-weight:700}
+  select,button,input{font:inherit}
+  select,button{background:#2b2b2b;color:#eee;border:1px solid #555;padding:4px 8px;border-radius:4px;cursor:pointer}
+  button.on{background:#990000;border-color:#ffcc00}
+  .btns{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+  input[type=range]{width:100%}
+  .note{font-size:12px;color:#aaa;padding:0 16px 20px;max-width:1300px}
+  .move{display:inline-block;padding:2px 8px;border-radius:3px;color:#111;font-weight:700}
+  canvas#att{width:290px;height:70px;background:#151515;border:1px solid #333;image-rendering:auto}
+</style>
+</head>
+<body>
+<header>
+  <h1>Same Page SC: simulated lecture hall</h1>
+  <p>A tiered hall of about 250 seats, seen from the back row. All data is synthetic, for demonstration. Click any seat to sit there.</p>
+</header>
+
+<div class="wrap">
+  <div class="stage">
+    <canvas id="c" width="320" height="200"></canvas>
+    <div class="timeline" id="timeline"><div class="playhead" id="playhead"></div></div>
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <div class="panel">
+    <h3>Section</h3>
+    <select id="section" style="width:100%">
+      <option value="A">Section A: Prof. A, MW 8:00am (lecture-centered)</option>
+      <option value="B">Section B: Prof. B, TTh 2:00pm (active learning)</option>
+    </select>
+
+    <h3>Playback</h3>
+    <div class="row"><span>Class time</span><span class="big" id="clock">00:00</span></div>
+    <div>Now: <span class="move" id="moveLabel">explain</span></div>
+    <div class="btns">
+      <button id="play">⏸ Pause</button>
+      <button data-sp="1">1×</button><button data-sp="2" class="on">2×</button><button data-sp="4">4×</button><button data-sp="8">8×</button>
+    </div>
+    <div class="btns"><button id="heat">Show participation heat</button></div>
+
+    <h3>Semester week: <span id="wk">1</span></h3>
+    <input type="range" id="week" min="1" max="15" value="1">
+    <canvas id="att" width="290" height="70"></canvas>
+    <div style="font-size:11px;color:#aaa">Attendance across the semester: <span style="color:#ff6b6b">■ A</span> <span style="color:#ffcc00">■ B</span></div>
+
+    <h3>Right now</h3>
+    <div class="row"><span>Seats filled</span><b id="filled"></b></div>
+    <div class="row"><span>Hands raised</span><b id="hands"></b></div>
+    <div class="row"><span>Students talking</span><b id="talking"></b></div>
+    <div class="row"><span>Laptops open</span><b id="laptops"></b></div>
+
+    <h3>Teaching fingerprint (whole session)</h3>
+    <div class="row"><span>Professor talk time</span><b id="fTalk"></b></div>
+    <div class="row"><span>Questions per 10 min</span><b id="fQ"></b></div>
+    <div class="row"><span>Avg wait after a question</span><b id="fWait"></b></div>
+    <div class="row"><span>Worked examples / demos</span><b id="fWorked"></b></div>
+    <div class="row"><span>Pair activities</span><b id="fPairs"></b></div>
+    <div class="row"><span>Opens with a recap</span><b id="fRecap"></b></div>
+
+    <h3>Your seat</h3>
+    <div id="youInfo" style="color:#bbb">Click a seat in the hall.</div>
+  </div>
+</div>
+
+<p class="note">
+  <b>How the real version works:</b> a 30-second scan of the <i>empty</i> room becomes a 3D model (Gaussian splatting), rendered at low resolution in this pixel style. Classmates are anonymous figures driven by aggregate data: attendance, hand-raise rates, and bursts of discussion detected from audio. No real student is ever shown. The professor's moves follow their teaching-move timeline from recorded sessions. The pixel style is deliberate: it shows how the room <i>works</i> without imitating any real person.
+</p>
+
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+ctx.imageSmoothingEnabled=false;
+const W=320,H=200;
+function prng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const R=prng(20261114);
+const pick=a=>a[Math.floor(R()*a.length)];
+const SKIN=['#f1c27d','#e0ac69','#c68642','#8d5524','#ffdbac','#a0662f'];
+const SHIRT=['#990000','#ffcc00','#2e5e8c','#3c7a46','#6b4c8a','#d9d9d9','#333333','#c0563b','#4f8a8b','#8a8a3c','#1f1f1f','#b03a2e'];
+const HAIR=['#2b1b10','#120c08','#5a3a1a','#a0703a','#d8b060','#3a3a3a','#1a1a1a'];
+const COLORS={explain:'#8c9aa8',question:'#ffcc00',pair:'#4caf50',worked:'#e67e22',demo:'#3498db',recap:'#b07cc6',logistics:'#666'};
+const NAMES={explain:'Explaining',question:'Question to class',pair:'Think-pair-share',worked:'Worked example',demo:'Live demo',recap:'Recap',logistics:'Logistics'};
+
+const SECTIONS={
+  A:{segs:[['explain',0,18],['question',18,20],['explain',20,38],['worked',38,46],['explain',46,62],['question',62,63.5],['explain',63.5,76],['logistics',76,80]],
+     wait:1.2,hand:0.07,laptop:0.38,att:w=>Math.max(0.5,0.93-0.032*(w-1))},
+  B:{segs:[['recap',0,5],['explain',5,15],['question',15,18],['pair',18,24],['worked',24,34],['question',34,37],['explain',37,47],['demo',47,57],['pair',57,63],['question',63,66],['explain',66,74],['recap',74,80]],
+     wait:3.4,hand:0.2,laptop:0.15,att:w=>Math.max(0.72,0.95-0.013*(w-1))}
+};
+
+// ---- build seats ----
+const ROWS=12,seats=[],rows=[];
+for(let r=0;r<ROWS;r++){
+  const y=62+r*11,w=150+r*13,n=Math.round(14+r*1.6),sp=w/n,x0=160-w/2+sp/2;
+  const a1=Math.floor(n/3),a2=Math.floor(2*n/3);
+  rows.push({y,w});
+  for(let i=0;i<n;i++){
+    if(i===a1||i===a2)continue;
+    const nearAisle=Math.abs(i-a1)===1||Math.abs(i-a2)===1||i===0||i===n-1;
+    const rowScore=r<2?0.1+r*0.12:0.45+((r>=5&&r<=10)?0.15:0);
+    seats.push({r,i,x:Math.round(x0+i*sp),y,skin:pick(SKIN),shirt:pick(SHIRT),hair:pick(HAIR),
+      eng:R(),handSeed:R(),stag:R(),lapSeed:R(),noteSeed:R(),side:R()<0.5?-1:1,
+      pref:rowScore+(nearAisle?0.15:0)+R()*0.4,occ:false,part:0,pairDir:0});
+  }
+}
+[...seats].sort((a,b)=>b.pref-a.pref).forEach((s,k)=>s.rank=k);
+
+let secKey='A',week=1,t=0,playing=true,speed=2,heat=false,you=null,frame=0,last=performance.now(),profX=100;
+
+function setOcc(){
+  const N=Math.round(seats.length*SECTIONS[secKey].att(week));
+  seats.forEach(s=>{s.occ=s.rank<N||s===you;s.pairDir=0;s.part=0});
+  for(let r=0;r<ROWS;r++){
+    const rs=seats.filter(s=>s.r===r&&s.occ).sort((a,b)=>a.i-b.i);
+    for(let j=0;j<rs.length-1;j++){
+      if(rs[j].pairDir===0&&rs[j+1].i===rs[j].i+1){rs[j].pairDir=1;rs[j+1].pairDir=-1;j++;}
+    }
+  }
+}
+
+function curSeg(){const segs=SECTIONS[secKey].segs;for(const s of segs)if(t>=s[1]&&t<s[2])return s;return segs[segs.length-1];}
+function writingMinutes(){let m=0;for(const [k,a,b] of SECTIONS[secKey].segs){if(k==='explain'||k==='worked'){m+=Math.max(0,Math.min(t,b)-a);}}return m;}
+
+function px(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),w,h);}
+
+function drawRoom(move,seg){
+  px(0,0,W,H,'#241e1b');
+  for(let x=20;x<W;x+=40)px(x,2,6,1,'#f6e7a1');                  // ceiling lights
+  px(0,40,W,1,'#1a1513');
+  // chalkboard
+  px(28,6,146,32,'#8b6b3e');px(30,8,142,28,'#244a34');
+  const lines=Math.floor(writingMinutes()/2.5)%8;
+  for(let k=0;k<lines;k++){
+    const len=40+((k*53)%90),yy=11+k*3.4;
+    for(let x=34;x<34+len;x+=2) if(((x*7+k*13)%11)>2) px(x,yy,1,1,'#e8efe8');
+    if(k%3===2)px(34+len+3,yy-1,3,3,'#e8efe8');
+  }
+  // projector screen
+  const sx=184,sy=5,sw=108,sh=34;
+  px(sx-1,sy-1,sw+2,sh+2,'#555');
+  if(move==='demo'){
+    px(sx,sy,sw,sh,'#1b1f27');
+    const cols=['#7fdbca','#c792ea','#ffcb6b','#82aaff','#f78c6c'];
+    const off=Math.floor(t*6)%5;
+    for(let k=0;k<7;k++)px(sx+4+(k%3)*4,sy+3+k*4,30+((k+off)*17)%60,2,cols[(k+off)%5]);
+  }else{
+    px(sx,sy,sw,sh,'#e9edf2');
+    if(move==='question'){
+      const p=(t-seg[1])/(seg[2]-seg[1]);
+      px(sx+4,sy+3,sw-8,4,'#990000');
+      [0.55,0.25,0.2].forEach((v,k)=>px(sx+8,sy+11+k*7,Math.max(1,(sw-20)*v*Math.min(1,p*1.6)),4,k===0?'#ffcc00':'#999'));
+    }else if(move==='pair'){
+      const p=(t-seg[1])/(seg[2]-seg[1]);
+      px(sx+4,sy+3,sw-8,4,'#3c7a46');
+      px(sx+40,sy+12,5,5,'#555');px(sx+58,sy+12,5,5,'#555');px(sx+47,sy+14,9,1,'#555');
+      px(sx+8,sy+26,(sw-16)*(1-p),3,'#4caf50');
+    }else{
+      px(sx+4,sy+3,sw-8,4,'#990000');
+      for(let k=0;k<4;k++){px(sx+6,sy+11+k*6,2,2,'#555');px(sx+11,sy+11+k*6,40+(k*23)%45,2,'#888');}
+    }
+  }
+  // stage
+  px(0,41,W,15,'#5b4532');px(0,55,W,2,'#3e2f22');
+  px(164,43,10,11,'#6e4e2f');px(163,42,12,2,'#8b6b3e');            // lectern
+  // professor
+  let target=160;
+  if(move==='explain'||move==='worked')target=60+((Math.sin(t*0.9)+1)/2)*95;
+  else if(move==='demo')target=178;
+  else if(move==='pair')target=70+((Math.sin(t*1.7)+1)/2)*180;
+  else if(move==='question')target=150;
+  else target=140;
+  profX+=(target-profX)*0.04;
+  const pxp=Math.round(profX),py=42;
+  px(pxp-1,py,3,3,'#9a9a9a');px(pxp-1,py+1,3,2,'#e0ac69');
+  px(pxp-2,py+3,5,6,'#2c3e50');px(pxp-2,py+9,2,3,'#222');px(pxp+1,py+9,2,3,'#222');
+  if(move==='explain'||move==='worked'){if(((frame>>4)%3)!==0)px(pxp-3,py+1,1,4,'#2c3e50');}
+  if(move==='question')px(pxp+3,py,1,4,'#2c3e50');
+  // seating floor
+  ctx.fillStyle='#33281f';ctx.beginPath();ctx.moveTo(70,57);ctx.lineTo(250,57);ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
+}
+
+function drawStudents(move,seg,dt){
+  const sec=SECTIONS[secKey],segT=t-seg[1],len=seg[2]-seg[1],prog=segT/len;
+  let hands=0,talking=0,laptops=0,maxPart=0.0001;
+  seats.forEach(s=>{if(s.part>maxPart)maxPart=s.part});
+  for(let r=0;r<ROWS;r++){
+    const {y,w}=rows[r];
+    px(160-w/2-6,y+6,w+12,5,r%2?'#4a382b':'#43332a');
+    for(const s of seats){
+      if(s.r!==r)continue;
+      const x=s.x;
+      if(s.occ){
+        let raised=false,speak=false,laptop=false,down=false,turn=0;
+        if(move==='question'&&s.handSeed<sec.hand*(0.6+s.eng)&&prog>s.stag*0.5&&prog<0.92)raised=true;
+        if(move==='pair'&&s.pairDir!==0){turn=s.pairDir;speak=((Math.floor(frame/18+s.stag*6)+(s.pairDir>0?0:1))%2)===0;}
+        if((move==='explain'||move==='logistics'||move==='worked')&&s.lapSeed<sec.laptop*(0.5+(1-s.eng))*Math.min(1,0.4+segT/12))laptop=true;
+        if((move==='worked'||move==='explain')&&s.noteSeed<0.3&&((Math.floor(frame/30)+s.i)%4===0))down=true;
+        if(playing&&(raised||speak))s.part+=dt;
+        if(raised)hands++; if(speak)talking++; if(laptop)laptops++;
+        if(heat&&s.part>0){ctx.globalAlpha=Math.min(0.85,0.15+s.part/maxPart*0.7);px(x-4,y-4,9,10,'#ff9f1a');ctx.globalAlpha=1;}
+        const shirt=s===you?'#ffcc00':s.shirt;
+        px(x-2,y+1,5,5,shirt);
+        const hx=x-1+turn,hy=y-2+(down?1:0);
+        px(hx,hy,3,3,s.hair);
+        if(turn)px(turn>0?hx+2:hx,hy+1,1,2,s.skin);
+        if(raised){const ax=s.side>0?x+3:x-3;px(ax,y-5,1,6,s.skin);px(ax,y-6,1,1,s.skin);}
+        if(speak){px(x+turn*2,y-4,1,1,'#fff');px(x+turn*3,y-5,1,1,'#fff');}
+        if(laptop){px(x-4,y+1,1,2,'#9fd3ff');px(x+4,y+1,1,2,'#9fd3ff');}
+      }
+      px(x-3,y+4,7,1,'#94302a');px(x-3,y+5,7,2,'#7a1d1d');           // seat back (cardinal)
+      if(s===you&&(frame>>4)%2===0){ctx.strokeStyle='#ffcc00';ctx.lineWidth=1;ctx.strokeRect(x-4.5,y-3.5,10,11);}
+    }
+  }
+  return {hands,talking,laptops};
+}
+
+// ---- UI ----
+const $=id=>document.getElementById(id);
+function buildTimeline(){
+  const tl=$('timeline');[...tl.querySelectorAll('.seg')].forEach(e=>e.remove());
+  for(const [k,a,b] of SECTIONS[secKey].segs){
+    const d=document.createElement('div');d.className='seg';d.style.width=((b-a)/80*100)+'%';d.style.background=COLORS[k];d.title=NAMES[k]+' ('+a+'–'+b+' min)';
+    tl.insertBefore(d,$('playhead'));
+  }
+  const sec=SECTIONS[secKey],m={};sec.segs.forEach(([k,a,b])=>m[k]=(m[k]||0)+(b-a));
+  const prof=(m.explain||0)+(m.worked||0)+(m.demo||0)+(m.recap||0)+(m.logistics||0)+(m.question||0)*0.4;
+  $('fTalk').textContent=Math.round(prof/80*100)+'%';
+  $('fQ').textContent=(sec.segs.filter(s=>s[0]==='question').length/8).toFixed(2);
+  $('fWait').textContent=sec.wait+' s';
+  $('fWorked').textContent=Math.round(((m.worked||0)+(m.demo||0))/80*100)+'% of class';
+  $('fPairs').textContent=sec.segs.filter(s=>s[0]==='pair').length;
+  $('fRecap').textContent=m.recap?'Yes':'No';
+}
+$('legend').innerHTML=Object.keys(COLORS).map(k=>`<span><i style="background:${COLORS[k]}"></i>${NAMES[k]}</span>`).join('')+
+  '<span><i style="background:#9fd3ff"></i>Laptop open</span><span><i style="background:#ffcc00"></i>You</span>';
+$('timeline').addEventListener('click',e=>{const r=e.currentTarget.getBoundingClientRect();t=Math.max(0,Math.min(79.99,(e.clientX-r.left)/r.width*80));});
+$('section').onchange=e=>{secKey=e.target.value;t=0;setOcc();buildTimeline();drawAtt();updateYou();};
+$('week').oninput=e=>{week=+e.target.value;$('wk').textContent=week;setOcc();drawAtt();updateYou();};
+$('play').onclick=()=>{playing=!playing;$('play').textContent=playing?'⏸ Pause':'▶ Play';};
+$('heat').onclick=()=>{heat=!heat;$('heat').classList.toggle('on',heat);};
+document.querySelectorAll('[data-sp]').forEach(b=>b.onclick=()=>{speed=+b.dataset.sp;document.querySelectorAll('[data-sp]').forEach(x=>x.classList.toggle('on',x===b));});
+cv.addEventListener('click',e=>{
+  const r=cv.getBoundingClientRect(),cx=(e.clientX-r.left)*W/r.width,cy=(e.clientY-r.top)*H/r.height;
+  let best=null,bd=1e9;for(const s of seats){const d=(s.x-cx)**2+(s.y+1-cy)**2;if(d<bd){bd=d;best=s;}}
+  if(best&&bd<60){you=best;setOcc();updateYou();}
+});
+function updateYou(){
+  if(!you){return;}
+  const near=seats.filter(s=>s!==you&&s.occ&&Math.abs(s.r-you.r)<=1&&Math.abs(s.x-you.x)<=20).length;
+  const zone=you.r<3?'front':you.r<8?'middle':'back';
+  $('youInfo').innerHTML=`Row <b>${you.r+1}</b> of ${ROWS} (${zone})<br>Approx. distance to board: <b>${(4+you.r*0.9).toFixed(1)} m</b> (est.)<br>Classmates within reach: <b>${near}</b><br><span style="color:#888">In week ${week}, the ${zone} rows are ${zone==='front'?'mostly empty':'where most students sit'}.</span>`;
+}
+function drawAtt(){
+  const c=$('att'),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);
+  const X=w=>10+(w-1)/14*270,Y=v=>62-(v-0.4)/0.6*56;
+  [['A','#ff6b6b'],['B','#ffcc00']].forEach(([k,col])=>{g.strokeStyle=col;g.lineWidth=2;g.beginPath();for(let w=1;w<=15;w++){const v=SECTIONS[k].att(w);w===1?g.moveTo(X(w),Y(v)):g.lineTo(X(w),Y(v));}g.stroke();});
+  g.strokeStyle='#fff';g.setLineDash([3,3]);g.beginPath();g.moveTo(X(week),4);g.lineTo(X(week),66);g.stroke();g.setLineDash([]);
+  g.fillStyle='#aaa';g.font='10px sans-serif';g.fillText('100%',255,10);g.fillText('40%',258,66);
+}
+
+function loop(now){
+  const dt=Math.min(0.1,(now-last)/1000);last=now;frame++;
+  if(playing){t+=dt*speed;if(t>=80)t=0;}
+  const seg=curSeg(),move=seg[0];
+  drawRoom(move,seg);
+  const st=drawStudents(move,seg,dt);
+  const present=seats.filter(s=>s.occ).length;
+  $('filled').textContent=`${present} / ${seats.length} (${Math.round(present/seats.length*100)}%)`;
+  $('hands').textContent=st.hands;$('talking').textContent=st.talking;$('laptops').textContent=st.laptops;
+  const mm=Math.floor(t),ss=Math.floor((t-mm)*60);
+  $('clock').textContent=String(mm).padStart(2,'0')+':'+String(ss).padStart(2,'0');
+  const ml=$('moveLabel');ml.textContent=NAMES[move];ml.style.background=COLORS[move];
+  $('playhead').style.left=(t/80*100)+'%';
+  requestAnimationFrame(loop);
+}
+setOcc();buildTimeline();drawAtt();requestAnimationFrame(loop);
+</script>
+</body>
+</html>
