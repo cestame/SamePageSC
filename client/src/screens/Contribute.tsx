@@ -1,11 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { ArrowRight, CircleNotch, Eraser, TextAa, Trash, type Icon } from '@phosphor-icons/react';
+import { ArrowRight, CircleNotch, ClipboardText, Eraser, Microphone, NotePencil, Timer, Trash, type Icon } from '@phosphor-icons/react';
 import { FIELDS, PRIVACY_POINTS } from '../../../shared/content.js';
-import { api, type ContributionResult, type Course, type ExtractedProfile, type FieldKey } from '../lib/api';
+import { api, type ContributionResult, type Course, type ExtractedProfile, type FieldKey, type ProfessorChoice } from '../lib/api';
 import { useAsync } from '../lib/hooks';
 import { ProfileLine } from '../components/ProfileLine';
 import { EvidenceList } from '../components/EvidenceList';
-import { Button, Card, EmptyState, ErrorState, KeyValue, LoadingState } from '../components/ui';
+import { Badge, Button, Card, EmptyState, ErrorState, KeyValue, LoadingState } from '../components/ui';
+import { RecordClass } from '../components/RecordClass';
 
 const MIN_CHARS = 80;
 const NEW_PROFESSOR = 'new';
@@ -16,15 +17,25 @@ const SOURCE_TYPES = [
 ] as const;
 type SourceType = (typeof SOURCE_TYPES)[number]['value'];
 
-const PRIVACY_ICONS: Record<string, Icon> = { text: TextAa, eraser: Eraser, trash: Trash };
+const PRIVACY_ICONS: Record<string, Icon> = { microphone: Microphone, timer: Timer, eraser: Eraser, trash: Trash };
+
+/** The three ways to add notes. Recording is the default; pasting is the original flow, unchanged. */
+type Method = 'record' | 'paste' | 'granola';
+const METHODS: { value: Method; label: string; detail: string; Icon: Icon; prototype?: boolean }[] = [
+  { value: 'record', label: 'Record this class', detail: 'Listens to the lecture and builds the profile from it', Icon: Microphone, prototype: true },
+  { value: 'paste', label: 'Paste notes or a syllabus', detail: 'Type or paste what you wrote down', Icon: ClipboardText },
+  { value: 'granola', label: 'Import from Granola', detail: 'Bring in notes you took in Granola', Icon: NotePencil },
+];
+
+type Added = { result: ContributionResult; from: 'notes' | 'recording' };
 const SHOWN_PRIVACY = PRIVACY_POINTS.filter((p) => p.icon in PRIVACY_ICONS);
 
 export function Contribute() {
   const [meta] = useAsync(api.meta, []);
   const [courses, retryCourses] = useAsync(api.courses, []);
-  const [result, setResult] = useState<ContributionResult | null>(null);
+  const [added, setAdded] = useState<Added | null>(null);
 
-  if (result) return <Success result={result} onAgain={() => setResult(null)} />;
+  if (added) return <Success result={added.result} from={added.from} onAgain={() => setAdded(null)} />;
 
   return (
     <>
@@ -51,13 +62,67 @@ export function Contribute() {
       {courses.status === 'loading' && <LoadingState label="Loading courses" />}
       {courses.status === 'error' && <ErrorState title="We couldn't load the courses" error={courses.error} onRetry={retryCourses} />}
       {courses.status === 'success' && (
-        <ContributionForm courses={courses.data} disabled={meta.status === 'success' && !meta.data.ai} onDone={setResult} />
+        <ContributionForm
+          courses={courses.data}
+          disabled={meta.status === 'success' && !meta.data.ai}
+          recordingBlocked={meta.status === 'success' && Boolean(meta.data.recording) && !meta.data.ai}
+          onDone={setAdded}
+        />
       )}
     </>
   );
 }
 
-function ContributionForm({ courses, disabled, onDone }: { courses: Course[]; disabled: boolean; onDone: (r: ContributionResult) => void }) {
+function MethodPicker({ method, onChange }: { method: Method; onChange: (m: Method) => void }) {
+  return (
+    <div className="stack-2">
+      <h2 id="method-title" className="text-heading">How do you want to add notes?</h2>
+      <div className="method-options" role="radiogroup" aria-labelledby="method-title">
+        {METHODS.map(({ value, label, detail, Icon: MethodIcon, prototype }) => (
+          <button
+            key={value}
+            type="button"
+            role="radio"
+            aria-checked={method === value}
+            className={method === value ? 'method-option method-option--selected' : 'method-option'}
+            onClick={() => onChange(value)}
+          >
+            <MethodIcon className="method-option__icon" size={28} aria-hidden />
+            <span className="method-option__label">{label}</span>
+            <span className="text-small text-muted">{detail}</span>
+            {prototype && <Badge>Prototype</Badge>}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function GranolaImport() {
+  const [asked, setAsked] = useState(false);
+  return (
+    <div className="stack-3">
+      <Button variant="secondary" block onClick={() => setAsked(true)}>Import notes from Granola (coming soon)</Button>
+      {asked && (
+        <p className="text-small" role="status">
+          Granola import is planned. For now, copy your notes out of Granola and use Paste notes or a syllabus.
+        </p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * `disabled` stops the paste flow when the server has no AI key. Recording without a voice-separation key
+ * falls back to the sample, so it is only blocked when live recording is set up but the AI key is missing.
+ */
+function ContributionForm({ courses, disabled, recordingBlocked, onDone }: {
+  courses: Course[];
+  disabled: boolean;
+  recordingBlocked: boolean;
+  onDone: (added: Added) => void;
+}) {
+  const [method, setMethod] = useState<Method>('record');
   const [courseId, setCourseId] = useState(courses[0]?.id ?? '');
   const course = courses.find((c) => c.id === courseId);
   const [professorId, setProfessorId] = useState<string>('');
@@ -75,6 +140,9 @@ function ContributionForm({ courses, disabled, onDone }: { courses: Course[]; di
   const isNew = professorId === NEW_PROFESSOR;
   const professorName = isNew ? newName.trim() : course?.sections.find((s) => String(s.id) === professorId)?.name ?? '';
   const ready = !disabled && consent && text.trim().length >= MIN_CHARS && professorName.length >= 3;
+  const choice: ProfessorChoice | null = professorName.length >= 3
+    ? { courseId, ...(isNew ? { professorName: newName.trim() } : { professorId: Number(professorId) }) }
+    : null;
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -82,14 +150,14 @@ function ContributionForm({ courses, disabled, onDone }: { courses: Course[]; di
     setSending(true);
     setError(null);
     try {
-      onDone(await api.contribute({
+      onDone({ from: 'notes', result: await api.contribute({
         courseId,
         professorId: isNew ? undefined : Number(professorId),
         professorName: isNew ? newName.trim() : undefined,
         sourceType,
         text,
         consent,
-      }));
+      }) });
     } catch (err) {
       setError(err as Error);
       setSending(false);
@@ -99,7 +167,8 @@ function ContributionForm({ courses, disabled, onDone }: { courses: Course[]; di
   if (sending) return <Working professorName={professorName} />;
 
   return (
-    <form className="stack-4" onSubmit={submit} noValidate>
+    <div className="stack-5">
+      <div className="stack-4">
       <label className="field">
         <span className="field__label">Course</span>
         <select className="input" id="course" value={courseId} onChange={(e) => setCourseId(e.target.value)}>
@@ -119,6 +188,12 @@ function ContributionForm({ courses, disabled, onDone }: { courses: Course[]; di
           <input className="input" id="professor-name" type="text" maxLength={80} value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Dr. Jordan Smith" />
         </label>
       )}
+      </div>
+      <MethodPicker method={method} onChange={setMethod} />
+      {method === 'record' && <RecordClass choice={choice} disabled={recordingBlocked} onDone={(result) => onDone({ from: 'recording', result })} />}
+      {method === 'granola' && <GranolaImport />}
+      {method === 'paste' && (
+      <form className="stack-4" onSubmit={submit} noValidate>
       <label className="field">
         <span className="field__label">What you're pasting</span>
         <select className="input" id="source-type" value={sourceType} onChange={(e) => setSourceType(e.target.value as SourceType)}>
@@ -143,7 +218,9 @@ function ContributionForm({ courses, disabled, onDone }: { courses: Course[]; di
       <Button type="submit" block disabled={!ready}>
         {professorName ? `Build the profile for ${professorName}` : 'Build the profile'}
       </Button>
-    </form>
+      </form>
+      )}
+    </div>
   );
 }
 
@@ -164,23 +241,29 @@ function Working({ professorName }: { professorName: string }) {
   );
 }
 
-function Success({ result, onAgain }: { result: ContributionResult; onAgain: () => void }) {
+const SOURCE_FATE = {
+  notes: { heading: 'Your notes are now part of', key: 'Your pasted text', value: 'Discarded after reading', found: 'What the AI found in your text' },
+  recording: { heading: 'This class is now part of', key: 'Your recording', value: 'Deleted after it was analyzed', found: 'What the recording showed' },
+};
+
+function Success({ result, from, onAgain }: { result: ContributionResult; from: Added['from']; onAgain: () => void }) {
+  const fate = SOURCE_FATE[from];
   const { extracted, professor } = result;
   const merged = Object.fromEntries(Object.entries(professor.profile).map(([k, v]) => [k, v.value]));
   const droppedLabels = FIELDS.filter((f) => extracted.dropped.includes(f.key)).map((f) => f.label.toLowerCase());
 
   return (
     <>
-      <h1 className="text-display">Your notes are now part of {professor.name}'s profile</h1>
+      <h1 className="text-display">{fate.heading} {professor.name}'s profile</h1>
       <Card>
         <ProfileLine values={merged} label={professor.name} />
         <KeyValue items={[
           ['Built from', `${professor.contributionCount} contributions, averaged`],
-          ['Your pasted text', 'Discarded after reading'],
+          [fate.key, fate.value],
         ]} />
       </Card>
       <Card>
-        <h2 className="text-title">What the AI found in your text</h2>
+        <h2 className="text-title">{fate.found}</h2>
         <p className="text-body">{extracted.summary}</p>
         <EvidenceList rows={toEvidenceRows(extracted.profile)} />
         {droppedLabels.length > 0 && (

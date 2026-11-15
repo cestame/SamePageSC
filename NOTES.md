@@ -113,6 +113,15 @@ Submission is due **Sunday, November 15, 2026 at 11:00 AM PT** (AI@USC, HackSC x
 - `#/get-extension` (`client/src/screens/GetExtension.tsx`) has the download, five install steps (with a button that copies chrome://extensions, since Chrome blocks links to it) and a "Test it on the sample Web Registration" card linking to `/demo/webreg`.
 - Every "get the extension" button now leads there: the top bar, the hero's "Get the Chrome extension" and the extension band's "Download the extension". The extension band also links "Try it on the sample Web Registration". The old install-steps disclosure on the landing page was removed, since the page has the steps.
 
+## Record a class (prototype, 2026-11-15)
+
+- The team decided to allow recording (CLAUDE.md, README and the privacy rules were updated). Add notes now offers three method cards under Course and Professor: Record this class (default, labeled Prototype), Paste notes or a syllabus (the original flow, unchanged) and Import from Granola (a "coming soon" button with an inline note).
+- Recording needs the consent checkbox, uses MediaRecorder with a live level waveform, and handles a blocked or missing microphone. `POST /api/recordings/analyze` takes the raw audio, sends it to pyannoteAI (`server/recording.js`, precision-3 with transcription), treats the most talkative speaker as the professor and keeps only their words. Student turns are timing only. The professor's transcript goes through the existing extraction; Format and Participation come from measured talk time and student turns.
+- Nothing is saved until "Submit this profile". The server signs each draft so only a draft it built can be submitted (`/api/recordings/submit`), and sample results can never be submitted.
+- Demo safety: "Try it with a sample recording" loads `server/sample-recording.json`, a fictional CSCI 103 lecture in pyannoteAI's output shape, through the same summary code. Without `PYANNOTE_API_KEY`, recording falls back to that sample and says so.
+- Not yet tested against the live pyannoteAI API (no key here). Its docs don't say whether browser WebM/Opus audio is accepted.
+- Try this class: the Same Page logo and a "Back to Same Page" link go to the home page, and the camera is clamped inside the hall so zooming or panning never leaves the room.
+
 ## Open audit items (current UI vs CLAUDE.md)
 
 Fix these during the redesign:

@@ -1,9 +1,9 @@
-import { ChalkboardTeacher, Eraser, Handshake, Plugs, TextAa, Trash, type Icon } from '@phosphor-icons/react';
+import { ChalkboardTeacher, Eraser, Handshake, Microphone, Plugs, Timer, Trash, type Icon } from '@phosphor-icons/react';
 import { PRIVACY_POINTS } from '../../../shared/content.js';
 import { ProfileLine } from '../components/ProfileLine';
 import { Card } from '../components/ui';
 
-const ICONS: Record<string, Icon> = { text: TextAa, eraser: Eraser, trash: Trash, person: ChalkboardTeacher, handshake: Handshake, plug: Plugs };
+const ICONS: Record<string, Icon> = { microphone: Microphone, timer: Timer, eraser: Eraser, trash: Trash, person: ChalkboardTeacher, handshake: Handshake, plug: Plugs };
 
 // A worked example: a sample section against a beginner who wants a steady, organized class.
 const EXAMPLE_CLASS = { pace: 2, format: 2, structure: 5, assessment: 3, participation: 2, guidance: 1, workload: 3 };

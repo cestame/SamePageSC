@@ -4,15 +4,18 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { closeDb, initDb, query } from './db.js';
 import { seedSamples } from './seed.js';
-import { FIELD_KEYS, PRODUCT_NAME } from '../shared/content.js';
+import { PRODUCT_NAME } from '../shared/content.js';
 import { scoreProfile, mergeContributions, validateAnswers } from './scoring.js';
-import { scrubText, isAboutThePerson } from './privacy.js';
+import { scrubText } from './privacy.js';
 import { extractProfile, explainMatch, aiConfigured, AiUnavailableError } from './ai.js';
 import { planSchedule } from './planner.js';
 import { authRoutes, loadUser, migrateAuth } from './auth.js';
 import { getRequirements, migrateUsc, searchCourses, searchPrograms } from './usc.js';
 import { lookupSections } from './sections.js';
 import { renderDemoPage } from './demoPage.js';
+import { keepEvidencedFields, resolveProfessor, saveContribution } from './contributions.js';
+import { measuredRatings, publicAnalysis, recordingConfigured, summarizeLecture, transcribeLecture } from './recording.js';
+import { readFileSync } from 'node:fs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -144,7 +147,7 @@ app.post('/api/courses', rateLimit({ windowMs: 60_000, max: 30 }), asyncRoute(as
 
 app.get('/api/health', (req, res) => res.json({ ok: true, ai: aiConfigured() }));
 
-app.get('/api/meta', (req, res) => res.json({ ai: aiConfigured() }));
+app.get('/api/meta', (req, res) => res.json({ ai: aiConfigured(), recording: recordingConfigured() }));
 
 app.get('/api/courses', asyncRoute(async (req, res) => {
   // Each course carries its sections' profiles so the course picker can draw their shapes.
@@ -311,15 +314,8 @@ app.post('/api/contribute', rateLimit({ windowMs: 60 * 60_000, max: 15 }), async
   const [course] = await query('SELECT id, code, title FROM courses WHERE id = $1', [courseId]);
   if (!course) return res.status(400).json({ error: 'Unknown course' });
 
-  let prof;
-  if (professorId) {
-    [prof] = await query('SELECT id, name FROM professors WHERE id = $1 AND course_id = $2', [Number(professorId), courseId]);
-    if (!prof) return res.status(400).json({ error: 'Unknown professor for this course' });
-  } else {
-    const name = String(professorName || '').trim().slice(0, 80);
-    if (name.length < 3) return res.status(400).json({ error: 'Enter the professor\'s name' });
-    prof = { id: null, name };
-  }
+  const { prof, error } = await resolveProfessor(query, { courseId, professorId, professorName });
+  if (error) return res.status(400).json({ error });
 
   // 1. Strip personal details before the text leaves our server.
   const scrubbed = scrubText(text);
@@ -337,39 +333,105 @@ app.post('/api/contribute', rateLimit({ windowMs: 60 * 60_000, max: 15 }), async
   }
 
   // 3. Keep only fields with evidence; scrub evidence again and drop anything about the person.
-  const profile = {};
-  const dropped = [];
-  for (const key of FIELD_KEYS) {
-    const f = extracted[key];
-    const evidence = scrubText(f.evidence || '').slice(0, 240);
-    if (!f.found || isAboutThePerson(evidence)) {
-      if (f.found) dropped.push(key);
-      profile[key] = { value: null, evidence: '' };
-      continue;
-    }
-    profile[key] = { value: Math.min(5, Math.max(1, Math.round(f.value))), evidence };
-  }
-  const found = FIELD_KEYS.filter((k) => profile[k].value !== null);
-  if (found.length < 2) {
+  const { profile, dropped, found } = keepEvidencedFields(extracted);
+  if (found < 2) {
     return res.status(422).json({ error: 'There wasn\'t enough about how the class is taught to build a profile. Try adding notes about lectures, assignments, or exams.' });
   }
   const summary = scrubText(extracted.summary).slice(0, 600);
 
   // 4. Store the profile (never the raw notes) and merge with existing contributions.
-  if (!prof.id) {
-    const [row] = await query(
-      `INSERT INTO professors (course_id, name) VALUES ($1, $2)
-       ON CONFLICT (course_id, name) DO UPDATE SET name = EXCLUDED.name RETURNING id, name`,
-      [courseId, prof.name],
-    );
-    prof = row;
-  }
-  await query(
-    'INSERT INTO contributions (professor_id, profile, summary, source_type) VALUES ($1, $2, $3, $4)',
-    [prof.id, JSON.stringify(profile), summary, sourceType],
-  );
-  const [merged] = await loadProfessors('p.id = $1', [prof.id]);
+  const id = await saveContribution(query, { courseId, prof, profile, summary, sourceType });
+  const [merged] = await loadProfessors('p.id = $1', [id]);
   res.json({ extracted: { profile, summary, dropped }, professor: merged });
+}));
+
+// ---------- class recording (prototype) ----------
+
+/**
+ * A recording's draft profile is signed when the server builds it, so a browser can only submit a profile
+ * that came from a real analysis. Sample results are signed as samples and can never be submitted.
+ */
+const DRAFT_SIGNING_KEY = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+const signDraft = (draft, source) => crypto.createHmac('sha256', DRAFT_SIGNING_KEY).update(JSON.stringify({ draft, source })).digest('hex');
+
+function draftMatches(draft, token) {
+  const expected = Buffer.from(signDraft(draft, 'live'));
+  const given = Buffer.from(String(token || ''));
+  return expected.length === given.length && crypto.timingSafeEqual(expected, given);
+}
+
+const SAMPLE_RECORDING = JSON.parse(readFileSync(path.join(here, 'sample-recording.json'), 'utf8'));
+const MAX_RECORDING_BYTES = 60 * 1024 * 1024;
+
+/** The pre-processed sample lecture, run through the same summary as a live recording so the demo never needs a microphone or the API. */
+function sampleRecordingResult(notice) {
+  const lecture = summarizeLecture(SAMPLE_RECORDING.output);
+  const draft = { profile: { ...SAMPLE_RECORDING.draft.profile, ...measuredRatings(lecture) }, summary: SAMPLE_RECORDING.draft.summary, dropped: [] };
+  return { analysis: publicAnalysis(lecture), draft, source: 'sample', notice, token: signDraft(draft, 'sample') };
+}
+
+/** Builds the draft profile from the professor's words. Format and Participation come from the measured numbers. */
+async function draftFromLecture(lecture, course) {
+  const transcript = scrubText(lecture.professorTranscript).slice(0, 30_000);
+  if (transcript.trim().length < 80) throw Object.assign(new Error('There wasn\'t enough of the professor speaking to build a profile.'), { status: 422 });
+  const extracted = await extractProfile({ text: transcript, sourceType: 'lecture transcript (professor only)', courseLabel: `${course.code} ${course.title}` });
+  if (!extracted.is_course_material) throw Object.assign(new Error('That recording doesn\'t sound like a class, so nothing was kept.'), { status: 422 });
+  const { profile, dropped } = keepEvidencedFields(extracted);
+  return { profile: { ...profile, ...measuredRatings(lecture) }, summary: scrubText(extracted.summary).slice(0, 600), dropped };
+}
+
+app.get('/api/recordings/sample', (req, res) => {
+  res.json(sampleRecordingResult('This is a sample recording of a fictional CSCI 103 lecture, analyzed ahead of time.'));
+});
+
+app.post(
+  '/api/recordings/analyze',
+  rateLimit({ windowMs: 60 * 60_000, max: 6 }),
+  express.raw({ type: ['audio/*', 'video/webm', 'application/octet-stream'], limit: MAX_RECORDING_BYTES }),
+  asyncRoute(async (req, res) => {
+    if (req.query.consent !== 'yes') return res.status(400).json({ error: 'Please confirm the professor agreed to the recording and told the class.' });
+    const [course] = await query('SELECT id, code, title FROM courses WHERE id = $1', [req.query.courseId]);
+    if (!course) return res.status(400).json({ error: 'Unknown course' });
+    if (!recordingConfigured()) {
+      return res.json(sampleRecordingResult('Live recording isn\'t set up on this server yet, so this shows the sample recording instead. Your audio was not sent anywhere.'));
+    }
+    if (!aiConfigured()) return res.status(503).json({ error: 'The server doesn\'t have its AI key set up, so it can\'t build a profile right now.' });
+    if (!Buffer.isBuffer(req.body) || req.body.length < 1000) return res.status(400).json({ error: 'The recording was empty. Try recording again.' });
+
+    // The audio lives only in this request's memory. It is dropped as soon as the voice separation is back.
+    let lecture;
+    try {
+      lecture = summarizeLecture(await transcribeLecture(req.body));
+    } catch (e) {
+      return res.status(502).json({ error: e.message });
+    } finally {
+      req.body = null;
+    }
+
+    try {
+      const draft = await draftFromLecture(lecture, course);
+      res.json({ analysis: publicAnalysis(lecture), draft, source: 'live', token: signDraft(draft, 'live') });
+    } catch (e) {
+      const status = e.status || (e instanceof AiUnavailableError ? 503 : 502);
+      res.status(status).json({ error: e.message });
+    }
+  }),
+);
+
+app.post('/api/recordings/submit', rateLimit({ windowMs: 60 * 60_000, max: 15 }), asyncRoute(async (req, res) => {
+  const { courseId, professorId, professorName, draft, token, consent } = req.body || {};
+  if (!consent) return res.status(400).json({ error: 'Please confirm the professor agreed to the recording and told the class.' });
+  if (!draft || !draftMatches(draft, token)) {
+    return res.status(400).json({ error: 'Only a profile built from your own recording can be submitted. Sample results are for trying it out.' });
+  }
+  const [course] = await query('SELECT id FROM courses WHERE id = $1', [courseId]);
+  if (!course) return res.status(400).json({ error: 'Unknown course' });
+  const { prof, error } = await resolveProfessor(query, { courseId, professorId, professorName });
+  if (error) return res.status(400).json({ error });
+
+  const id = await saveContribution(query, { courseId, prof, profile: draft.profile, summary: draft.summary, sourceType: 'recording' });
+  const [merged] = await loadProfessors('p.id = $1', [id]);
+  res.json({ extracted: draft, professor: merged });
 }));
 
 app.post('/api/feedback', rateLimit({ windowMs: 60 * 60_000, max: 20 }), asyncRoute(async (req, res) => {

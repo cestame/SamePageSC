@@ -82,6 +82,30 @@ export type ContributionResult = {
   professor: Professor;
 };
 
+/** One stretch of the class: the professor talking, or a student turn (students are never named or transcribed). */
+export type ClassTurn = { who: 'professor' | 'student'; start: number; end: number };
+
+export type RecordingAnalysis = {
+  durationSeconds: number;
+  professorShare: number;
+  studentTurns: number;
+  professorQuestions: number;
+  timeline: ClassTurn[];
+};
+
+export type RecordingDraft = { profile: ExtractedProfile; summary: string; dropped: FieldKey[] };
+
+/** A recording's result, shown before anything is saved. `token` lets the server confirm it built this draft. */
+export type RecordingResult = {
+  analysis: RecordingAnalysis;
+  draft: RecordingDraft;
+  source: 'live' | 'sample';
+  notice?: string;
+  token: string;
+};
+
+export type ProfessorChoice = { courseId: string; professorId?: number; professorName?: string };
+
 export type User = { id: number; email: string; name: string };
 export type Session = { user: User | null; profile: unknown };
 
@@ -114,6 +138,24 @@ async function request<T>(path: string, body?: unknown, method = 'POST'): Promis
   return data as T;
 }
 
+/** Sends recorded audio as the raw request body. The server keeps it in memory only and drops it after analysis. */
+async function analyzeRecording(audio: Blob, courseId: string): Promise<RecordingResult> {
+  let res: Response;
+  try {
+    res = await fetch(`${API_ORIGIN}/api/recordings/analyze?courseId=${encodeURIComponent(courseId)}&consent=yes`, {
+      method: 'POST',
+      headers: { 'Content-Type': audio.type || 'application/octet-stream' },
+      body: audio,
+      credentials: API_ORIGIN ? 'include' : 'same-origin',
+    });
+  } catch {
+    throw new ApiError('We could not reach the server. Check your connection and try again.');
+  }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new ApiError(data.error || `The server answered with an error (${res.status}).`);
+  return data as RecordingResult;
+}
+
 export const api = {
   me: () => request<Session>('/auth/me'),
   searchPrograms: (q: string) => request<UscProgram[]>(`/usc/programs?q=${encodeURIComponent(q)}`),
@@ -124,7 +166,7 @@ export const api = {
   login: (email: string, password: string) => request<Session>('/auth/login', { email, password }),
   logout: () => request<{ ok: true }>('/auth/logout', {}),
   saveProfile: (data: unknown) => request<{ ok: true }>('/profile', { data }, 'PUT'),
-  meta: () => request<{ ai: boolean }>('/meta'),
+  meta: () => request<{ ai: boolean; recording?: boolean }>('/meta'),
   courses: () => request<Course[]>('/courses'),
   professors: (courseId: string) => request<Professor[]>(`/courses/${encodeURIComponent(courseId)}/professors`),
   professor: (id: number) => request<ProfessorDetail>(`/professors/${id}`),
@@ -140,6 +182,10 @@ export const api = {
     text: string;
     consent: boolean;
   }) => request<ContributionResult>('/contribute', body),
+  sampleRecording: () => request<RecordingResult>('/recordings/sample'),
+  analyzeRecording: (audio: Blob, courseId: string) => analyzeRecording(audio, courseId),
+  submitRecording: (body: ProfessorChoice & { draft: RecordingDraft; token: string; consent: boolean }) =>
+    request<ContributionResult>('/recordings/submit', body),
   feedback: (professorId: number, answers: { pace: boolean; format: boolean; workload: boolean }) =>
     request<{ feedback: FeedbackStats }>('/feedback', { professorId, ...answers }),
   respond: (professorId: number, body: string, code: string) =>

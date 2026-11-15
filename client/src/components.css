@@ -882,6 +882,59 @@ textarea.input { min-height: 220px; resize: vertical; line-height: 1.5; }
 .install-steps { display: grid; gap: var(--space-5); }
 .install-steps__step { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-3); align-items: start; }
 
+/* ---------- add notes: method cards, recorder and recording analysis ---------- */
+
+.method-options { display: grid; gap: var(--space-2); }
+.method-option {
+  display: grid;
+  gap: var(--space-1);
+  justify-items: start;
+  align-content: start;
+  width: 100%;
+  min-height: 112px;
+  padding: var(--space-4);
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-raised);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--duration-quick) var(--ease-out), box-shadow var(--duration-quick) var(--ease-out);
+}
+.method-option:hover { background: var(--surface-sunk); }
+.method-option--selected { background: var(--surface-sunk); box-shadow: var(--ring-selected); }
+.method-option__icon { color: var(--accent); }
+.method-option__label { font-weight: 700; font-size: 1.0625rem; }
+
+.recorder { display: grid; grid-template-columns: auto auto minmax(0, 1fr); align-items: center; gap: var(--space-3); }
+.recorder__dot { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); animation: recorder-pulse 1.2s var(--ease-out) infinite; }
+.recorder__time { font-variant-numeric: tabular-nums; }
+@keyframes recorder-pulse { 50% { opacity: 0.35; } }
+.waveform { display: flex; align-items: center; gap: 2px; height: 48px; }
+.waveform__bar { flex: 1; min-width: 2px; border-radius: var(--radius-pill); background: var(--accent); transition: height 80ms linear; }
+
+.class-timeline { margin: 0; display: grid; gap: var(--space-2); }
+.class-timeline__bar { position: relative; height: 40px; border-radius: var(--radius-md); background: var(--surface-sunk); overflow: hidden; }
+.class-timeline__turn { position: absolute; top: 0; bottom: 0; min-width: 4px; }
+.class-timeline__turn--professor { background: var(--accent); }
+.class-timeline__turn--student { background: var(--text-muted); }
+.class-timeline__legend { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center; }
+.class-timeline__legend span { display: inline-flex; align-items: center; gap: var(--space-1); }
+.class-timeline__key { display: inline-block; width: 12px; height: 12px; border-radius: 3px; }
+.class-timeline__key--professor { background: var(--accent); }
+.class-timeline__key--student { background: var(--text-muted); }
+.measures { margin: 0; display: grid; gap: var(--space-4); }
+.measure { display: grid; gap: var(--space-1); }
+.measure dd { margin: 0; color: var(--text-muted); }
+.measure__value { margin: 0; }
+.steps__item--done { color: var(--text); font-weight: 700; }
+
+@media (min-width: 720px) {
+  .method-options { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .measures { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
 /* ---------- top bar extension button ---------- */
 
 .nav__cta {
